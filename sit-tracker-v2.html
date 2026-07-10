@@ -1125,15 +1125,30 @@ const CORE = (function () {
   const WORDNUMS = {
     one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
     eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17,
-    eighteen: 18, nineteen: 19, twenty: 20, "twenty-five": 25, thirty: 30, "forty-five": 45, forty: 40,
-    fifty: 50, sixty: 60, ninety: 90, "a couple of": 2, "a few": 3, half: 0.5
+    eighteen: 18, nineteen: 19, "a couple of": 2, "a few": 3, half: 0.5
   };
+  // tens + hyphen/space compounds ("twenty-two", "thirty five") generated, not listed
+  (function () {
+    const TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+    const UNITS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9 };
+    for (const tn in TENS) {
+      WORDNUMS[tn] = TENS[tn];
+      for (const u in UNITS) {
+        WORDNUMS[tn + "-" + u] = TENS[tn] + UNITS[u];
+        WORDNUMS[tn + " " + u] = TENS[tn] + UNITS[u];
+      }
+    }
+  })();
   const NUMPAT = "(\\d+(?:\\.\\d+)?|" + Object.keys(WORDNUMS).sort((a, b) => b.length - a.length).join("|") + ")";
+  // ranges: "15 or 20", "8 to 10" for any number style; "15-20" for digits only
+  // (a hyphen between word numbers is a compound like twenty-five, never a range)
+  const RANGE_WORD = "\\s+(?:or|to)\\s+";
+  const DIGIT = "(\\d+(?:\\.\\d+)?)";
   function toNumber(tok) {
     if (/^\d/.test(tok)) return parseFloat(tok);
     return WORDNUMS[tok.toLowerCase()] !== undefined ? WORDNUMS[tok.toLowerCase()] : null;
   }
-  const HEDGE_RE = /\b(about|around|maybe|roughly|approximately|approx|perhaps|possibly|i think|i guess|i believe|not sure|sort of|kind of|ish|or so)\b/gi;
+  const HEDGE_RE = /\b(about|around|maybe|roughly|approximately|approx|perhaps|possibly|i think|i guess|i believe|i'd say|something like|give or take|not sure|sort of|kind of|ish|or so)\b/gi;
 
   function hedgeConfidence(text, index, length) {
     const win = sentenceAround(text, index);
@@ -1150,12 +1165,74 @@ const CORE = (function () {
       const re = new RegExp(p, "i");
       const m = re.exec(text);
       if (m) {
-        const numTok = m[1];
-        const val = numTok !== undefined ? toNumber(numTok) : null;
-        if (numTok === undefined || val !== null) {
-          return { value: val, index: m.index, length: m[0].length, evidence: m[0].trim().slice(0, 80) };
+        const a = m[1] !== undefined ? toNumber(m[1]) : null;
+        if (m[1] === undefined) {
+          return { value: null, index: m.index, length: m[0].length, evidence: m[0].trim().slice(0, 80), isRange: false };
         }
+        if (a === null) continue;                                    // number token didn't parse → try next pattern
+        if (m[2] !== undefined) {                                    // two captures = a range → midpoint
+          const b = toNumber(m[2]);
+          if (b === null) continue;
+          return { value: round1((a + b) / 2), index: m.index, length: m[0].length, evidence: m[0].trim().slice(0, 80), isRange: true };
+        }
+        return { value: a, index: m.index, length: m[0].length, evidence: m[0].trim().slice(0, 80), isRange: false };
       }
+    }
+    return null;
+  }
+
+  // negation guard: a hindrance word preceded by no/not/without in the same
+  // clause (no crossing of . ! ? , ;) is a report of absence, so nothing is recorded
+  function isNegated(text, index) {
+    let back = text.slice(Math.max(0, index - 36), index);
+    for (const ch of [".", "!", "?", ",", ";"]) {
+      const i = back.lastIndexOf(ch);
+      if (i >= 0) back = back.slice(i + 1);
+    }
+    return /\b(?:no|not|never|without|hardly|barely|zero|free of|didn'?t(?:\s+feel)?|wasn'?t)\b/i.test(back);
+  }
+
+  // start time from explicit clock references only. am/pm comes from a marker
+  // or from morning/evening words in the text; an unresolvable bare hour returns
+  // a clarifying question instead of a guess.
+  const HOURPAT = "(\\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)";
+  function parseStartTime(t) {
+    const morningCtx = /\b(?:morning|dawn|sunrise|before breakfast|after waking)\b/i.test(t);
+    const eveningCtx = /\b(?:evening|night|sunset|after dinner|before bed)\b/i.test(t);
+    const resolve = (h, mark) => {
+      if (h > 23) return null;
+      if (mark) { const pm = /p/i.test(mark); if (h === 12) return pm ? 12 : 0; return pm && h < 12 ? h + 12 : h; }
+      if (h >= 13) return h;                     // already unambiguous 24-hour
+      if (morningCtx && !eveningCtx) return h === 12 ? 12 : h;
+      if (eveningCtx && !morningCtx) return h === 12 ? 12 : (h + 12) % 24;
+      return null;                               // ambiguous — ask, don't guess
+    };
+    const fmt = (h, min) => pad2(h) + ":" + pad2(min);
+    let m = /\b(?:at|around|about)\s+(\d{1,2}):(\d{2})\s*(a\.?m\.?|p\.?m\.?)?/i.exec(t);
+    if (m) {
+      const h = resolve(parseInt(m[1], 10), m[3]);
+      const min = parseInt(m[2], 10);
+      if (h !== null && min < 60) return { startTime: fmt(h, min), evidence: m[0].trim(), confidence: m[3] || parseInt(m[1], 10) >= 13 ? "high" : "medium" };
+      if (parseInt(m[1], 10) <= 12 && min < 60) return { ambiguous: true, evidence: m[0].trim() };
+    }
+    m = new RegExp("\\b(quarter|half)\\s+past\\s+" + HOURPAT + "\\b", "i").exec(t);
+    if (m) {
+      const h = resolve(toNumber(m[2]), null);
+      if (h !== null) return { startTime: fmt(h, m[1].toLowerCase() === "half" ? 30 : 15), evidence: m[0].trim(), confidence: "medium" };
+      return { ambiguous: true, evidence: m[0].trim() };
+    }
+    m = new RegExp("\\bquarter\\s+to\\s+" + HOURPAT + "\\b", "i").exec(t);
+    if (m) {
+      const h = resolve(toNumber(m[1]), null);
+      if (h !== null) return { startTime: fmt((h + 23) % 24, 45), evidence: m[0].trim(), confidence: "medium" };
+      return { ambiguous: true, evidence: m[0].trim() };
+    }
+    m = new RegExp("\\b(?:started|began|sat(?:\\s+down)?)\\s+(?:at|around|about)\\s+" + HOURPAT + "\\s*(a\\.?m\\.?|p\\.?m\\.?|o'?clock)?\\b", "i").exec(t);
+    if (m) {
+      const mark = m[2] && /[ap]/i.test(m[2]) ? m[2] : null;
+      const h = resolve(toNumber(m[1]), mark);
+      if (h !== null) return { startTime: fmt(h, 0), evidence: m[0].trim(), confidence: mark ? "high" : "medium" };
+      return { ambiguous: true, evidence: m[0].trim() };
     }
     return null;
   }
@@ -1175,30 +1252,40 @@ const CORE = (function () {
     if (!t) { draft.questions.push("The journal entry is empty — what happened during the sit?"); return draft; }
 
     const M = "\\s*-?\\s*min(?:ute)?s?\\b";
+    const H = "(?:about\\s+|around\\s+|maybe\\s+|roughly\\s+|approximately\\s+|perhaps\\s+)?";
     function grab(field, patterns) {
       const m = firstMatch(t, patterns);
       if (m && m.value !== null) {
         draft[field] = m.value;
-        conf[field] = { value: m.value, confidence: hedgeConfidence(t, m.index, m.length), evidence: m.evidence };
+        let c = hedgeConfidence(t, m.index, m.length);
+        if (m.isRange) c = c === "high" ? "medium" : "low";           // a range is itself a hedge
+        conf[field] = { value: m.value, confidence: c, evidence: m.evidence };
       }
     }
     grab("actualMin", [
-      "sat(?:\\s+\\w+){0,3}?\\s+for\\s+" + NUMPAT + M,
+      "sat(?:\\s+\\w+){0,3}?\\s+for\\s+" + H + NUMPAT + RANGE_WORD + NUMPAT + M,
+      "sat(?:\\s+\\w+){0,3}?\\s+for\\s+" + H + DIGIT + "\\s*[-–]\\s*" + DIGIT + M,
+      "sat(?:\\s+\\w+){0,3}?\\s+for\\s+" + H + NUMPAT + M,
       NUMPAT + "[ -]min(?:ute)?s?\\s+(?:sit|session|meditation)",
       "\\bdid\\s+(?:a\\s+)?" + NUMPAT + M,
-      "\\bsat\\s+" + NUMPAT + M,
-      "session\\s+(?:was|lasted)\\s+" + NUMPAT + M
+      "\\bsat\\s+" + H + NUMPAT + M,
+      "session\\s+(?:was|lasted)\\s+" + H + NUMPAT + M
     ]);
     grab("settleMin", [
       "first\\s+" + NUMPAT + "\\s+min\\w*\\s+(?:were|was)\\s+(?:pretty\\s+|very\\s+|quite\\s+|all\\s+)?(?:scattered|restless|unsettled|choppy|over the place|noisy|rough)",
+      "took\\s+(?:me\\s+)?(?:about\\s+|around\\s+|maybe\\s+)?" + NUMPAT + RANGE_WORD + NUMPAT + "\\s*min\\w*\\s+to\\s+settle",
       "took\\s+(?:me\\s+)?(?:about\\s+|around\\s+|maybe\\s+)?" + NUMPAT + "\\s*min\\w*\\s+to\\s+settle",
       "settled?\\s+(?:down\\s+)?(?:after|around|at|by)\\s+(?:about\\s+|the\\s+)?" + NUMPAT + M
     ]);
     grab("concMin", [
+      NUMPAT + RANGE_WORD + NUMPAT + "\\s*min\\w*\\s+of\\s+(?:real\\s+|genuine\\s+|good\\s+|actual\\s+|solid\\s+|true\\s+)?(?:concentration|contact|focus|stability|stillness|being with the breath)",
+      DIGIT + "\\s*[-–]\\s*" + DIGIT + "\\s*min\\w*\\s+of\\s+(?:real\\s+|genuine\\s+|good\\s+|actual\\s+|solid\\s+|true\\s+)?(?:concentration|contact|focus|stability|stillness|being with the breath)",
       NUMPAT + "\\s*min\\w*\\s+of\\s+(?:real\\s+|genuine\\s+|good\\s+|actual\\s+|solid\\s+|true\\s+)?(?:concentration|contact|focus|stability|stillness|being with the breath)",
+      "(?:concentrated|focused|with the breath)\\s+for\\s+(?:about\\s+|around\\s+|maybe\\s+)?" + NUMPAT + RANGE_WORD + NUMPAT + M,
       "(?:concentrated|focused|with the breath)\\s+for\\s+(?:about\\s+|around\\s+|maybe\\s+)?" + NUMPAT + M
     ]);
     grab("longestSteadyMin", [
+      "longest[^.!?]*?\\b" + NUMPAT + RANGE_WORD + NUMPAT + "\\b\\s*min",
       "longest[^.!?]*?\\b" + NUMPAT + "\\b\\s*min",
       "best\\s+(?:stretch|run|period)[^.!?]*?\\b" + NUMPAT + "\\b\\s*min"
     ]);
@@ -1210,6 +1297,26 @@ const CORE = (function () {
     grab("returns", [
       "(?:came\\s+back|returned)[^.!?]*?\\b" + NUMPAT + "\\b\\s*times"
     ]);
+
+    // stated absence of wandering is a report of zero, not a guess
+    if (draft.wanderings === null) {
+      const nw = /\b(?:didn'?t|did not|never)\s+(?:really\s+)?wander|\bno (?:major\s+|big\s+)?wandering\b/i.exec(t);
+      if (nw) {
+        draft.wanderings = 0;
+        conf.wanderings = { value: 0, confidence: "medium", evidence: nw[0].trim().slice(0, 80) };
+      }
+    }
+
+    // start time (explicit clock references only; ambiguity becomes a question)
+    const st = parseStartTime(t);
+    if (st) {
+      if (st.startTime) {
+        draft.startTime = st.startTime;
+        conf.startTime = { value: st.startTime, confidence: st.confidence, evidence: st.evidence };
+      } else if (st.ambiguous) {
+        draft.questions.push("You mentioned “" + st.evidence + "” — was that morning or evening?");
+      }
+    }
 
     // overall confidence for the concentration estimate
     if (conf.concMin) draft.confidence = conf.concMin.confidence;
@@ -1225,10 +1332,12 @@ const CORE = (function () {
     for (const h of HKEYS) {
       const m = h.re.exec(t);
       if (!m) continue;
+      if (isNegated(t, m.index)) continue;      // "no restlessness" reports absence — record nothing
       const sentence = sentenceAround(t, m.index);
       let intensity = "moderate";
       if (/\b(slight\w*|mild\w*|a bit|a little|touch of)\b/i.test(sentence)) intensity = "mild";
-      if (/\b(strong\w*|intense|heavy|severe|overwhelming|very)\b/i.test(sentence)) intensity = "strong";
+      if (/\b(strong\w*|intense|heavy|severe|overwhelming|very)\b/i.test(sentence) &&
+        !/\b(?:not|never|wasn'?t|isn'?t)\s+(?:very\s+|too\s+|that\s+)?(?:strong|intense|heavy|severe|overwhelming)/i.test(sentence)) intensity = "strong";
       draft.hindrances[h.key] = intensity;
       conf["hindrance:" + h.key] = { value: intensity, confidence: "medium", evidence: sentence.trim().slice(0, 80) };
       if (/\b(strongest|worst|dominant|main|biggest|most)\b/i.test(sentence)) {
@@ -1421,6 +1530,27 @@ const CORE = (function () {
   }
 
   function numOrNull(v) { return isNum(v) && v >= 0 ? v : null; }
+
+  // classifies provider failures into the message shown next to the local-parser
+  // fallback; timeout (AbortError) and HTTP status get specific, honest wording
+  function providerErrorSummary(e) {
+    const msg = String((e && e.message) || e || "unknown error");
+    if ((e && e.name === "AbortError") || /abort/i.test(msg)) return "the provider timed out — the local parser produced this draft instead";
+    const http = msg.match(/HTTP \d+/);
+    if (http) return "the provider returned " + http[0] + " — the local parser produced this draft instead";
+    return "the provider failed (" + msg + ") — the local parser produced this draft instead";
+  }
+
+  // mock provider responses: the full adapter contract is exercisable without a
+  // key or a network. Shapes mirror real Anthropic / OpenAI-style envelopes.
+  const MOCK_PROVIDER_RESPONSES = {
+    valid: { content: [{ text: '{"actualMin":30,"plannedMin":30,"concMin":14,"confidence":"medium","settleMin":6,"longestSteadyMin":8,"wanderings":3,"returns":3,"hindrances":{"restlessness":"mild"},"dominantHindrance":null,"nimitta":null,"afterStateReport":"calmer","notes":"mock"}' }] },
+    validOpenAI: { choices: [{ message: { content: '{"actualMin":20,"concMin":9,"confidence":"high","notes":"mock"}' } }] },
+    malformed: { content: [{ text: '{"actualMin":30,, "concMin":}' }] },
+    refusal: { content: [{ text: "I cannot extract structured data from this text." }] },
+    overclaim: { content: [{ text: '{"actualMin":20,"concMin":45,"notes":"claims more contact than duration"}' }] },
+    junkShape: { unexpected: true }
+  };
 
   // ---------- backup reminder (calm, dismissible; pure decision logic) ----------
   // settings: lastExportAt 'YYYY-MM-DD'|null, backupSnoozeUntil 'YYYY-MM-DD'|null
@@ -1938,6 +2068,61 @@ const CORE = (function () {
     const provWeird = parseProviderResponse('{"actualMin":"thirty","hindrances":{"pride":"huge"},"nimitta":{"category":"unlocked"}}', "orig");
     t("provider bad types coerced to null/dropped", provWeird.ok && provWeird.draft.actualMin === null && Object.keys(provWeird.draft.hindrances).length === 0 && provWeird.draft.nimitta === null);
 
+    // --- journal parser round 2: compounds, ranges, clock times, negations
+    t("parse compound hyphen number", parseJournal("I sat for twenty-two minutes.").actualMin === 22);
+    t("parse compound spaced number", parseJournal("I sat for thirty five minutes.").actualMin === 35);
+    t("parse seventy word number", parseJournal("I sat for seventy minutes.").actualMin === 70);
+    const hedgedWord = parseJournal("I sat for about twenty minutes.");
+    t("parse hedged word number", hedgedWord.actualMin === 20 && hedgedWord.aiConfidence.actualMin.confidence === "medium");
+    const rng = parseJournal("I sat for 25 or 30 minutes.");
+    t("parse range midpoint", rng.actualMin === 27.5);
+    t("parse range downgrades confidence", rng.aiConfidence.actualMin.confidence === "medium");
+    t("parse digit dash range", parseJournal("I sat for 25-30 minutes.").actualMin === 27.5);
+    t("parse compound NOT split as range", parseJournal("I sat for twenty-five minutes.").actualMin === 25);
+    const rngConc = parseJournal("I sat for 40 minutes. Maybe 15 or 20 minutes of real concentration.");
+    t("parse conc range midpoint", rngConc.concMin === 17.5 && rngConc.actualMin === 40);
+    t("parse conc range + hedge → low", rngConc.aiConfidence.concMin.confidence === "low");
+    t("parse longest range", parseJournal("I sat for 30 minutes. My longest stretch was 8 to 10 minutes.").longestSteadyMin === 9);
+    const stacked = parseJournal("I think I had maybe about twenty minutes of concentration in a 40 minute sit.");
+    t("parse stacked hedges → low", stacked.concMin === 20 && stacked.aiConfidence.concMin.confidence === "low");
+    t("parse time hh:mm am", parseJournal("I sat for 30 minutes. Started at 6:30 am.").startTime === "06:30");
+    t("parse time pm", parseJournal("Sat for 20 minutes in the evening, began around 7 pm.").startTime === "19:00");
+    t("parse quarter past + morning", parseJournal("Sat down at quarter past six in the morning for 30 minutes.").startTime === "06:15");
+    t("parse half past + evening", parseJournal("I sat for 25 minutes at half past six in the evening.").startTime === "18:30");
+    t("parse quarter to", parseJournal("Began at quarter to seven in the morning, sat for 30 minutes.").startTime === "06:45");
+    const ambig = parseJournal("I sat for 30 minutes, started at 6.");
+    t("parse ambiguous hour → question, no guess", ambig.startTime === null && ambig.questions.some(q => /morning or evening/.test(q)));
+    t("parse 24h clock accepted", parseJournal("Sat for 30 minutes, started at 18:00.").startTime === "18:00");
+    t("parse negated restlessness absent", parseJournal("Sat for 30 minutes. There was no restlessness.").hindrances.restlessness === undefined);
+    t("parse negated sloth absent", parseJournal("Sat for 30 minutes. I was not sleepy at all.").hindrances.sloth === undefined);
+    const negClause = parseJournal("Sat for 30 minutes. Not sleepy, though restlessness was strong.");
+    t("parse negation stops at comma", negClause.hindrances.sloth === undefined && negClause.hindrances.restlessness === "strong");
+    t("parse 'not strong' avoids strong", parseJournal("Sat for 30 minutes. Restlessness was there but not strong.").hindrances.restlessness === "moderate");
+    const negWander = parseJournal("I sat 30 minutes and didn't wander at all. No light, though.");
+    t("parse didn't wander → zero", negWander.wanderings === 0);
+    t("parse no light with trailing clause", negWander.nimitta && negWander.nimitta.category === "none");
+    const long = parseJournal("Morning sit before breakfast. I sat for forty-five minutes, planned thirty. It took maybe seven or eight minutes to settle. After that there were stretches of real quiet. I think I managed twenty five or thirty minutes of genuine contact. My longest run was about twelve minutes. I wandered five times but always came back. A faint glow appeared briefly, not sure though. Felt calmer afterwards.");
+    t("parse long: duration compound", long.actualMin === 45);
+    t("parse long: settle range midpoint", long.settleMin === 7.5);
+    t("parse long: conc spaced-compound range", long.concMin === 27.5);
+    t("parse long: longest steady", long.longestSteadyMin === 12);
+    t("parse long: wanderings", long.wanderings === 5);
+    t("parse long: nimitta uncertain", long.nimitta && long.nimitta.category === "uncertain");
+    t("parse long: after calmer", long.afterStateReport === "calmer");
+
+    // --- mock provider harness fixtures (full contract, no key, no network)
+    const mockValid = parseProviderResponse(extractProviderText(MOCK_PROVIDER_RESPONSES.valid), "j");
+    t("mock valid → draft", mockValid.ok && mockValid.draft.actualMin === 30 && mockValid.draft.hindrances.restlessness === "mild");
+    const mockOA = parseProviderResponse(extractProviderText(MOCK_PROVIDER_RESPONSES.validOpenAI), "j");
+    t("mock openai shape → draft", mockOA.ok && mockOA.draft.actualMin === 20);
+    t("mock malformed rejected", !parseProviderResponse(extractProviderText(MOCK_PROVIDER_RESPONSES.malformed), "j").ok);
+    t("mock refusal rejected (no JSON)", !parseProviderResponse(extractProviderText(MOCK_PROVIDER_RESPONSES.refusal), "j").ok);
+    t("mock overclaim rejected", !parseProviderResponse(extractProviderText(MOCK_PROVIDER_RESPONSES.overclaim), "j").ok);
+    t("mock junk shape yields no text", extractProviderText(MOCK_PROVIDER_RESPONSES.junkShape) === null);
+    t("provider timeout summary", providerErrorSummary(Object.assign(new Error("x"), { name: "AbortError" })).indexOf("timed out") > 0);
+    t("provider http summary", providerErrorSummary(new Error("provider returned HTTP 429")).indexOf("HTTP 429") > 0);
+    t("provider generic summary mentions local parser", providerErrorSummary(new Error("weird")).indexOf("local parser") > 0);
+
     // --- backup reminder logic
     const mkN = (count) => { const a = []; for (let i = 0; i < count; i++) a.push(mk(addDays(TODAY, -i))); return a; };
     t("backup: silent under 10 sessions", backupStatus(mkN(9), {}, TODAY).remind === false);
@@ -2041,8 +2226,9 @@ const CORE = (function () {
     toCSV, sessionFingerprint, parseImport, migrate,
     backupStatus, makeTestSessions, isTestSession, realSessions, makeDemoSessions,
     PRESETS, presetById, onboardingState, formatFeedback, APP_VERSION,
-    parseJournal, validateDraft, draftToSession,
+    parseJournal, validateDraft, draftToSession, parseStartTime, isNegated,
     buildProviderRequest, extractProviderText, parseProviderResponse, PROVIDER_INSTRUCTION,
+    providerErrorSummary, MOCK_PROVIDER_RESPONSES,
     runSelfTests
   };
 })();
@@ -2439,11 +2625,11 @@ const AI = (function () {
     return c.enabled && !!c.endpoint;
   }
 
-  async function callProvider(text) {
+  async function callProvider(text, timeoutMs) {
     const req = CORE.buildProviderRequest(text, cfg());
     if (!req) throw new Error("no endpoint configured");
     const ctrl = new AbortController();
-    const to = setTimeout(() => ctrl.abort(), 20000);
+    const to = setTimeout(() => ctrl.abort(), timeoutMs || 20000);
     try {
       const resp = await fetchImpl(req.url, { method: "POST", headers: req.headers, body: req.body, signal: ctrl.signal });
       if (!resp.ok) throw new Error("provider returned HTTP " + resp.status);
@@ -2462,10 +2648,39 @@ const AI = (function () {
         const draft = await callProvider(text);
         return { draft, engine: "provider", fallback: null };
       } catch (e) {
-        return { draft: CORE.parseJournal(text), engine: "local", fallback: String(e.message || e) };
+        return { draft: CORE.parseJournal(text), engine: "local", fallback: CORE.providerErrorSummary(e) };
       }
     }
     return { draft: CORE.parseJournal(text), engine: "local", fallback: null };
+  }
+
+  // Mock-contract harness: drives the REAL callProvider/requestDraft path with a
+  // fake fetch — no key, no network. Callable from the console:
+  //   await __sitTracker.AI.runMockContract()
+  async function runMockContract() {
+    const realFetch = fetchImpl, realGet = STORE.getSetting;
+    const results = {};
+    STORE.getSetting = (k, d) => ({ aiEnabled: true, aiEndpoint: "https://mock.local/v1", aiKey: "", aiModel: "mock" })[k] ?? d;
+    const respond = body => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) });
+    try {
+      const cases = {
+        valid: CORE.MOCK_PROVIDER_RESPONSES.valid,
+        malformed: CORE.MOCK_PROVIDER_RESPONSES.malformed,
+        refusal: CORE.MOCK_PROVIDER_RESPONSES.refusal,
+        overclaim: CORE.MOCK_PROVIDER_RESPONSES.overclaim
+      };
+      for (const name in cases) {
+        fetchImpl = () => respond(cases[name]);
+        const r = await requestDraft("I sat for 30 minutes.");
+        results[name] = { engine: r.engine, fallback: r.fallback };
+      }
+      fetchImpl = (url, opts) => new Promise((resolve, reject) => {
+        opts.signal.addEventListener("abort", () => reject(Object.assign(new Error("aborted"), { name: "AbortError" })));
+      });
+      try { await callProvider("timeout case", 25); results.timeout = { engine: "provider" }; }
+      catch (e) { results.timeout = { engine: "local", fallback: CORE.providerErrorSummary(e) }; }
+      return results;
+    } finally { fetchImpl = realFetch; STORE.getSetting = realGet; }
   }
 
   async function testConnection() {
@@ -2478,7 +2693,7 @@ const AI = (function () {
     }
   }
 
-  return { requestDraft, testConnection, configured, cfg, _setFetch: f => { fetchImpl = f; } };
+  return { requestDraft, testConnection, configured, cfg, runMockContract, _setFetch: f => { fetchImpl = f; } };
 })();
 
 /* ================= UI helpers ================= */
