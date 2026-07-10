@@ -5,10 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <title>Sit Tracker — ဈာန်</title>
+<meta name="theme-color" content="#0d1117">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sit Tracker">
 <style>
 :root{
   --bg:#0d1117; --bg2:#141b24; --bg3:#1b2430; --line:#26303d;
-  --fg:#dbe4ee; --fg-dim:#8b98a8; --fg-faint:#5c6875;
+  --fg:#dbe4ee; --fg-dim:#98a4b3; --fg-faint:#7e8b99;
   --accent:#7fb4d9; --accent-dim:#3d6a8a; --gold:#c9a86a;
   --ok:#7fbf8e; --warn:#d9a86a; --err:#d97f7f;
   --r:10px; --r-sm:6px;
@@ -18,7 +25,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none !important}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:var(--fs-md);line-height:1.55;min-height:100vh}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:var(--fs-md);line-height:1.55;min-height:100vh;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
 body.zen .hide-zen{display:none !important}
 h1{font-size:var(--fs-lg);font-weight:600;letter-spacing:.02em}
 h2{font-size:var(--fs-lg);font-weight:600;margin-bottom:var(--sp-3)}
@@ -27,14 +34,14 @@ p{margin-bottom:var(--sp-2)}
 a{color:var(--accent)}
 small,.dim{color:var(--fg-dim);font-size:var(--fs-sm)}
 .faint{color:var(--fg-faint);font-size:var(--fs-xs)}
-header.app{display:flex;align-items:baseline;gap:var(--sp-3);padding:var(--sp-4) var(--sp-4) 0;max-width:860px;margin:0 auto}
+header.app{display:flex;align-items:baseline;gap:var(--sp-3);padding:calc(var(--sp-4) + env(safe-area-inset-top)) var(--sp-4) 0;max-width:860px;margin:0 auto}
 header.app .mm{color:var(--gold);font-size:var(--fs-sm)}
 nav.tabs{display:flex;gap:2px;overflow-x:auto;max-width:860px;margin:var(--sp-3) auto 0;padding:0 var(--sp-4);scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
 nav.tabs button{flex:0 0 auto;background:none;border:none;border-bottom:2px solid transparent;color:var(--fg-dim);padding:var(--sp-2) var(--sp-3);font-size:var(--fs-sm);cursor:pointer;white-space:nowrap}
 nav.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
 nav.tabs button:hover{color:var(--fg)}
-main{max-width:860px;margin:0 auto;padding:var(--sp-4);padding-bottom:var(--sp-6)}
+main{max-width:860px;margin:0 auto;padding:var(--sp-4);padding-bottom:calc(var(--sp-6) + env(safe-area-inset-bottom))}
 section[role="tabpanel"]{display:none}
 section[role="tabpanel"].active{display:block}
 .card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-4)}
@@ -44,7 +51,7 @@ section[role="tabpanel"].active{display:block}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
 .grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--sp-3)}
 @media(max-width:480px){.grid2{grid-template-columns:1fr}}
-button,.btn{font:inherit;cursor:pointer;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--bg3);color:var(--fg);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);min-height:40px}
+button,.btn{font:inherit;cursor:pointer;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--bg3);color:var(--fg);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);min-height:44px}
 button:hover{border-color:var(--accent-dim)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button.primary{background:var(--accent-dim);border-color:var(--accent-dim);color:#fff;font-weight:600}
@@ -54,9 +61,9 @@ button.danger{border-color:#5a2f2f;color:var(--err)}
 button.ghost{background:none;border-color:transparent;color:var(--fg-dim)}
 button.ghost:hover{color:var(--fg)}
 button:disabled{opacity:.45;cursor:not-allowed}
-button.chip{min-height:36px;padding:var(--sp-1) var(--sp-3);border-radius:18px}
+button.chip{min-height:44px;padding:var(--sp-1) var(--sp-3);border-radius:22px}
 button.chip[aria-pressed="true"]{background:var(--accent-dim);border-color:var(--accent);color:#fff}
-input[type=text],input[type=number],input[type=password],input[type=date],input[type=time],input[type=url],select,textarea{font:inherit;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-sm);color:var(--fg);padding:var(--sp-2) var(--sp-3);min-height:40px;max-width:100%}
+input[type=text],input[type=number],input[type=password],input[type=date],input[type=time],input[type=url],select,textarea{font:inherit;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-sm);color:var(--fg);padding:var(--sp-2) var(--sp-3);min-height:44px;max-width:100%}
 input[type=number]{width:90px}
 textarea{width:100%;min-height:110px;resize:vertical}
 label{font-size:var(--fs-sm);color:var(--fg-dim)}
@@ -65,7 +72,7 @@ fieldset{border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp
 legend{font-size:var(--fs-sm);color:var(--fg-dim);padding:0 var(--sp-2)}
 input[type=range]{width:100%;accent-color:var(--accent);min-height:40px}
 input[type=checkbox],input[type=radio]{width:18px;height:18px;accent-color:var(--accent)}
-.check{display:flex;align-items:center;gap:var(--sp-2);min-height:40px;font-size:var(--fs-sm);color:var(--fg)}
+.check{display:flex;align-items:center;gap:var(--sp-2);min-height:44px;font-size:var(--fs-sm);color:var(--fg)}
 /* timer */
 .timer-wrap{text-align:center;padding:var(--sp-5) var(--sp-3)}
 .timer-big{font-size:var(--fs-timer);font-variant-numeric:tabular-nums;font-weight:300;letter-spacing:.03em;line-height:1.1}
@@ -106,7 +113,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 .level.current{border-color:var(--gold)}
 .level h3{margin-top:0}
 details{margin:var(--sp-2) 0}
-details summary{cursor:pointer;color:var(--fg-dim);font-size:var(--fs-sm);min-height:40px;display:flex;align-items:center}
+details summary{cursor:pointer;color:var(--fg-dim);font-size:var(--fs-sm);min-height:44px;display:flex;align-items:center}
 details[open] summary{color:var(--fg)}
 /* draft table */
 .draft-field{display:grid;grid-template-columns:130px 1fr auto;gap:var(--sp-2);align-items:center;padding:var(--sp-1) 0;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
@@ -117,6 +124,18 @@ details[open] summary{color:var(--fg)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media(max-width:400px){main{padding:var(--sp-3)}.card{padding:var(--sp-3)}}
+/* teacher report: hidden on screen, the only thing visible in print */
+#print-report{display:none}
+@media print{
+  body>*:not(#print-report){display:none !important}
+  body{background:#fff;color:#000;padding:0}
+  #print-report{display:block !important;font-size:11pt;color:#000}
+  #print-report h1{font-size:16pt;margin-bottom:4pt}
+  #print-report h2{font-size:13pt;margin:10pt 0 4pt}
+  #print-report table{width:100%;border-collapse:collapse;font-size:9.5pt}
+  #print-report th,#print-report td{border:1px solid #999;padding:3pt 5pt;text-align:left;vertical-align:top}
+  #print-report .foot{margin-top:10pt;font-size:8.5pt;color:#444;border-top:1px solid #999;padding-top:4pt}
+}
 </style>
 </head>
 <body>
@@ -133,6 +152,21 @@ details[open] summary{color:var(--fg)}
 </nav>
 <main>
 <div id="storage-warning" class="notice warn" hidden>Local storage is unavailable in this browser context. The app is running in memory only — data will be lost when the tab closes. Export regularly.</div>
+<div id="update-notice" class="notice hide-zen" hidden>
+  A new version of the app is ready.
+  <span class="row" style="display:inline-flex;gap:8px;margin-left:8px">
+    <button id="btn-apply-update">Reload to update</button>
+    <button id="btn-dismiss-update" class="ghost">Later</button>
+  </span>
+</div>
+<div id="backup-reminder" class="notice hide-zen" hidden>
+  <span id="backup-reminder-text"></span>
+  <span class="row" style="display:inline-flex;gap:8px;margin-left:8px">
+    <button id="btn-backup-now">Export backup</button>
+    <button id="btn-backup-snooze" class="ghost">Remind me in a week</button>
+  </span>
+</div>
+<div id="timer-live" class="sr-only" role="status" aria-live="polite"></div>
 
 <!-- ============ SIT ============ -->
 <section id="tab-sit" role="tabpanel" aria-labelledby="tabbtn-sit" class="active">
@@ -176,7 +210,7 @@ details[open] summary{color:var(--fg)}
       <button class="chip" data-min="90">90</button>
       <button class="chip" data-min="120">120</button>
       <label class="row" style="gap:6px">custom
-        <input type="number" id="custom-min" min="1" max="480" step="1" aria-label="Custom duration in minutes"> min
+        <input type="number" id="custom-min" min="1" max="480" step="1" inputmode="numeric" aria-label="Custom duration in minutes"> min
       </label>
     </div>
     <h3>Object</h3>
@@ -198,6 +232,7 @@ details[open] summary{color:var(--fg)}
       <label class="check"><input type="checkbox" id="opt-interval"> Interval bell every <select id="opt-interval-min" aria-label="Interval bell minutes"><option value="5">5</option><option value="10" selected>10</option><option value="15">15</option></select> min</label>
       <label class="check"><input type="checkbox" id="opt-wakelock" checked> Keep screen awake (if supported)</label>
     </div>
+    <small>Honest limit: if the screen locks or the browser is put in the background, bells may not sound until you return — the elapsed time itself always stays correct. Keeping the screen awake avoids this.</small>
   </div>
 
   <div class="card hide-zen instructions">
@@ -212,7 +247,10 @@ details[open] summary{color:var(--fg)}
   <div class="card">
     <div class="row between">
       <h2 style="margin:0">History</h2>
-      <button id="btn-manual-entry">+ Manual entry</button>
+      <span class="row">
+        <button id="btn-teacher-report">Teacher report</button>
+        <button id="btn-manual-entry">+ Manual entry</button>
+      </span>
     </div>
     <div class="row" style="margin-top:var(--sp-3)">
       <input type="text" id="hist-search" placeholder="Search notes / journal…" aria-label="Search sessions" style="flex:1;min-width:140px">
@@ -269,6 +307,7 @@ details[open] summary{color:var(--fg)}
       <label class="btn" style="display:inline-flex;align-items:center">Import JSON… <input type="file" id="import-file" accept=".json,application/json" class="sr-only"></label>
     </div>
     <p class="faint" id="storage-info" style="margin-top:var(--sp-2)"></p>
+    <div id="storage-health" style="margin-top:var(--sp-2)"></div>
   </div>
 
   <div class="card">
@@ -304,6 +343,19 @@ details[open] summary{color:var(--fg)}
   </div>
 
   <div class="card">
+    <h2>Developer</h2>
+    <details>
+      <summary>Performance test data (synthetic sessions)</summary>
+      <p class="dim">Seeds ~1,000 clearly-marked synthetic sessions to test performance. They are tagged <code>[TEST DATA]</code>, excluded from nothing except your judgement, and removable in one click. Exports made while test data exists will include it.</p>
+      <div class="row">
+        <button id="btn-seed-test">Seed 1,000 test sessions…</button>
+        <button id="btn-purge-test" class="danger">Purge test sessions…</button>
+      </div>
+      <p class="faint" id="test-data-status"></p>
+    </details>
+  </div>
+
+  <div class="card">
     <h2 style="color:var(--err)">Danger zone</h2>
     <p class="dim">Deletes the tracker envelope from this browser. Legacy v1 keys (<code>janSits</code>, <code>janGates</code>) are never touched. Export first.</p>
     <button id="btn-wipe" class="danger">Delete all tracker data…</button>
@@ -314,7 +366,8 @@ details[open] summary{color:var(--fg)}
 </main>
 
 <div id="toast" role="status" aria-live="polite"></div>
-<dialog id="modal"><div id="modal-body"></div></dialog>
+<dialog id="modal" aria-label="Dialog"><div id="modal-body"></div></dialog>
+<div id="print-report" aria-hidden="true"></div>
 
 <script>
 "use strict";
@@ -601,7 +654,12 @@ const CORE = (function () {
         return xs.length ? round1(Math.max.apply(null, xs)) : null;
       })(),
       currentStreak: streaks.current,
-      longestStreak: streaks.longest
+      longestStreak: streaks.longest,
+      // descriptive consistency: a missed day cannot "break" this number
+      daysSatLast30: (function () {
+        const from = addDays(todayStr, -29);
+        return new Set(sessions.filter(s => isDateStr(s.date) && s.date >= from && s.date <= todayStr).map(s => s.date)).size;
+      })()
     };
   }
 
@@ -1103,6 +1161,67 @@ const CORE = (function () {
 
   function numOrNull(v) { return isNum(v) && v >= 0 ? v : null; }
 
+  // ---------- backup reminder (calm, dismissible; pure decision logic) ----------
+  // settings: lastExportAt 'YYYY-MM-DD'|null, backupSnoozeUntil 'YYYY-MM-DD'|null
+  function backupStatus(sessions, settings, todayStr) {
+    const s = settings || {};
+    const n = sessions.length;
+    const out = { remind: false, reason: null, daysSinceExport: null, unexported: null };
+    if (s.lastExportAt && isDateStr(s.lastExportAt)) {
+      let d = 0, cursor = s.lastExportAt;
+      while (cursor < todayStr && d < 3650) { cursor = addDays(cursor, 1); d++; }
+      out.daysSinceExport = d;
+      out.unexported = sessions.filter(x => (x.date || "") > s.lastExportAt).length;
+    }
+    if (n < 10) return out;                                          // too little data to nag about
+    if (s.backupSnoozeUntil && isDateStr(s.backupSnoozeUntil) && todayStr < s.backupSnoozeUntil) return out;
+    if (!s.lastExportAt) { out.remind = true; out.reason = n + " sessions recorded and no backup has been exported yet."; return out; }
+    if (out.daysSinceExport > 14 && out.unexported > 0) {
+      out.remind = true;
+      out.reason = "Last backup was " + out.daysSinceExport + " days ago; " + out.unexported + " sessions since are not backed up.";
+    }
+    return out;
+  }
+
+  // ---------- synthetic test sessions (performance testing; clearly marked) ----------
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function makeTestSessions(n, todayStr, nowIso) {
+    const rnd = mulberry32(20260709);
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const daysAgo = Math.floor(rnd() * 500);
+      const dur = 15 + Math.floor(rnd() * 8) * 15 / 2; // 15..~70
+      const conc = rnd() < 0.8 ? round1(dur * (0.2 + rnd() * 0.6)) : null;
+      const h = {};
+      if (rnd() < 0.4) h[HINDRANCES[Math.floor(rnd() * HINDRANCES.length)]] = INTENSITIES[Math.floor(rnd() * 3)];
+      const s = normalizeSession({
+        id: "test-" + i,
+        date: addDays(todayStr, -daysAgo),
+        startTime: pad2(5 + Math.floor(rnd() * 16)) + ":" + pad2(Math.floor(rnd() * 60)),
+        plannedMin: dur, actualMin: dur,
+        concMin: conc, confidence: conc !== null ? CONFIDENCES[Math.floor(rnd() * 3)] : null,
+        settleMin: rnd() < 0.6 ? round1(2 + rnd() * 10) : null,
+        wanderings: rnd() < 0.5 ? Math.floor(rnd() * 8) : null,
+        object: "nostril", hindrances: h,
+        nimitta: rnd() < 0.05 ? { category: "brief" } : null,
+        notes: "[TEST DATA] synthetic session for performance testing",
+        entrySource: "imported",
+        _test: true
+      }, nowIso, todayStr);
+      out.push(s);
+    }
+    return out;
+  }
+  function isTestSession(s) { return s && (s._test === true || (typeof s.notes === "string" && s.notes.indexOf("[TEST DATA]") === 0)); }
+
   // ---------- self tests ----------
   function runSelfTests() {
     let passed = 0, failed = 0;
@@ -1405,6 +1524,34 @@ const CORE = (function () {
     const provWeird = parseProviderResponse('{"actualMin":"thirty","hindrances":{"pride":"huge"},"nimitta":{"category":"unlocked"}}', "orig");
     t("provider bad types coerced to null/dropped", provWeird.ok && provWeird.draft.actualMin === null && Object.keys(provWeird.draft.hindrances).length === 0 && provWeird.draft.nimitta === null);
 
+    // --- backup reminder logic
+    const mkN = (count) => { const a = []; for (let i = 0; i < count; i++) a.push(mk(addDays(TODAY, -i))); return a; };
+    t("backup: silent under 10 sessions", backupStatus(mkN(9), {}, TODAY).remind === false);
+    t("backup: reminds at 10 with no export", backupStatus(mkN(10), {}, TODAY).remind === true);
+    t("backup: reason mentions count", /10 sessions/.test(backupStatus(mkN(10), {}, TODAY).reason));
+    t("backup: quiet after recent export", backupStatus(mkN(12), { lastExportAt: addDays(TODAY, -3) }, TODAY).remind === false);
+    t("backup: reminds after 15 days with new sessions", backupStatus(mkN(20), { lastExportAt: addDays(TODAY, -20) }, TODAY).remind === true);
+    t("backup: quiet when stale but nothing new", backupStatus([mk(addDays(TODAY, -400)), mk(addDays(TODAY, -401)), mk(addDays(TODAY, -402)), mk(addDays(TODAY, -403)), mk(addDays(TODAY, -404)), mk(addDays(TODAY, -405)), mk(addDays(TODAY, -406)), mk(addDays(TODAY, -407)), mk(addDays(TODAY, -408)), mk(addDays(TODAY, -409))], { lastExportAt: addDays(TODAY, -30) }, TODAY).remind === false);
+    t("backup: snooze respected", backupStatus(mkN(10), { backupSnoozeUntil: addDays(TODAY, 3) }, TODAY).remind === false);
+    t("backup: snooze expiry", backupStatus(mkN(10), { backupSnoozeUntil: addDays(TODAY, -1) }, TODAY).remind === true);
+    t("backup: daysSinceExport computed", backupStatus(mkN(10), { lastExportAt: addDays(TODAY, -5) }, TODAY).daysSinceExport === 5);
+
+    // --- synthetic test sessions
+    const seeded = makeTestSessions(50, TODAY, NOW);
+    t("seed: correct count", seeded.length === 50);
+    t("seed: all valid", seeded.every(s => validateSession(s).ok));
+    t("seed: all flagged", seeded.every(isTestSession));
+    t("seed: marked in notes", seeded.every(s => s.notes.indexOf("[TEST DATA]") === 0));
+    t("seed: unique ids", new Set(seeded.map(s => s.id)).size === 50);
+    t("seed: deterministic", makeTestSessions(5, TODAY, NOW)[0].date === makeTestSessions(5, TODAY, NOW)[0].date && makeTestSessions(5, TODAY, NOW)[3].actualMin === makeTestSessions(5, TODAY, NOW)[3].actualMin);
+    t("seed: conc within duration", seeded.every(s => s.concMin === null || s.concMin <= s.actualMin));
+    t("seed: purge filter removes all", seeded.filter(s => !isTestSession(s)).length === 0);
+    t("real session not flagged as test", !isTestSession(mk(TODAY)));
+
+    // --- descriptive consistency metric
+    t("daysSatLast30 counts distinct days", summaryMetrics([mk(TODAY), mk(TODAY), mk(addDays(TODAY, -1)), mk(addDays(TODAY, -40))], TODAY).daysSatLast30 === 2);
+    t("daysSatLast30 empty", summaryMetrics([], TODAY).daysSatLast30 === 0);
+
     // --- forbidden wording guard: nothing in CORE's user-facing strings certifies attainment
     const corpus = [PROVIDER_INSTRUCTION, JSON.stringify(NIMITTA_LABELS), JSON.stringify(REVIEW_LABELS), JSON.stringify(SEGMENT_LABELS), JSON.stringify(QUALITY_LABELS)].join(" ");
     t("no 'confirmed nimitta' wording", !/confirmed nimitta/i.test(corpus));
@@ -1426,6 +1573,7 @@ const CORE = (function () {
     timerSnapshot, startTimerState, pauseTimerState, resumeTimerState, dueBells,
     computeStreaks, filterRange, summaryMetrics, timeOfDayBucket, insights, strengthLabel,
     toCSV, sessionFingerprint, parseImport, migrate,
+    backupStatus, makeTestSessions, isTestSession,
     parseJournal, validateDraft, draftToSession,
     buildProviderRequest, extractProviderText, parseProviderResponse, PROVIDER_INSTRUCTION,
     runSelfTests
@@ -1548,6 +1696,11 @@ const STORE = (function () {
   }
   function clearTimer() { adapter.remove(TIMER_KEY); }
 
+  function purgeTestSessions() {
+    env.sessions = env.sessions.filter(s => !CORE.isTestSession(s));
+    save();
+  }
+
   function wipe() {
     adapter.remove(KEY);
     adapter.remove(TIMER_KEY);
@@ -1569,7 +1722,7 @@ const STORE = (function () {
 
   return {
     load, save, sessions, getSession, addSession, updateSession, deleteSession, mergeImported,
-    getSetting, setSetting, getMap, saveMap, saveTimer, loadTimer, clearTimer, wipe,
+    getSetting, setSetting, getMap, saveMap, saveTimer, loadTimer, clearTimer, wipe, purgeTestSessions,
     storageInfo, nowIso, todayStr, adapter, notes: () => migrationNotes, env: () => env
   };
 })();
@@ -1636,7 +1789,11 @@ const TIMER = (function () {
     if (wakeLock) { wakeLock.release().catch(() => { }); wakeLock = null; }
   }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && st && st.core.phase === "running") acquireWakeLock();
+    // On wake: reconcile immediately from wall-clock timestamps and re-acquire the lock.
+    if (document.visibilityState === "visible" && st && st.core.phase === "running") {
+      tick();
+      acquireWakeLock();
+    }
   });
 
   function start() {
@@ -1658,6 +1815,7 @@ const TIMER = (function () {
     acquireWakeLock();
     loop();
     UI.renderTimer();
+    UI.announce("Sit started: " + cfg.plannedMin + " minutes.");
   }
 
   function loop() {
@@ -1686,6 +1844,7 @@ const TIMER = (function () {
     st.core = CORE.pauseTimerState(st.core, Date.now());
     persist(true);
     UI.renderTimer();
+    UI.announce("Paused at " + CORE.fmtClock(CORE.timerSnapshot(st.core, Date.now()).elapsedSec) + " elapsed.");
   }
   function resume() {
     if (!st || st.core.phase !== "paused") return;
@@ -1693,6 +1852,7 @@ const TIMER = (function () {
     persist(true);
     loop();
     UI.renderTimer();
+    UI.announce("Resumed.");
   }
 
   function finishEarly() {
@@ -1735,6 +1895,7 @@ const TIMER = (function () {
     UI.setZen(false);
     UI.renderTimer();
     REVIEW.openFor(pending);
+    UI.announce("Sit complete after " + CORE.fmtClock(actualSec) + ". Review is open.");
     UI.toast("Sit complete — take 30 seconds to record what happened.");
   }
 
@@ -1853,6 +2014,10 @@ const UI = (function () {
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
+  function announce(msg) {
+    const el = $("#timer-live");
+    if (el) el.textContent = msg;
+  }
   let toastTimer = null;
   function toast(msg) {
     const el = $("#toast");
@@ -1891,6 +2056,7 @@ const UI = (function () {
     }
     if (name === "progress") PROGRESS.render();
     if (name === "review") HISTORY.render();
+    if (typeof APP !== "undefined") APP.refreshBackupReminder();
     if (name === "map") MAP.render();
     if (name === "journal") JOURNAL.renderEngineNotice();
     if (name === "settings") SETTINGS.renderInfo();
@@ -1954,7 +2120,7 @@ const UI = (function () {
     $("#btn-zen").textContent = on ? "Show screen" : "Quiet screen";
   }
 
-  return { $, $$, esc, toast, modal, closeModal, confirmModal, showTab, selectedMinutes, renderTimer, paintTimer, paintMarkerLog, setZen };
+  return { $, $$, esc, toast, announce, modal, closeModal, confirmModal, showTab, selectedMinutes, renderTimer, paintTimer, paintMarkerLog, setZen };
 })();
 
 /* ================= REVIEW — post-session form + editing ================= */
@@ -2033,7 +2199,7 @@ const REVIEW = (function () {
       '<div class="grid3">' +
       '<div class="field"><label for="rv-date">Date</label><input type="date" id="rv-date" value="' + esc(p.date || "") + '"></div>' +
       '<div class="field"><label for="rv-start">Start time</label><input type="time" id="rv-start" value="' + esc(p.startTime || "") + '"></div>' +
-      '<div class="field"><label for="rv-actual">Actual duration (min)</label><input type="number" id="rv-actual" min="0.5" step="0.5" value="' + actual + '"></div>' +
+      '<div class="field"><label for="rv-actual">Actual duration (min)</label><input type="number" id="rv-actual" min="0.5" step="0.5" inputmode="decimal" value="' + actual + '"></div>' +
       "</div>" +
 
       '<h3>Estimated minutes of genuine breath contact <span class="badge">self-reported</span></h3>' +
@@ -2056,10 +2222,10 @@ const REVIEW = (function () {
 
       '<details style="margin-top:16px"><summary>Attention details (settling, wandering, longest stretch)</summary>' +
       '<div class="grid3" style="margin-top:8px">' +
-      '<div class="field"><label for="rv-settle">Minutes to first settle</label><input type="number" id="rv-settle" min="0" step="0.5" value="' + (p.settleMin ?? "") + '" placeholder="not reported"></div>' +
-      '<div class="field"><label for="rv-longest">Longest steady stretch (min)</label><input type="number" id="rv-longest" min="0" step="0.5" value="' + (p.longestSteadyMin ?? "") + '" placeholder="not reported"></div>' +
-      '<div class="field"><label for="rv-wander">Major wandering episodes</label><input type="number" id="rv-wander" min="0" step="1" value="' + (p.wanderings ?? "") + '" placeholder="not reported"></div>' +
-      '<div class="field"><label for="rv-returns">Attention returns</label><input type="number" id="rv-returns" min="0" step="1" value="' + (p.returns ?? "") + '" placeholder="not reported"></div>' +
+      '<div class="field"><label for="rv-settle">Minutes to first settle</label><input type="number" id="rv-settle" min="0" step="0.5" inputmode="decimal" value="' + (p.settleMin ?? "") + '" placeholder="not reported"></div>' +
+      '<div class="field"><label for="rv-longest">Longest steady stretch (min)</label><input type="number" id="rv-longest" min="0" step="0.5" inputmode="decimal" value="' + (p.longestSteadyMin ?? "") + '" placeholder="not reported"></div>' +
+      '<div class="field"><label for="rv-wander">Major wandering episodes</label><input type="number" id="rv-wander" min="0" step="1" inputmode="numeric" value="' + (p.wanderings ?? "") + '" placeholder="not reported"></div>' +
+      '<div class="field"><label for="rv-returns">Attention returns</label><input type="number" id="rv-returns" min="0" step="1" inputmode="numeric" value="' + (p.returns ?? "") + '" placeholder="not reported"></div>' +
       "</div>" +
       (p.markers && p.markers.length ? '<p class="faint">markers from the sit: ' + esc(p.markers.map(m => m.kind + "@" + m.atMin + "′").join(", ")) + "</p>" : "") +
       "</details>" +
@@ -2107,7 +2273,7 @@ const REVIEW = (function () {
       '<div class="field"><label for="rv-phase">Practice phase</label><select id="rv-phase">' +
       ["foundation", "consistency", "stability", "collectedness", "jhana-investigation", "advanced"].map(o => '<option value="' + o + '"' + ((p.phase || "foundation") === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
       ["energyBefore", "energyAfter", "calmBefore", "calmAfter"].map(f =>
-        '<div class="field"><label for="rv-' + f + '">' + f.replace(/([A-Z])/g, " $1").toLowerCase() + ' (1–5)</label><input type="number" id="rv-' + f + '" min="1" max="5" step="1" value="' + (p[f] ?? "") + '" placeholder="—"></div>'
+        '<div class="field"><label for="rv-' + f + '">' + f.replace(/([A-Z])/g, " $1").toLowerCase() + ' (1–5)</label><input type="number" id="rv-' + f + '" min="1" max="5" step="1" inputmode="numeric" value="' + (p[f] ?? "") + '" placeholder="—"></div>'
       ).join("") +
       '<div class="field"><label for="rv-afterstate">Overall after-state</label><select id="rv-afterstate"><option value="">not reported</option>' +
       CORE.AFTER_STATES.map(a => '<option value="' + a + '"' + (p.afterStateReport === a ? " selected" : "") + ">" + a + "</option>").join("") + "</select></div>" +
@@ -2376,7 +2542,41 @@ const HISTORY = (function () {
     };
   }
 
+  // Printable summary for a human teacher: last N days, plain language, no dashboards.
+  function teacherReport(days) {
+    days = days || 30;
+    const today = STORE.todayStr();
+    const from = CORE.addDays(today, -(days - 1));
+    const sel = STORE.sessions().filter(s => s.date >= from && s.date <= today && !CORE.isTestSession(s))
+      .sort((a, b) => (a.date + (a.startTime || "")) < (b.date + (b.startTime || "")) ? -1 : 1);
+    const m = CORE.summaryMetrics(sel, today);
+    const f = v => v === null ? "—" : v;
+    const rows = sel.map(s =>
+      "<tr><td>" + esc(s.date) + (s.startTime ? " " + esc(s.startTime) : "") + "</td>" +
+      "<td>" + f(s.actualMin) + "</td>" +
+      "<td>" + (s.concMin !== null ? s.concMin + (s.confidence ? " (" + s.confidence + ")" : "") : "—") + "</td>" +
+      "<td>" + f(s.settleMin) + "</td>" +
+      "<td>" + (s.dominantHindrance ? esc(CORE.HINDRANCE_LABELS[s.dominantHindrance]) : Object.keys(s.hindrances || {}).filter(k => s.hindrances[k]).map(k => esc(CORE.HINDRANCE_LABELS[k])).join(", ") || "—") + "</td>" +
+      "<td>" + (s.nimitta ? esc(CORE.NIMITTA_LABELS[s.nimitta.category]) : "—") + "</td>" +
+      "<td>" + esc((s.notes || "").slice(0, 120)) + "</td></tr>"
+    ).join("");
+    UI.$("#print-report").innerHTML =
+      "<h1>Practice record — last " + days + " days</h1>" +
+      "<p>Prepared " + esc(today) + " for teacher review. All values are the practitioner's own reports.</p>" +
+      "<h2>Summary</h2>" +
+      "<p>" + m.sessions + " sessions · " + f(m.totalHours) + " h total · average " + f(m.avgDuration) + " min/session · " +
+      "self-estimated contact average " + f(m.avgConc) + " min (" + m.concReportedCount + " sessions reported) · " +
+      "average settling " + f(m.avgSettle) + " min · sat " + m.daysSatLast30 + " of the last 30 days.</p>" +
+      "<h2>Sessions</h2>" +
+      "<table><tr><th>Date</th><th>Min</th><th>Contact est.</th><th>Settle</th><th>Hindrances</th><th>Light/image report</th><th>Notes</th></tr>" +
+      (rows || "<tr><td colspan='7'>No sessions in this range.</td></tr>") + "</table>" +
+      "<p class='foot'>Generated by Sit Tracker, a private local journal. Nothing in this record is verified or certified by software; " +
+      "concentration estimates are subjective self-reports and light/image entries are neutral observations for discussion.</p>";
+    window.print();
+  }
+
   function initFilters() {
+    UI.$("#btn-teacher-report").onclick = () => teacherReport(30);
     UI.$("#hist-filter-object").innerHTML = '<option value="">Any object</option>' + CORE.OBJECTS.map(o => '<option value="' + o + '">' + o + "</option>").join("");
     UI.$("#hist-filter-hindrance").innerHTML = '<option value="">Any hindrance</option>' + CORE.HINDRANCES.map(h => '<option value="' + h + '">' + esc(CORE.HINDRANCE_LABELS[h]) + "</option>").join("");
     for (const id of ["hist-search", "hist-filter-object", "hist-filter-hindrance", "hist-filter-nimitta", "hist-filter-source", "hist-filter-review"]) {
@@ -2384,7 +2584,7 @@ const HISTORY = (function () {
     }
   }
 
-  return { render, initFilters, detail };
+  return { render, initFilters, detail, teacherReport };
 })();
 
 /* ================= PROGRESS — metrics, charts, insights ================= */
@@ -2473,6 +2673,7 @@ const PROGRESS = (function () {
 
     let html = '<div class="grid3">' +
       statCard("current streak", mAll.currentStreak + "d", "days with ≥1 sit") +
+      statCard("days sat, last 30", mAll.daysSatLast30 + "/30", "a missed day is data, not failure") +
       statCard("longest streak", mAll.longestStreak + "d", "all time") +
       statCard("sessions", m.sessions, "in range") +
       statCard("practice hours", f(m.totalHours), "in range") +
@@ -2681,7 +2882,7 @@ const JOURNAL = (function () {
   }
 
   function numInput(id, val, step) {
-    return '<input type="number" id="' + id + '" value="' + (val === null || val === undefined ? "" : val) + '" min="0" step="' + (step || 1) + '" placeholder="null" style="width:80px">';
+    return '<input type="number" id="' + id + '" value="' + (val === null || val === undefined ? "" : val) + '" min="0" step="' + (step || 1) + '" inputmode="decimal" placeholder="null" style="width:80px">';
   }
 
   function renderDraft() {
@@ -2805,14 +3006,22 @@ const SETTINGS = (function () {
   }
 
   function exportJSON() {
-    const env = STORE.env();
+    // Deep copy and strip the AI key: backups are meant to be shared/stored; secrets are not.
+    const env = JSON.parse(JSON.stringify(STORE.env()));
+    if (env.settings) delete env.settings.aiKey;
     const stamp = STORE.todayStr().replace(/-/g, "");
     download("sit-tracker-backup-" + stamp + ".json", JSON.stringify(env, null, 2));
+    STORE.setSetting("lastExportAt", STORE.todayStr());
+    APP.refreshBackupReminder();
+    renderInfo();
     UI.toast("Backup exported — keep a copy outside this device.");
   }
   function exportCSV() {
     const stamp = STORE.todayStr().replace(/-/g, "");
     download("sit-tracker-sessions-" + stamp + ".csv", CORE.toCSV(STORE.sessions()), "text/csv");
+    STORE.setSetting("lastExportAt", STORE.todayStr());
+    APP.refreshBackupReminder();
+    renderInfo();
   }
 
   function importFile(file) {
@@ -2864,6 +3073,35 @@ const SETTINGS = (function () {
       "storage: " + (i.available ? "localStorage OK" : "UNAVAILABLE (memory only!)") +
       " · schema v" + i.schemaVersion + " · " + i.sessions + " sessions · " +
       (i.bytes / 1024).toFixed(1) + " KB used · last saved " + (i.savedAt || "never");
+    renderHealth();
+    const testCount = STORE.sessions().filter(CORE.isTestSession).length;
+    const ts = $("#test-data-status");
+    if (ts) ts.textContent = testCount ? testCount + " synthetic test sessions are present — purge before relying on your statistics or exports." : "No test data present.";
+  }
+
+  async function renderHealth() {
+    const el = $("#storage-health");
+    if (!el) return;
+    const lastExport = STORE.getSetting("lastExportAt", null);
+    const bs = CORE.backupStatus(STORE.sessions(), STORE.env().settings, STORE.todayStr());
+    let persistLine = "persistent storage: not applicable on file:// (browser may clear site data — export regularly)";
+    let usageLine = "";
+    if (location.protocol.indexOf("http") === 0 && navigator.storage) {
+      try {
+        const persisted = navigator.storage.persisted ? await navigator.storage.persisted() : false;
+        persistLine = "persistent storage: " + (persisted ? "granted — the browser will avoid evicting this site's data (user clearing still removes it)" : "not granted — the browser may evict site data under pressure; exports are the real guarantee");
+        if (navigator.storage.estimate) {
+          const est = await navigator.storage.estimate();
+          if (est && est.quota) usageLine = "usage estimate: " + ((est.usage || 0) / 1024).toFixed(0) + " KB of ~" + Math.round(est.quota / 1048576) + " MB quota";
+        }
+      } catch (e) { /* leave defaults */ }
+    }
+    el.innerHTML =
+      '<table class="kv">' +
+      "<tr><td>last JSON/CSV export</td><td>" + (lastExport ? UI.esc(lastExport) + (bs.unexported ? " · " + bs.unexported + " sessions since" : "") : "<span class='conf-medium'>never</span>") + "</td></tr>" +
+      "<tr><td>persistence</td><td>" + UI.esc(persistLine) + "</td></tr>" +
+      (usageLine ? "<tr><td>usage</td><td>" + UI.esc(usageLine) + "</td></tr>" : "") +
+      "</table>";
   }
 
   function runSelfTestsUI() {
@@ -2909,6 +3147,25 @@ const SETTINGS = (function () {
 
     $("#btn-selftest").onclick = runSelfTestsUI;
 
+    // developer: synthetic performance data
+    $("#btn-seed-test").onclick = async () => {
+      const ok = await UI.confirmModal("Seed 1,000 synthetic sessions marked [TEST DATA]? They will appear in history, statistics, and any export you make until purged.", "Seed test data");
+      if (!ok) return;
+      const t0 = performance.now();
+      STORE.mergeImported(CORE.makeTestSessions(1000, STORE.todayStr(), STORE.nowIso()));
+      UI.toast("Seeded 1,000 test sessions in " + Math.round(performance.now() - t0) + " ms.");
+      renderInfo(); HISTORY.render(); PROGRESS.render();
+    };
+    $("#btn-purge-test").onclick = async () => {
+      const n = STORE.sessions().filter(CORE.isTestSession).length;
+      if (!n) { UI.toast("No test sessions to purge."); return; }
+      const ok = await UI.confirmModal("Remove all " + n + " synthetic test sessions? Real sessions are untouched.", "Purge test data");
+      if (!ok) return;
+      STORE.purgeTestSessions();
+      UI.toast("Purged " + n + " test sessions.");
+      renderInfo(); HISTORY.render(); PROGRESS.render();
+    };
+
     $("#btn-wipe").onclick = () => {
       const dlg = UI.modal("<h2>Delete all tracker data</h2>" +
         "<p>This deletes the <code>jhanaTracker.v2</code> envelope (" + STORE.sessions().length + " sessions) from this browser. Legacy keys are untouched. <strong>Export a backup first.</strong></p>" +
@@ -2926,6 +3183,62 @@ const SETTINGS = (function () {
   }
 
   return { wire, renderInfo, runSelfTestsUI, exportJSON };
+})();
+
+/* ================= APP — platform glue (backup reminder, PWA lifecycle) ================= */
+const APP = (function () {
+  const { $ } = UI;
+
+  function refreshBackupReminder() {
+    const el = $("#backup-reminder");
+    if (!el) return;
+    if (TIMER.state()) { el.hidden = true; return; } // never during a sit
+    const bs = CORE.backupStatus(STORE.sessions(), STORE.env().settings, STORE.todayStr());
+    el.hidden = !bs.remind;
+    if (bs.remind) $("#backup-reminder-text").textContent = bs.reason + " A JSON export takes one tap.";
+  }
+
+  function wireBackupReminder() {
+    $("#btn-backup-now").onclick = () => SETTINGS.exportJSON();
+    $("#btn-backup-snooze").onclick = () => {
+      STORE.setSetting("backupSnoozeUntil", CORE.addDays(STORE.todayStr(), 7));
+      refreshBackupReminder();
+    };
+  }
+
+  async function requestPersistence() {
+    if (location.protocol.indexOf("http") !== 0 || !navigator.storage || !navigator.storage.persist) return;
+    try { await navigator.storage.persist(); } catch (e) { /* denied or unsupported — export remains the guarantee */ }
+  }
+
+  // Service worker: register only on http(s); file:// keeps working with zero platform code.
+  function registerSW() {
+    if (location.protocol.indexOf("http") !== 0 || !("serviceWorker" in navigator)) return;
+    navigator.serviceWorker.register("sw.js").then(reg => {
+      function offerUpdate(worker) {
+        const note = $("#update-notice");
+        note.hidden = false;
+        $("#btn-apply-update").onclick = () => { worker.postMessage({ type: "SKIP_WAITING" }); };
+        $("#btn-dismiss-update").onclick = () => { note.hidden = true; };
+      }
+      if (reg.waiting && navigator.serviceWorker.controller) offerUpdate(reg.waiting);
+      reg.addEventListener("updatefound", () => {
+        const w = reg.installing;
+        if (!w) return;
+        w.addEventListener("statechange", () => {
+          if (w.state === "installed" && navigator.serviceWorker.controller) offerUpdate(w);
+        });
+      });
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (reloaded) return;
+        reloaded = true;
+        location.reload();
+      });
+    }).catch(() => { /* registration failure must never break the app */ });
+  }
+
+  return { refreshBackupReminder, wireBackupReminder, requestPersistence, registerSW };
 })();
 
 /* ================= BOOT ================= */
@@ -2987,9 +3300,13 @@ const SETTINGS = (function () {
   UI.renderTimer();
   HISTORY.render();
   TIMER.restore();
+  APP.wireBackupReminder();
+  APP.refreshBackupReminder();
+  APP.requestPersistence();
+  APP.registerSW();
 
   // expose for automated verification
-  window.__sitTracker = { CORE, STORE, TIMER, AI, REVIEW };
+  window.__sitTracker = { CORE, STORE, TIMER, AI, REVIEW, APP };
 
   if (new URLSearchParams(location.search).get("selftest") === "1") {
     UI.showTab("settings");

@@ -1,7 +1,10 @@
 Confirmed test commands, AI-adapter rules, and the wording rules the app must never break.
 
-- Tests: `node tests/run-core-tests.mjs sit-tracker-v2.html` (207/207 as of 2026-07-09) and
-  in-app Settings → Run self-tests or `?selftest=1`. Extend runSelfTests() with every CORE change.
+- Tests: `node tests/run-core-tests.mjs sit-tracker-v2.html` (227/227 as of 2026-07-09 evening)
+  and in-app Settings → Run self-tests or `?selftest=1`. Extend runSelfTests() with every CORE change.
+- SW dev gotcha: once sw.js registers (http only), it serves the CACHED html — after editing
+  the file, unregister + delete caches in the test tab, and bump SW_VERSION in sw.js for
+  every real deployment or clients never see the update.
 - Syntax gate: extract the <script> block and `node --check` it (done in CI-less fashion by hand).
 - Run the app: open file directly or `python -m http.server`. Storage is per-origin —
   file:// and localhost hold separate data.

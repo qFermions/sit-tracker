@@ -10,4 +10,8 @@ Schema v3 envelope in localStorage key `jhanaTracker.v2`; stored names are perma
 - Missing values are null ("not reported"), never 0. `concMin > actualMin` must be rejected
   by validation, not silently clamped.
 - Unparseable envelope bytes are quarantined under `jhanaTracker.v2.recovered-<ts>`, never discarded.
-- API keys live only in localStorage settings (aiKey) — never in files or commits.
+- API keys live only in localStorage settings (aiKey) — never in files or commits, and
+  exportJSON strips settings.aiKey from every backup (privacy: backups get shared).
+- New settings keys (2026-07-09): lastExportAt, backupSnoozeUntil (both 'YYYY-MM-DD'|null),
+  consumed by CORE.backupStatus for the calm export reminder.
+- Full persisted-field contract lives in DATA_CONTRACT.md — update it with any schema change.
