@@ -33,18 +33,26 @@ When served over http(s) the page is an installable PWA (`manifest.json` + `sw.j
   it never force-reloads.
 - On `file://` none of this applies and nothing breaks — the double-click use case is unchanged.
 
-## Everyday workflow
+## Everyday workflow (five tabs: Today · Journal · Progress · Learn · Settings)
 
-1. **Sit** — pick a preset (default 30 min), press *Start sit* (or Space). Optional prep
-   countdown, interval bells, final bell, quiet-screen mode, one-tap markers.
-2. **Review** (~30 seconds) — opens automatically when the sit ends. The one number that
-   matters: *estimated minutes of genuine breath contact*, self-reported with confidence.
-3. **Journal AI** — or write/dictate plain language; the local deterministic parser builds
-   a draft you confirm field by field. Nothing saves without explicit confirmation.
+First launch shows a short, skippable 3-screen introduction ending in
+"Start my first 30-minute sit."
+
+1. **Today** — the status strip says whether you sat today; pick a practice card
+   (First Sit 30′ is recommended) and press *Start sit* (or Space). Calm breathing orb +
+   progress arc while sitting; quiet-screen mode; one-tap markers; optional bells.
+2. **After the sit** (~30 s) — the quick log opens by itself: contact-minutes slider,
+   confidence, one-tap impressions (attention, breath clarity, restlessness, drowsiness),
+   optional note. Full detail (timeline, hindrances, light/image report, teacher review)
+   stays available underneath.
+3. **Journal** — or write what you noticed in plain language; the local parser builds a
+   draft you confirm field by field. History and search live here too.
 4. **Progress** — streaks shown descriptively (plus "days sat of last 30" — a missed day is
-   data, not failure), hours, ratios, charts, and deterministic observations.
-5. **Teacher report** — Review → History → *Teacher report*: a printable last-30-days
-   summary (print to PDF and email it yourself; there is no sharing infrastructure).
+   data, not failure), hours, ratios, charts, deterministic observations.
+5. **Teacher report** — Journal → *Teacher report*: printable last-30-days summary
+   (print to PDF and email it yourself; there is no sharing infrastructure).
+6. **Learn** — the practice map and traditional material, each statement labeled
+   (practice guidance / traditional claim / personal record). Optional reading.
 
 ## Honest mobile limits
 
@@ -57,7 +65,7 @@ default, supported browsers) avoids the problem; a future native wrapper is the 
 ## Storage & backup
 
 - Data lives in this browser's `localStorage` under `jhanaTracker.v2` (versioned envelope,
-  schema v3 — see `DATA_CONTRACT.md`). The in-progress timer persists separately, so a
+  schema v4 — see `DATA_CONTRACT.md`). The in-progress timer persists separately, so a
   refresh or crash never loses a sit.
 - Legacy v1 keys (`janSits`, `janGates`) migrate automatically and are never deleted.
 - Data is **not encrypted**. It is as private as your browser profile.
@@ -79,13 +87,25 @@ The key is stored only in this browser's localStorage, in plain text, and is str
 exports. Provider output is schema-validated; invented values are rejected; failures fall
 back to the local parser with a visible notice; drafts never save without confirmation.
 
+## Family beta
+
+- The **Private family beta** chip (top right) opens a local-only feedback form — it
+  produces a text report to copy, download, or paste into an email. Nothing is sent
+  automatically; reports are also stored in the envelope.
+- **Demo data**: Settings → *Load demo data* adds two weeks of clearly-marked example
+  sessions so a new person can explore. Demo entries are excluded from statistics,
+  streaks, exports, and the teacher report, and are removable in one tap.
+
 ## Testing
 
 - **In app:** Settings → *Run self-tests*, or open with `?selftest=1`.
 - **Node:** `node tests/run-core-tests.mjs sit-tracker-v2.html` (exit 1 on failure).
 - Performance: Settings → Developer → seed 1,000 clearly-marked synthetic sessions
-  (`[TEST DATA]`), purge in one click. Exports made while seeded include them — purge first.
+  (`[TEST DATA]`), purge in one click. Synthetic entries are excluded from statistics,
+  exports, and reports automatically.
 - Icons are reproducible: `node tools/make-icons.mjs` (zero dependencies).
+- ⚠ After any edit to `sit-tracker-v2.html`, bump `SW_VERSION` in `sw.js` — installed
+  clients otherwise keep the old cached shell. The in-app update notice handles the rest.
 
 ## Honesty rules (enforced by design and by tests)
 

@@ -4,7 +4,17 @@ Every entry cites its evidence (RESEARCH_NOTES.md §n, PROJECT_STATE.md, or a da
 Protected differentiators (never trade away): no account, no paywall, offline, exportable
 data, evidence-honest labels (RESEARCH_NOTES §5).
 
-## Now (done in the 2026-07-09 run)
+## Now (done in the 2026-07-09 family-beta run)
+- First-launch onboarding (3 screens, skippable, step-resume, CORE-tested).
+- Today home: status strip, preset cards (30' recommended), cinematic timer (orb + arc).
+- Post-sit quick log (one-tap impressions -> schema v4 stability/breathClarity + hindrances).
+- IA: five tabs (Today / Journal / Progress / Learn / Settings); deep material under Learn with epistemic legend.
+- Demo mode with hard isolation (stats/streaks/exports/report) + one-tap removal.
+- Local-only feedback path (copy/download/mailto) + Private-family-beta chip.
+- In-app install guide with offline checklist; live-verified SW update notice.
+- Fixes: timer re-entry guard, clock-back clamp, synthetic-data leakage.
+
+### Earlier in the same day (platform run)
 - Storage health panel + `persist()` request + calm export reminder — §2.
 - Installable PWA (manifest, SW, icons) with file:// unchanged — §1.
 - Mobile hardening: 44px targets, safe areas, numeric keyboards, landscape, honest
@@ -16,6 +26,9 @@ data, evidence-honest labels (RESEARCH_NOTES §5).
 - API key stripped from JSON exports (privacy defect found while writing DATA_CONTRACT).
 
 ## Next (evidence exists, not yet built)
+- Physical-device pass (iPhone Safari + Android Chrome): install, offline checklist, wake lock, print. Discovered: window-resize automation unreliable — test on real hardware.
+- Screen-reader pass (VoiceOver/NVDA) over onboarding, quick log, timer announcements.
+- Multi-tab timer guard (storage-event watch or Web Locks; currently last-writer-wins).
 - Auto-suggest timeline segments from in-sit markers (markers already captured;
   reduces review friction — §5 "low-friction logging"; PROJECT_STATE known limitation).
 - Custom date range on Progress (CORE.filterRange already supports {from,to}).

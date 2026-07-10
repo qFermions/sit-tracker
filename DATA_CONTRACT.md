@@ -1,4 +1,4 @@
-# DATA_CONTRACT — persisted data, schema v3
+# DATA_CONTRACT — persisted data, schema v4
 
 This is the authoritative contract for any future client (iOS wrapper, sync tool).
 Stored names are permanent; changes require a `schemaVersion` bump + migration + tests.
@@ -6,8 +6,9 @@ Stored names are permanent; changes require a `schemaVersion` bump + migration +
 ## Envelope — localStorage key `jhanaTracker.v2`
 | Field | Type | Semantics |
 |---|---|---|
-| schemaVersion | int (3) | current schema; see version history below |
+| schemaVersion | int (4) | current schema; see version history below |
 | sessions | Session[] | append-mostly log; union-merge by `id` on import |
+| feedback | {at, entry, text}[] | local-only family-beta feedback reports (v4) |
 | settings | object | scalar preferences, last-write-wins (see Settings) |
 | map | object\|null | practice-map bookkeeping (see Map) |
 | legacyGates | any? | preserved v1 `janGates` content, opaque |
@@ -32,6 +33,8 @@ Stored names are permanent; changes require a `schemaVersion` bump + migration +
 | posture | string | yes | free-ish ('cross-legged'…) |
 | phase | string | no (default 'foundation') | practice-map phase label |
 | energyBefore/After, calmBefore/After | int 1–5 | yes | self-rated scales |
+| stability | int 1–5 | yes | quick-log: attention steadiness (1 scattered … 5 steady), self-rated |
+| breathClarity | int 1–5 | yes | quick-log: breath clarity (1 faint … 5 clear), self-rated |
 | afterStateReport | 'calmer'\|'no change'\|'more agitated'\|'tired'\|'energized' | yes | directional self-report (journal-derived) |
 | hindrances | {key→'mild'\|'moderate'\|'strong'} | no (may be {}) | keys: sensualDesire, illWill, sloth, restlessness, doubt |
 | dominantHindrance | key\|null | yes | at most one |
@@ -48,13 +51,15 @@ Stored names are permanent; changes require a `schemaVersion` bump + migration +
 | teacherReview | 'none'\|'flagged'\|'discussed'\|'reviewed' | no | only the user may set 'reviewed' |
 | teacherNotes | string | yes | private notes from teacher conversations |
 | createdAt / updatedAt | ISO string | yes | audit timestamps |
-| _test | true? | absent on real data | synthetic performance data marker; notes also start with `[TEST DATA]` |
+| _test | true? | absent on real data | synthetic marker; notes also start with `[TEST DATA]`. Synthetic entries are excluded from statistics, streaks, backups/exports, and the teacher report |
+| _demo | true? | absent on real data | friendly demo-data variant of _test |
 | _legacy | object? | absent normally | original v1 record preserved through migration |
 
 ## Settings (scalar, last-write-wins)
 `aiEnabled` bool · `aiEndpoint` string · `aiModel` string · `aiKey` string (plain text,
 local only; **stripped from every JSON export** — a restored backup requires re-entering the key) ·
-`bellVolume` 0–100 · `lastExportAt` 'YYYY-MM-DD'|null · `backupSnoozeUntil` 'YYYY-MM-DD'|null.
+`bellVolume` 0–100 · `lastExportAt` 'YYYY-MM-DD'|null · `backupSnoozeUntil` 'YYYY-MM-DD'|null ·
+`onboarding` {done:bool, step:int} (first-launch introduction state, v4).
 
 ## Map
 `{currentLevel: 0–5, levels: [{evidence, teacherNotes, reviewDate}] ×6}` with evidence ∈
@@ -71,7 +76,10 @@ timestamps, never stored.
   minutes/min/duration → actualMin, focusMinutes/focus/conc → concMin) and `janGates`.
   Migrated once into a fresh envelope; original keys never touched.
 - **v2**: envelope without entrySource / teacherReview / afterStateReport / markers / teacherNotes.
-- **v3** (current, 2026-07-09): adds those five fields; unknown entrySource stays null.
+- **v3** (2026-07-09): adds those five fields; unknown entrySource stays null.
+- **v4** (current, 2026-07-09 beta run): adds session `stability` + `breathClarity` (null = not
+  reported), envelope `feedback[]`, settings `onboarding`. JSON exports exclude synthetic
+  entries and the AI key.
 
 ## Sync contract (two devices, no accounts)
 Transport = the JSON export file (user's own cloud folder). Merge = union by session `id` +

@@ -1,4 +1,9 @@
-Schema v3 envelope in localStorage key `jhanaTracker.v2`; stored names are permanent.
+Schema v4 envelope in localStorage key `jhanaTracker.v2`; stored names are permanent.
+
+- v4 (2026-07-09 beta run): session stability/breathClarity (1–5|null quick-log scales),
+  envelope feedback[], settings onboarding{done,step}. Synthetic entries (_test/_demo,
+  notes "[TEST DATA]") are excluded from stats/streaks/exports/reports via CORE.realSessions —
+  keep using realSessions() for anything user-facing that means "real practice".
 
 - Envelope: {schemaVersion:3, sessions[], settings{}, map, savedAt}. Timer state is a
   separate key `jhanaTracker.v2.timer` so ticking never rewrites sessions.

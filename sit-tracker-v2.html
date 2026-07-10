@@ -124,6 +124,58 @@ details[open] summary{color:var(--fg)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media(max-width:400px){main{padding:var(--sp-3)}.card{padding:var(--sp-3)}}
+/* ============ cinematic-calm visual layer ============ */
+:root{
+  --indigo:#4a5b8c; --teal:#5aa8a0; --glow:rgba(127,180,217,.14); --gold-glow:rgba(201,168,106,.10);
+}
+body{background:radial-gradient(120% 90% at 50% -10%, #131a26 0%, var(--bg) 55%) fixed}
+.card{background:linear-gradient(180deg, #161e29 0%, var(--bg2) 100%);box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 8px 24px rgba(0,0,0,.25)}
+section[role="tabpanel"].active{animation:tabIn .22s ease}
+@keyframes tabIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.section-title{font-size:var(--fs-md);color:var(--fg-dim);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:var(--sp-4) 0 var(--sp-3)}
+.beta-chip{margin-left:auto;background:none;border:1px solid var(--line);color:var(--fg-faint);font-size:var(--fs-xs);border-radius:12px;min-height:28px;padding:2px 10px;cursor:pointer}
+.beta-chip:hover{color:var(--gold);border-color:var(--gold)}
+/* today status strip */
+.status-strip{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin-bottom:var(--sp-3);font-size:var(--fs-sm);color:var(--fg-dim)}
+.status-strip .pill{border:1px solid var(--line);border-radius:14px;padding:4px 12px;background:var(--bg2);display:inline-flex;align-items:center;gap:6px}
+.status-strip .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block}
+.status-strip .pill.today-done{border-color:var(--teal);color:var(--fg)}
+/* timer stage: orb + arc */
+.timer-stage{position:relative;width:min(300px,72vw);height:min(300px,72vw);margin:0 auto;display:flex;align-items:center;justify-content:center}
+.orb{position:absolute;inset:8%;border-radius:50%;background:radial-gradient(circle at 42% 36%, rgba(127,180,217,.16), rgba(74,91,140,.10) 45%, rgba(13,17,23,0) 72%);filter:blur(2px);transform:scale(.97)}
+body.running .orb{animation:orbBreathe 8s ease-in-out infinite}
+body.timer-paused .orb{opacity:.5;animation:none}
+@keyframes orbBreathe{0%,100%{transform:scale(.94);opacity:.75}50%{transform:scale(1.05);opacity:1}}
+.arc{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.arc circle{fill:none;stroke-width:3.5}
+.arc-track{stroke:rgba(127,180,217,.12)}
+.arc-fill{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:703.7;stroke-dashoffset:703.7;transition:stroke-dashoffset .3s linear}
+body.timer-paused .arc-fill{stroke:var(--fg-faint)}
+.timer-big{position:relative;z-index:1}
+/* preset cards */
+.preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:var(--sp-3)}
+.preset-card{text-align:left;display:flex;flex-direction:column;gap:4px;padding:var(--sp-3);border-radius:var(--r);border:1px solid var(--line);background:linear-gradient(180deg,#18202c 0%, var(--bg2) 100%);min-height:118px;cursor:pointer}
+.preset-card:hover{border-color:var(--accent-dim)}
+.preset-card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent), 0 6px 18px var(--glow)}
+.preset-card .p-min{font-size:var(--fs-xl);font-weight:600;color:var(--fg)}
+.preset-card .p-name{font-size:var(--fs-sm);color:var(--fg);font-weight:600}
+.preset-card .p-why{font-size:var(--fs-xs);color:var(--fg-dim);line-height:1.4}
+.preset-card .p-commit{font-size:var(--fs-xs);color:var(--fg-faint);margin-top:auto}
+.preset-card.recommended{border-color:var(--gold);background:linear-gradient(180deg,#1c2230 0%, var(--bg2) 100%)}
+.preset-card.recommended .p-tag{color:var(--gold);font-size:var(--fs-xs);letter-spacing:.05em;text-transform:uppercase}
+/* quick-log chips */
+.qrow{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:1px solid var(--line)}
+.qrow .ql{min-width:130px;font-size:var(--fs-sm);color:var(--fg-dim)}
+/* onboarding */
+.onboard{position:fixed;inset:0;z-index:60;background:radial-gradient(110% 100% at 50% 0%, #17202e 0%, #0b0f15 70%);display:flex;align-items:center;justify-content:center;padding:var(--sp-4)}
+.onboard-inner{max-width:430px;width:100%;text-align:center;position:relative;padding:var(--sp-5) var(--sp-4)}
+.ob-orb{position:absolute;left:50%;top:-40px;width:180px;height:180px;inset:auto;transform:translateX(-50%);opacity:.8;animation:orbBreathe 9s ease-in-out infinite}
+#ob-body{position:relative;z-index:1;margin-top:120px}
+.ob-text{color:var(--fg-dim);margin:var(--sp-3) 0 var(--sp-5);line-height:1.7}
+.ob-step-dots{letter-spacing:8px;color:var(--accent);font-size:10px;margin-bottom:var(--sp-3)}
+.ob-actions{display:flex;flex-direction:column;gap:var(--sp-2);position:relative;z-index:1}
+.ob-actions button{width:100%}
+@media(prefers-reduced-motion:reduce){.orb,.ob-orb{animation:none !important}}
 /* teacher report: hidden on screen, the only thing visible in print */
 #print-report{display:none}
 @media print{
@@ -141,13 +193,13 @@ details[open] summary{color:var(--fg)}
 <body>
 <header class="app hide-zen">
   <h1>Sit Tracker</h1><span class="mm">ဈာန် · breath first</span>
+  <button id="beta-chip" class="beta-chip" title="Send feedback">Private family beta</button>
 </header>
 <nav class="tabs hide-zen" role="tablist" aria-label="Sections">
-  <button role="tab" id="tabbtn-sit" aria-selected="true" aria-controls="tab-sit">Sit</button>
-  <button role="tab" id="tabbtn-review" aria-selected="false" aria-controls="tab-review">Review</button>
+  <button role="tab" id="tabbtn-today" aria-selected="true" aria-controls="tab-today">Today</button>
+  <button role="tab" id="tabbtn-journal" aria-selected="false" aria-controls="tab-journal">Journal</button>
   <button role="tab" id="tabbtn-progress" aria-selected="false" aria-controls="tab-progress">Progress</button>
-  <button role="tab" id="tabbtn-map" aria-selected="false" aria-controls="tab-map">Practice Map</button>
-  <button role="tab" id="tabbtn-journal" aria-selected="false" aria-controls="tab-journal">Journal AI</button>
+  <button role="tab" id="tabbtn-learn" aria-selected="false" aria-controls="tab-learn">Learn</button>
   <button role="tab" id="tabbtn-settings" aria-selected="false" aria-controls="tab-settings">Settings</button>
 </nav>
 <main>
@@ -168,8 +220,13 @@ details[open] summary{color:var(--fg)}
 </div>
 <div id="timer-live" class="sr-only" role="status" aria-live="polite"></div>
 
-<!-- ============ SIT ============ -->
-<section id="tab-sit" role="tabpanel" aria-labelledby="tabbtn-sit" class="active">
+<!-- ============ TODAY ============ -->
+<section id="tab-today" role="tabpanel" aria-labelledby="tabbtn-today" class="active">
+  <div id="demo-banner" class="notice hide-zen" hidden>
+    Demo data is active. Statistics, streaks, exports, and reports ignore it.
+    <button id="btn-remove-demo" class="ghost" style="margin-left:8px">Remove demo data</button>
+  </div>
+  <div id="today-status" class="hide-zen"></div>
   <div id="resume-banner" class="notice" hidden>
     <strong>A sit was in progress.</strong> <span id="resume-detail"></span>
     <div class="row" style="margin-top:8px">
@@ -178,9 +235,16 @@ details[open] summary{color:var(--fg)}
     </div>
   </div>
 
-  <div class="card timer-wrap">
+  <div class="card timer-wrap" id="timer-card">
     <div class="timer-phase" id="timer-phase" aria-live="polite"></div>
-    <div class="timer-big" id="timer-display" role="timer" aria-live="off">30:00</div>
+    <div class="timer-stage">
+      <div class="orb" aria-hidden="true"></div>
+      <svg class="arc" viewBox="0 0 240 240" aria-hidden="true">
+        <circle class="arc-track" cx="120" cy="120" r="112"/>
+        <circle class="arc-fill" id="arc-fill" cx="120" cy="120" r="112"/>
+      </svg>
+      <div class="timer-big" id="timer-display" role="timer" aria-live="off">30:00</div>
+    </div>
     <div class="timer-sub" id="timer-sub">planned 30 min</div>
     <div class="row" style="justify-content:center;margin-top:var(--sp-4)">
       <button id="btn-start" class="primary big">Start sit</button>
@@ -200,50 +264,57 @@ details[open] summary{color:var(--fg)}
     <div class="faint" id="marker-log" style="margin-top:var(--sp-2)" aria-live="polite"></div>
   </div>
 
-  <div class="card hide-zen" id="sit-config">
-    <h3 style="margin-top:0">Duration</h3>
-    <div class="row" id="preset-row" role="group" aria-label="Duration presets">
-      <button class="chip" data-min="20">20</button>
-      <button class="chip" data-min="30" aria-pressed="true">30</button>
-      <button class="chip" data-min="45">45</button>
-      <button class="chip" data-min="60">60</button>
-      <button class="chip" data-min="90">90</button>
-      <button class="chip" data-min="120">120</button>
-      <label class="row" style="gap:6px">custom
-        <input type="number" id="custom-min" min="1" max="480" step="1" inputmode="numeric" aria-label="Custom duration in minutes"> min
-      </label>
-    </div>
-    <h3>Object</h3>
-    <div class="row">
-      <select id="sit-object" aria-label="Meditation object">
-        <option value="nostril">Nostril rim</option>
-        <option value="upperlip">Upper lip</option>
-        <option value="abdomen">Abdomen</option>
-        <option value="wholebody">Whole-body breath</option>
-        <option value="custom">Custom…</option>
-      </select>
-      <input type="text" id="sit-object-custom" placeholder="describe object" hidden aria-label="Custom object description">
-    </div>
-    <small>Changing objects is not automatically progress. The current practice is the nostril rim / upper lip.</small>
-    <h3>Options</h3>
-    <div class="grid2">
-      <label class="check"><input type="checkbox" id="opt-prep"> Preparation countdown <select id="opt-prep-sec" aria-label="Preparation seconds"><option value="10">10 s</option><option value="20" selected>20 s</option><option value="30">30 s</option><option value="60">60 s</option></select></label>
-      <label class="check"><input type="checkbox" id="opt-final" checked> Final bell</label>
-      <label class="check"><input type="checkbox" id="opt-interval"> Interval bell every <select id="opt-interval-min" aria-label="Interval bell minutes"><option value="5">5</option><option value="10" selected>10</option><option value="15">15</option></select> min</label>
-      <label class="check"><input type="checkbox" id="opt-wakelock" checked> Keep screen awake (if supported)</label>
-    </div>
-    <small>Honest limit: if the screen locks or the browser is put in the background, bells may not sound until you return — the elapsed time itself always stays correct. Keeping the screen awake avoids this.</small>
+  <div class="hide-zen" id="sit-config">
+    <h2 class="section-title">Choose a practice</h2>
+    <div class="preset-grid" id="preset-grid" role="group" aria-label="Practice presets"></div>
+
+    <details class="card sub" style="margin-top:var(--sp-3)">
+      <summary>Options — focus point, bells, screen</summary>
+      <h3>Meditation focus</h3>
+      <div class="row">
+        <select id="sit-object" aria-label="Meditation focus point">
+          <option value="nostril">Nostril rim (recommended)</option>
+          <option value="upperlip">Upper lip</option>
+          <option value="abdomen">Abdomen</option>
+          <option value="wholebody">Whole-body breath</option>
+          <option value="custom">Custom…</option>
+        </select>
+        <input type="text" id="sit-object-custom" placeholder="describe the focus point" hidden aria-label="Custom focus description">
+      </div>
+      <small>Changing the focus point is not automatically progress. The current practice is the nostril rim / upper lip.</small>
+      <h3>Bells & screen</h3>
+      <div class="grid2">
+        <label class="check"><input type="checkbox" id="opt-prep"> Settling countdown <select id="opt-prep-sec" aria-label="Settling seconds"><option value="10">10 s</option><option value="20" selected>20 s</option><option value="30">30 s</option><option value="60">60 s</option></select></label>
+        <label class="check"><input type="checkbox" id="opt-final" checked> Final bell</label>
+        <label class="check"><input type="checkbox" id="opt-interval"> Interval bell every <select id="opt-interval-min" aria-label="Interval bell minutes"><option value="5">5</option><option value="10" selected>10</option><option value="15">15</option></select> min</label>
+        <label class="check"><input type="checkbox" id="opt-wakelock" checked> Keep screen awake (if supported)</label>
+      </div>
+      <small>Honest limit: if the screen locks or the browser goes to the background, bells may not sound until you return — the elapsed time itself always stays correct. Keeping the screen awake avoids this.</small>
+    </details>
   </div>
 
   <div class="card hide-zen instructions">
-    <strong style="color:var(--fg)">Current instructions — Gate 0, Foundation</strong><br>
-    Observe the natural breath at the nostril rim or upper lip. Count one full in-and-out cycle as one, from 1 through 8, then restart. When the mind wanders, return without commentary. When the breath becomes faint, wait — do not breathe harder.
+    <strong style="color:var(--fg)">How to practice</strong> <span class="badge">practice guidance</span><br>
+    Sit comfortably. Notice the breath where it touches near the nostrils. Count each in-and-out cycle from one to eight, then restart. When attention wanders, return without commentary. If the breath becomes faint, wait rather than forcing it.
   </div>
 </section>
 
-<!-- ============ REVIEW (post-session + history) ============ -->
-<section id="tab-review" role="tabpanel" aria-labelledby="tabbtn-review">
+<!-- ============ JOURNAL (after-sit log + write + history) ============ -->
+<section id="tab-journal" role="tabpanel" aria-labelledby="tabbtn-journal">
   <div id="review-container"></div>
+
+  <div class="card">
+    <h2>Write what you noticed</h2>
+    <p class="dim">Describe the sit in your own words — the app turns it into a <strong>draft entry</strong> you check before anything is saved. Unmentioned things stay blank; nothing is guessed.</p>
+    <div class="notice" id="ai-engine-notice"></div>
+    <textarea id="journal-text" aria-label="Journal text" placeholder="Example: I sat for 30 minutes. The first seven minutes were scattered. I think I had about 16 minutes of real concentration…"></textarea>
+    <div class="row" style="margin-top:var(--sp-2)">
+      <button id="btn-parse" class="primary">Create draft</button>
+      <button id="btn-journal-clear" class="ghost">Clear</button>
+    </div>
+  </div>
+  <div id="draft-container"></div>
+
   <div class="card">
     <div class="row between">
       <h2 style="margin:0">History</h2>
@@ -276,24 +347,23 @@ details[open] summary{color:var(--fg)}
   <div id="progress-container" style="margin-top:var(--sp-3)"></div>
 </section>
 
-<!-- ============ PRACTICE MAP ============ -->
-<section id="tab-map" role="tabpanel" aria-labelledby="tabbtn-map">
-  <div id="map-container"></div>
-</section>
-
-<!-- ============ JOURNAL AI ============ -->
-<section id="tab-journal" role="tabpanel" aria-labelledby="tabbtn-journal">
+<!-- ============ LEARN ============ -->
+<section id="tab-learn" role="tabpanel" aria-labelledby="tabbtn-learn">
   <div class="card">
-    <h2>Journal → structured draft</h2>
-    <p class="dim">Write or dictate what actually happened. The parser produces a <strong>draft</strong> — nothing is saved until you review and confirm it. Unreported values stay empty; they are never guessed.</p>
-    <div class="notice" id="ai-engine-notice"></div>
-    <textarea id="journal-text" aria-label="Journal text" placeholder="Example: I sat for 30 minutes. The first seven minutes were scattered. I think I had about 16 minutes of real concentration…"></textarea>
-    <div class="row" style="margin-top:var(--sp-2)">
-      <button id="btn-parse" class="primary">Create draft</button>
-      <button id="btn-journal-clear" class="ghost">Clear</button>
-    </div>
+    <h2>Learn</h2>
+    <p class="dim">The deeper material lives here, separate from everyday practice. Labels tell you what kind of statement you are reading:</p>
+    <p>
+      <span class="badge">practice guidance</span> how to practice ·
+      <span class="badge gold">traditional claim</span> what the classical texts assert ·
+      <span class="badge">personal record</span> what you yourself reported
+    </p>
+    <p class="dim" style="margin-bottom:0">The app records observations. The texts make the claims. The cushion settles the question.</p>
   </div>
-  <div id="draft-container"></div>
+  <div id="map-container"></div>
+  <div class="card">
+    <h3 style="margin-top:0">Source library</h3>
+    <p class="dim">The full traditional reference lives beside this app as <code>abhinna-practice-manual.md</code> and <code>abhinna-6-roadmap.md</code> — reading them is optional and never required for daily practice.</p>
+  </div>
 </section>
 
 <!-- ============ SETTINGS ============ -->
@@ -343,6 +413,27 @@ details[open] summary{color:var(--fg)}
   </div>
 
   <div class="card">
+    <h2>Install on your phone</h2>
+    <div id="install-guide"></div>
+  </div>
+
+  <div class="card">
+    <h2>Send feedback (family beta)</h2>
+    <p class="dim">Everything stays on this device — the app builds a text report you can copy, save, or paste into an email yourself. Nothing is sent automatically.</p>
+    <button id="btn-feedback" class="primary">Write feedback…</button>
+    <p class="faint" id="feedback-count"></p>
+  </div>
+
+  <div class="card">
+    <h2>Demo data</h2>
+    <p class="dim">Two weeks of clearly-marked example sessions so a new person can explore the app. Demo entries are ignored by statistics, streaks, exports, and the teacher report, and are removable in one tap.</p>
+    <div class="row">
+      <button id="btn-try-demo">Load demo data</button>
+      <button id="btn-remove-demo-2" class="ghost">Remove demo data</button>
+    </div>
+  </div>
+
+  <div class="card">
     <h2>Developer</h2>
     <details>
       <summary>Performance test data (synthetic sessions)</summary>
@@ -361,10 +452,21 @@ details[open] summary{color:var(--fg)}
     <button id="btn-wipe" class="danger">Delete all tracker data…</button>
   </div>
 
-  <div class="honesty">This application records self-reported experience and observable practice patterns. It cannot verify jhāna, nimitta, attainments, or abilities, and it never claims to. Teacher review outranks anything this software computes.</div>
+  <div class="honesty">This application records self-reported experience and observable practice patterns. It cannot verify jhāna, nimitta, attainments, or abilities, and it never claims to. Teacher review outranks anything this software computes. <span id="app-version-line"></span></div>
 </section>
 </main>
 
+<div id="onboard" class="onboard" hidden role="dialog" aria-modal="true" aria-labelledby="ob-title">
+  <div class="onboard-inner">
+    <div class="orb ob-orb" aria-hidden="true"></div>
+    <div id="ob-body">
+      <p class="ob-step-dots" id="ob-dots" aria-hidden="true"></p>
+      <h2 id="ob-title"></h2>
+      <p id="ob-text" class="ob-text"></p>
+    </div>
+    <div class="ob-actions" id="ob-actions"></div>
+  </div>
+</div>
 <div id="toast" role="status" aria-live="polite"></div>
 <dialog id="modal" aria-label="Dialog"><div id="modal-body"></div></dialog>
 <div id="print-report" aria-hidden="true"></div>
@@ -374,7 +476,8 @@ details[open] summary{color:var(--fg)}
 /*CORE-START*/
 /* Pure logic. No DOM, no localStorage, no fetch side-effects. Extractable and runnable under Node. */
 const CORE = (function () {
-  const SCHEMA_VERSION = 3;
+  const SCHEMA_VERSION = 4;
+  const APP_VERSION = "4.0.0";
   const OBJECTS = ["nostril", "upperlip", "abdomen", "wholebody", "custom"];
   const HINDRANCES = ["sensualDesire", "illWill", "sloth", "restlessness", "doubt"];
   const HINDRANCE_LABELS = {
@@ -449,6 +552,7 @@ const CORE = (function () {
       object: null, objectCustom: null, posture: null, phase: "foundation",
       energyBefore: null, energyAfter: null, calmBefore: null, calmAfter: null,
       afterStateReport: null,
+      stability: null, breathClarity: null,
       hindrances: {}, dominantHindrance: null,
       qualities: [],
       nimitta: null,
@@ -501,7 +605,7 @@ const CORE = (function () {
       const tv = validateTimeline(s.timeline, s.actualMin);
       if (!tv.ok) errors.push.apply(errors, tv.errors);
     }
-    for (const scale of ["energyBefore", "energyAfter", "calmBefore", "calmAfter"]) {
+    for (const scale of ["energyBefore", "energyAfter", "calmBefore", "calmAfter", "stability", "breathClarity"]) {
       const v = s[scale];
       if (v !== null && v !== undefined && (!isNum(v) || v < 1 || v > 5)) errors.push("invalid " + scale + " (1-5)");
     }
@@ -570,6 +674,11 @@ const CORE = (function () {
     const anchor = st.phase === "paused" ? st.pausedAtMs : nowMs;
     const raw = (anchor - st.startMs - (st.pausedTotalMs || 0)) / 1000;
     if (raw < 0) {
+      // Negative with no prep configured = system clock moved backwards mid-sit.
+      // Clamp to elapsed 0 rather than showing a bogus preparation countdown.
+      if (!st.prepSec || st.prepSec <= 0) {
+        return { mode: st.phase === "paused" ? "paused" : "running", elapsedSec: 0, remainingSec: st.plannedSec, prepRemainingSec: 0, overSec: 0 };
+      }
       return { mode: st.phase === "paused" ? "paused" : "prep", elapsedSec: 0, remainingSec: st.plannedSec, prepRemainingSec: Math.ceil(-raw), overSec: 0 };
     }
     if (raw >= st.plannedSec) {
@@ -810,7 +919,8 @@ const CORE = (function () {
 
   // ---------- migration ----------
   // Envelope: {schemaVersion, sessions, settings, map, savedAt}
-  // v1 = legacy loose keys (janSits / janGates), v2 = envelope without entrySource/teacherReview/afterStateReport, v3 = current.
+  // v1 = legacy loose keys (janSits / janGates), v2 = envelope without entrySource/teacherReview/afterStateReport,
+  // v3 = + those fields, v4 = current (+ stability/breathClarity, envelope feedback[]).
   function migrate(rawEnvelope, legacy, nowIso, todayStr) {
     const notes = [];
     let env = rawEnvelope;
@@ -843,11 +953,15 @@ const CORE = (function () {
     if (fromVersion < SCHEMA_VERSION) {
       env.sessions = (env.sessions || []).map(s => {
         const up = Object.assign({}, s);
+        // v2 → v3
         if (up.entrySource === undefined) up.entrySource = null;      // unknown, not guessed
         if (up.teacherReview === undefined) up.teacherReview = "none";
         if (up.afterStateReport === undefined) up.afterStateReport = null;
         if (up.markers === undefined) up.markers = null;
         if (up.teacherNotes === undefined) up.teacherNotes = null;
+        // v3 → v4: quick-log scales, unreported stays null
+        if (up.stability === undefined) up.stability = null;
+        if (up.breathClarity === undefined) up.breathClarity = null;
         up.v = SCHEMA_VERSION;
         return up;
       });
@@ -857,6 +971,7 @@ const CORE = (function () {
     if (!env.settings || typeof env.settings !== "object") env.settings = {};
     if (!Array.isArray(env.sessions)) env.sessions = [];
     if (env.map === undefined) env.map = null;
+    if (!Array.isArray(env.feedback)) env.feedback = [];              // v4: local-only beta feedback
     return { env, notes };
   }
 
@@ -1221,6 +1336,75 @@ const CORE = (function () {
     return out;
   }
   function isTestSession(s) { return s && (s._test === true || (typeof s.notes === "string" && s.notes.indexOf("[TEST DATA]") === 0)); }
+  // Real practice data only — synthetic/demo entries never reach stats, streaks, exports, or reports.
+  function realSessions(list) { return (list || []).filter(s => !isTestSession(s)); }
+
+  // Friendly demo data: two weeks of plausible, clearly-marked example sessions.
+  function makeDemoSessions(todayStr, nowIso) {
+    const rnd = mulberry32(20260710);
+    const out = [];
+    for (let i = 0; i < 12; i++) {
+      const daysAgo = 13 - i;
+      if (i === 4 || i === 9) continue; // two honest missed days
+      const dur = [20, 30, 30, 30, 45][Math.floor(rnd() * 5)];
+      const conc = round1(dur * (0.25 + rnd() * 0.35 + i * 0.015));
+      const h = {};
+      if (rnd() < 0.5) h[rnd() < 0.6 ? "restlessness" : "sloth"] = rnd() < 0.7 ? "mild" : "moderate";
+      out.push(normalizeSession({
+        id: "demo-" + i,
+        date: addDays(todayStr, -daysAgo),
+        startTime: pad2(6 + Math.floor(rnd() * 2)) + ":" + pad2(Math.floor(rnd() * 60)),
+        plannedMin: dur, actualMin: dur,
+        concMin: Math.min(conc, dur), confidence: ["low", "medium", "medium", "high"][Math.floor(rnd() * 4)],
+        settleMin: round1(3 + rnd() * 7),
+        stability: 1 + Math.floor(rnd() * 4),
+        breathClarity: 1 + Math.floor(rnd() * 4),
+        wanderings: Math.floor(rnd() * 6),
+        object: "nostril", hindrances: h,
+        notes: "[TEST DATA] Demo session — example entry, not real practice.",
+        entrySource: "imported",
+        _test: true, _demo: true
+      }, nowIso, todayStr));
+    }
+    return out;
+  }
+
+  // ---------- practice presets (decision friction ↓, no gamification) ----------
+  const PRESETS = [
+    { id: "first", name: "First Sit", min: 30, purpose: "The recommended starting practice: breath at the nostril rim, counting 1–8.", commitment: "About half an hour of quiet", recommended: true },
+    { id: "short", name: "Short Reset", min: 10, purpose: "A brief sit for a busy day. Better than skipping.", commitment: "Ten quiet minutes" },
+    { id: "steady", name: "Steady Breath", min: 20, purpose: "A middle-length sit when 30 feels like too much.", commitment: "Twenty minutes" },
+    { id: "standard", name: "Standard Practice", min: 45, purpose: "A longer sit for settled days.", commitment: "Three quarters of an hour" }
+  ];
+  function presetById(id) { return PRESETS.find(p => p.id === id) || null; }
+
+  // ---------- first-launch onboarding (state decision is pure; UI just obeys) ----------
+  // settings.onboarding = {done:bool, step:int}
+  function onboardingState(realSessionCount, settings, hasActiveRecovery) {
+    const ob = (settings && settings.onboarding) || {};
+    if (ob.done === true) return { show: false, step: 0 };
+    if (hasActiveRecovery) return { show: false, step: 0 };          // never over an active-sit recovery
+    if (realSessionCount > 0) return { show: false, step: 0 };
+    return { show: true, step: clamp(isNum(ob.step) ? ob.step : 0, 0, 2) };
+  }
+
+  // ---------- family-beta feedback (local only; formatted for copy/download/mailto) ----------
+  function formatFeedback(entry, meta) {
+    const e = entry || {}, m = meta || {};
+    const line = (label, v) => label + ": " + (v && String(v).trim() ? String(v).trim() : "(not answered)");
+    return [
+      "SIT TRACKER — FAMILY BETA FEEDBACK",
+      "date: " + (m.date || "unknown"),
+      "app version: " + (m.appVersion || APP_VERSION) + " · schema v" + SCHEMA_VERSION,
+      "device: " + (m.device || "unknown"),
+      "sessions recorded: " + (isNum(m.sessions) ? m.sessions : "unknown"),
+      "",
+      line("What were you trying to do", e.trying),
+      line("What was confusing", e.confused),
+      line("What didn't work", e.broken),
+      line("General impression", e.impression)
+    ].join("\n");
+  }
 
   // ---------- self tests ----------
   function runSelfTests() {
@@ -1421,16 +1605,27 @@ const CORE = (function () {
     t("migration sets schema version", mig.env.schemaVersion === SCHEMA_VERSION);
     const v2env = { schemaVersion: 2, sessions: [{ id: "v2s", date: "2026-06-05", actualMin: 30, concMin: 10, nimitta: { category: "brief" } }], settings: { theme: "dark" } };
     const mig2 = migrate(v2env, null, NOW, TODAY);
-    t("v2→v3 bumps version", mig2.env.schemaVersion === 3);
-    t("v2→v3 adds entrySource as null", mig2.env.sessions[0].entrySource === null);
-    t("v2→v3 adds teacherReview", mig2.env.sessions[0].teacherReview === "none");
-    t("v2→v3 keeps nimitta name", mig2.env.sessions[0].nimitta.category === "brief");
-    t("v2→v3 keeps settings", mig2.env.settings.theme === "dark");
-    t("v2→v3 records note", mig2.notes.some(n => n.indexOf("v2") >= 0 && n.indexOf("v3") >= 0));
+    t("v2→v4 bumps version", mig2.env.schemaVersion === SCHEMA_VERSION);
+    t("v2→v4 adds entrySource as null", mig2.env.sessions[0].entrySource === null);
+    t("v2→v4 adds teacherReview", mig2.env.sessions[0].teacherReview === "none");
+    t("v2→v4 keeps nimitta name", mig2.env.sessions[0].nimitta.category === "brief");
+    t("v2→v4 keeps settings", mig2.env.settings.theme === "dark");
+    t("v2→v4 records note", mig2.notes.some(n => n.indexOf("v2") >= 0 && n.indexOf("v" + SCHEMA_VERSION) >= 0));
     const mig3 = migrate(mig2.env, null, NOW, TODAY);
-    t("v3 idempotent", mig3.env.schemaVersion === 3 && mig3.notes.length === 0);
+    t("current version idempotent", mig3.env.schemaVersion === SCHEMA_VERSION && mig3.notes.length === 0);
     const migFresh = migrate(null, null, NOW, TODAY);
-    t("fresh install empty env", migFresh.env.sessions.length === 0 && migFresh.env.schemaVersion === 3);
+    t("fresh install empty env", migFresh.env.sessions.length === 0 && migFresh.env.schemaVersion === SCHEMA_VERSION);
+    // v3 → v4 specifics
+    const v3env = { schemaVersion: 3, sessions: [{ id: "v3s", date: "2026-06-20", actualMin: 30, concMin: 12, entrySource: "timer", teacherReview: "none", nimitta: { category: "none" } }], settings: {} };
+    const mig4 = migrate(v3env, null, NOW, TODAY);
+    t("v3→v4 adds stability null", mig4.env.sessions[0].stability === null);
+    t("v3→v4 adds breathClarity null", mig4.env.sessions[0].breathClarity === null);
+    t("v3→v4 keeps concMin", mig4.env.sessions[0].concMin === 12);
+    t("v3→v4 keeps nimitta name", mig4.env.sessions[0].nimitta.category === "none");
+    t("v4 envelope gets feedback array", Array.isArray(mig4.env.feedback));
+    t("stability validated 1-5", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, stability: 6 }, NOW, TODAY)).ok);
+    t("breathClarity null ok", validateSession(normalizeSession({ date: TODAY, actualMin: 30, breathClarity: null }, NOW, TODAY)).ok);
+    t("breathClarity 3 ok", validateSession(normalizeSession({ date: TODAY, actualMin: 30, breathClarity: 3, stability: 5 }, NOW, TODAY)).ok);
 
     // --- journal parser: the canonical example from the spec
     const sample = "I sat for 30 minutes. The first seven minutes were scattered. Then the breath got clearer. I think I had about 16 minutes of real concentration. My longest stretch was maybe nine minutes. I wandered badly four times. Restlessness was strongest. No light. I felt calmer afterward.";
@@ -1552,6 +1747,57 @@ const CORE = (function () {
     t("daysSatLast30 counts distinct days", summaryMetrics([mk(TODAY), mk(TODAY), mk(addDays(TODAY, -1)), mk(addDays(TODAY, -40))], TODAY).daysSatLast30 === 2);
     t("daysSatLast30 empty", summaryMetrics([], TODAY).daysSatLast30 === 0);
 
+    // --- presets
+    t("presets: four fixed options", PRESETS.length === 4);
+    t("presets: exactly one recommended", PRESETS.filter(p => p.recommended).length === 1);
+    t("presets: recommended is 30-min first sit", presetById("first").min === 30 && presetById("first").recommended === true);
+    t("presets: lookup miss is null", presetById("nope") === null);
+    t("presets: all have plain purpose & commitment", PRESETS.every(p => p.purpose.length > 10 && p.commitment.length > 5 && isNum(p.min)));
+
+    // --- onboarding state
+    t("onboarding: shows on fresh install", onboardingState(0, {}, false).show === true);
+    t("onboarding: starts at step 0", onboardingState(0, {}, false).step === 0);
+    t("onboarding: resumes saved step", onboardingState(0, { onboarding: { step: 2 } }, false).step === 2);
+    t("onboarding: step clamped", onboardingState(0, { onboarding: { step: 9 } }, false).step === 2);
+    t("onboarding: hidden once done", onboardingState(0, { onboarding: { done: true } }, false).show === false);
+    t("onboarding: hidden with real sessions", onboardingState(3, {}, false).show === false);
+    t("onboarding: never over active recovery", onboardingState(0, {}, true).show === false);
+    t("onboarding: done survives session deletion", onboardingState(0, { onboarding: { done: true, step: 1 } }, false).show === false);
+
+    // --- demo isolation
+    const demo = makeDemoSessions(TODAY, NOW);
+    t("demo: sessions generated", demo.length === 10);
+    t("demo: all valid", demo.every(s => validateSession(s).ok));
+    t("demo: all flagged as test data", demo.every(isTestSession));
+    t("demo: all carry demo marker", demo.every(s => s._demo === true));
+    t("demo: notes say demo", demo.every(s => s.notes.indexOf("[TEST DATA]") === 0 && /demo/i.test(s.notes)));
+    t("demo: deterministic", makeDemoSessions(TODAY, NOW)[0].id === demo[0].id && makeDemoSessions(TODAY, NOW)[3].concMin === demo[3].concMin);
+    const mixed = demo.concat([mk(TODAY, { concMin: 10 }), mk(addDays(TODAY, -1))]);
+    t("realSessions strips demo", realSessions(mixed).length === 2);
+    t("realSessions keeps real", realSessions(mixed).every(s => !isTestSession(s)));
+    t("demo never in streaks", computeStreaks(realSessions(demo), TODAY).current === 0);
+    t("demo never in metrics", summaryMetrics(realSessions(demo), TODAY).sessions === 0);
+    t("demo excluded from backup counting", backupStatus(realSessions(demo.concat(demo)), {}, TODAY).remind === false);
+    t("demo conc within duration", demo.every(s => s.concMin === null || s.concMin <= s.actualMin));
+
+    // --- feedback formatting
+    const fb = formatFeedback({ trying: "start a sit", confused: "  ", broken: "bell didn't ring", impression: "calm" }, { date: TODAY, device: "iPhone Safari", sessions: 4, appVersion: APP_VERSION });
+    t("feedback: header present", fb.indexOf("FAMILY BETA FEEDBACK") > 0);
+    t("feedback: fields included", fb.indexOf("start a sit") > 0 && fb.indexOf("bell didn't ring") > 0);
+    t("feedback: blank answers marked", fb.indexOf("What was confusing: (not answered)") > 0);
+    t("feedback: meta included", fb.indexOf("iPhone Safari") > 0 && fb.indexOf("sessions recorded: 4") > 0);
+    t("feedback: no undefined leakage", fb.indexOf("undefined") < 0);
+    t("feedback: survives empty input", formatFeedback(null, null).indexOf("(not answered)") > 0);
+    t("feedback: version stamped", fb.indexOf(APP_VERSION) > 0);
+
+    // --- clock moved backwards mid-sit
+    const stClock = startTimerState(1800, 0, T0);
+    const backSnap = timerSnapshot(stClock, T0 - 60000);
+    t("clock-back: no bogus prep mode", backSnap.mode === "running");
+    t("clock-back: elapsed clamped to 0", backSnap.elapsedSec === 0);
+    t("clock-back: remaining is full plan", backSnap.remainingSec === 1800);
+    t("clock-back: prep still works when configured", timerSnapshot(startTimerState(1800, 20, T0), T0 + 5000).mode === "prep");
+
     // --- forbidden wording guard: nothing in CORE's user-facing strings certifies attainment
     const corpus = [PROVIDER_INSTRUCTION, JSON.stringify(NIMITTA_LABELS), JSON.stringify(REVIEW_LABELS), JSON.stringify(SEGMENT_LABELS), JSON.stringify(QUALITY_LABELS)].join(" ");
     t("no 'confirmed nimitta' wording", !/confirmed nimitta/i.test(corpus));
@@ -1573,7 +1819,8 @@ const CORE = (function () {
     timerSnapshot, startTimerState, pauseTimerState, resumeTimerState, dueBells,
     computeStreaks, filterRange, summaryMetrics, timeOfDayBucket, insights, strengthLabel,
     toCSV, sessionFingerprint, parseImport, migrate,
-    backupStatus, makeTestSessions, isTestSession,
+    backupStatus, makeTestSessions, isTestSession, realSessions, makeDemoSessions,
+    PRESETS, presetById, onboardingState, formatFeedback, APP_VERSION,
     parseJournal, validateDraft, draftToSession,
     buildProviderRequest, extractProviderText, parseProviderResponse, PROVIDER_INSTRUCTION,
     runSelfTests
@@ -1701,6 +1948,12 @@ const STORE = (function () {
     save();
   }
 
+  function addFeedback(entry, text) {
+    env.feedback.push({ at: nowIso(), entry, text });
+    save();
+  }
+  function getFeedback() { return env.feedback || []; }
+
   function wipe() {
     adapter.remove(KEY);
     adapter.remove(TIMER_KEY);
@@ -1722,7 +1975,7 @@ const STORE = (function () {
 
   return {
     load, save, sessions, getSession, addSession, updateSession, deleteSession, mergeImported,
-    getSetting, setSetting, getMap, saveMap, saveTimer, loadTimer, clearTimer, wipe, purgeTestSessions,
+    getSetting, setSetting, getMap, saveMap, saveTimer, loadTimer, clearTimer, wipe, purgeTestSessions, addFeedback, getFeedback,
     storageInfo, nowIso, todayStr, adapter, notes: () => migrationNotes, env: () => env
   };
 })();
@@ -1797,6 +2050,7 @@ const TIMER = (function () {
   });
 
   function start() {
+    if (st) return; // guard: rapid double-click / re-entry must never spawn a second sit
     const cfg = cfgFromUI();
     if (!CORE.isNum(cfg.plannedMin) || cfg.plannedMin <= 0) { UI.toast("Choose a duration first."); return; }
     AUDIO.ensure(); // user gesture unlocks audio
@@ -2048,28 +2302,72 @@ const UI = (function () {
   }
 
   /* ---- tabs ---- */
-  const TABS = ["sit", "review", "progress", "map", "journal", "settings"];
+  const TABS = ["today", "journal", "progress", "learn", "settings"];
   function showTab(name) {
     for (const tb of TABS) {
       $("#tab-" + tb).classList.toggle("active", tb === name);
       $("#tabbtn-" + tb).setAttribute("aria-selected", tb === name ? "true" : "false");
     }
     if (name === "progress") PROGRESS.render();
-    if (name === "review") HISTORY.render();
-    if (typeof APP !== "undefined") APP.refreshBackupReminder();
-    if (name === "map") MAP.render();
-    if (name === "journal") JOURNAL.renderEngineNotice();
+    if (name === "journal") { HISTORY.render(); JOURNAL.renderEngineNotice(); }
+    if (name === "learn") MAP.render();
     if (name === "settings") SETTINGS.renderInfo();
+    if (name === "today" && typeof TODAY !== "undefined") TODAY.renderStatus();
+    if (typeof APP !== "undefined") { APP.refreshBackupReminder(); APP.refreshDemoBanner(); }
   }
 
-  /* ---- sit tab ---- */
+  /* ---- today tab: presets + duration ---- */
+  let presetSel = "first";
   function selectedMinutes() {
-    const custom = parseFloat($("#custom-min").value);
-    if (CORE.isNum(custom) && custom > 0) return custom;
-    const pressed = $("#preset-row button[aria-pressed='true']");
-    return pressed ? parseInt(pressed.dataset.min, 10) : 30;
+    if (presetSel === "custom") {
+      const custom = parseFloat($("#custom-min") ? $("#custom-min").value : "");
+      return CORE.isNum(custom) && custom > 0 ? Math.min(custom, 480) : null;
+    }
+    const p = CORE.presetById(presetSel);
+    return p ? p.min : 30;
   }
 
+  function renderPresets() {
+    const grid = $("#preset-grid");
+    if (!grid) return;
+    grid.innerHTML = CORE.PRESETS.map(p =>
+      '<button class="preset-card' + (p.recommended ? " recommended" : "") + '" data-preset="' + p.id + '" aria-pressed="' + (presetSel === p.id ? "true" : "false") + '">' +
+      (p.recommended ? '<span class="p-tag">Recommended</span>' : "") +
+      '<span class="p-min">' + p.min + "′</span>" +
+      '<span class="p-name">' + esc(p.name) + "</span>" +
+      '<span class="p-why">' + esc(p.purpose) + "</span>" +
+      '<span class="p-commit">' + esc(p.commitment) + " · tap, then press Start</span>" +
+      "</button>"
+    ).join("") +
+      '<button class="preset-card" data-preset="custom" aria-pressed="' + (presetSel === "custom" ? "true" : "false") + '">' +
+      '<span class="p-min">…</span><span class="p-name">Custom length</span>' +
+      '<span class="p-why">Any duration from 1 to 480 minutes.</span>' +
+      '<span class="p-commit">You choose · tap, then enter minutes</span>' +
+      "</button>" +
+      '<button class="preset-card" data-preset="__review" aria-pressed="false">' +
+      '<span class="p-min">↩</span><span class="p-name">Review a previous sit</span>' +
+      '<span class="p-why">Open the journal and history instead of starting a timer.</span>' +
+      '<span class="p-commit">No timer starts</span></button>';
+    const stale = $("#custom-row");
+    if (stale) stale.remove(); // renderPresets runs repeatedly
+    grid.insertAdjacentHTML("afterend",
+      '<div class="row" id="custom-row"' + (presetSel === "custom" ? "" : " hidden") + ' style="margin-top:var(--sp-2)">' +
+      '<label class="row" style="gap:6px">Custom length ' +
+      '<input type="number" id="custom-min" min="1" max="480" step="1" inputmode="numeric" aria-label="Custom duration in minutes" style="width:90px"> min</label></div>');
+    $$(".preset-card", grid).forEach(card => card.onclick = () => {
+      const id = card.dataset.preset;
+      if (id === "__review") { showTab("journal"); return; }
+      presetSel = id;
+      const val = $("#custom-min") ? $("#custom-min").value : "";
+      renderPresets();
+      if (id === "custom") { const ci = $("#custom-min"); if (ci) { ci.value = val; ci.focus(); } }
+      renderTimer();
+    });
+    const ci = $("#custom-min");
+    if (ci) ci.addEventListener("input", renderTimer);
+  }
+
+  const ARC_C = 703.7; // 2π × r112
   function renderTimer() {
     const st = TIMER.state();
     const running = !!st;
@@ -2080,12 +2378,16 @@ const UI = (function () {
     $("#btn-zen").hidden = !running;
     $("#markers-bar").hidden = !running;
     $("#sit-config").style.display = running ? "none" : "";
+    document.body.classList.toggle("running", running && st.core.phase === "running");
+    document.body.classList.toggle("timer-paused", running && st.core.phase === "paused");
     if (!running) {
       const min = selectedMinutes();
-      $("#timer-display").textContent = CORE.fmtClock(min * 60);
-      $("#timer-sub").textContent = "planned " + min + " min";
+      $("#timer-display").textContent = min === null ? "—:—" : CORE.fmtClock(min * 60);
+      $("#timer-sub").textContent = min === null ? "enter a custom length" : "planned " + min + " min";
       $("#timer-phase").textContent = "";
       $("#marker-log").textContent = "";
+      $("#arc-fill").style.strokeDashoffset = ARC_C;
+      $("#btn-start").disabled = min === null;
       setZen(false);
     } else {
       paintTimer(TIMER.snapshot(), st);
@@ -2099,11 +2401,16 @@ const UI = (function () {
       disp.textContent = String(snap.prepRemainingSec);
       $("#timer-phase").textContent = "settling in…";
       $("#timer-sub").textContent = "sit begins shortly";
+      $("#arc-fill").style.strokeDashoffset = ARC_C;
     } else {
       disp.textContent = CORE.fmtClock(snap.remainingSec);
       $("#timer-phase").textContent = snap.mode === "paused" ? "paused" : "";
       $("#timer-sub").textContent = "elapsed " + CORE.fmtClock(snap.elapsedSec) + " · planned " + CORE.fmtClock(st.core.plannedSec);
+      const progress = st.core.plannedSec > 0 ? CORE.clamp(snap.elapsedSec / st.core.plannedSec, 0, 1) : 0;
+      $("#arc-fill").style.strokeDashoffset = ARC_C * (1 - progress);
     }
+    document.body.classList.toggle("running", snap.mode === "running" || snap.mode === "prep");
+    document.body.classList.toggle("timer-paused", snap.mode === "paused");
     $("#btn-pause").textContent = snap.mode === "paused" ? "Resume" : "Pause";
   }
 
@@ -2120,7 +2427,7 @@ const UI = (function () {
     $("#btn-zen").textContent = on ? "Show screen" : "Quiet screen";
   }
 
-  return { $, $$, esc, toast, announce, modal, closeModal, confirmModal, showTab, selectedMinutes, renderTimer, paintTimer, paintMarkerLog, setZen };
+  return { $, $$, esc, toast, announce, modal, closeModal, confirmModal, showTab, selectedMinutes, renderPresets, selectPreset: id => { presetSel = id; renderPresets(); renderTimer(); }, renderTimer, paintTimer, paintMarkerLog, setZen };
 })();
 
 /* ================= REVIEW — post-session form + editing ================= */
@@ -2133,7 +2440,7 @@ const REVIEW = (function () {
     pending = Object.assign({}, partial);
     editingId = null;
     render();
-    UI.showTab("review");
+    UI.showTab("journal");
     window.scrollTo({ top: 0 });
   }
   function openManual() {
@@ -2145,7 +2452,7 @@ const REVIEW = (function () {
     pending = JSON.parse(JSON.stringify(s));
     editingId = id;
     render();
-    UI.showTab("review");
+    UI.showTab("journal");
     window.scrollTo({ top: 0 });
   }
   function close() {
@@ -2165,6 +2472,19 @@ const REVIEW = (function () {
         '<label class="check" style="min-height:auto"><input type="radio" name="rv-dominant" class="rv-dominant" value="' + h + '"' + (pending.dominantHindrance === h ? " checked" : "") + " aria-label=\"dominant\"> dom.</label>" +
         "</span></div>";
     }).join("");
+  }
+
+  function quickRow(label, field, opts, cur) {
+    return '<div class="qrow"><span class="ql">' + label + '</span><span class="row" role="group" aria-label="' + label + '">' +
+      opts.map(([v, txt]) => '<button class="chip rv-quick" data-f="' + field + '" data-v="' + v + '" aria-pressed="' + (String(cur) === v ? "true" : "false") + '">' + txt + "</button>").join("") +
+      "</span></div>";
+  }
+  function quickHindranceRow(label, hKey, p) {
+    const cur = (p.hindrances || {})[hKey] || "";
+    return '<div class="qrow"><span class="ql">' + label + '</span><span class="row" role="group" aria-label="' + label + '">' +
+      [["", "none"], ["mild", "mild"], ["moderate", "moderate"], ["strong", "strong"]].map(([v, txt]) =>
+        '<button class="chip rv-quickh" data-h="' + hKey + '" data-v="' + v + '" aria-pressed="' + (cur === v ? "true" : "false") + '">' + txt + "</button>").join("") +
+      "</span></div>";
   }
 
   function timelineRows() {
@@ -2193,9 +2513,9 @@ const REVIEW = (function () {
 
     box.innerHTML =
       '<div class="card" id="review-card">' +
-      '<div class="row between"><h2 style="margin:0">' + (editingId ? "Edit session" : "Session review") + '</h2>' +
+      '<div class="row between"><h2 style="margin:0">' + (editingId ? "Edit entry" : "After the sit") + '</h2>' +
       '<button id="rv-close" class="ghost">Close without saving</button></div>' +
-      '<p class="dim">' + (editingId ? "Editing a saved session." : "The one number that matters: your honest estimate of minutes in genuine contact with the breath. It is self-reported — there is no wrong answer.") + "</p>" +
+      '<p class="dim">' + (editingId ? "Editing a saved entry." : "Takes about 30 seconds. The one number that matters: your honest estimate of minutes in genuine contact with the breath — self-reported, no wrong answer.") + "</p>" +
       '<div class="grid3">' +
       '<div class="field"><label for="rv-date">Date</label><input type="date" id="rv-date" value="' + esc(p.date || "") + '"></div>' +
       '<div class="field"><label for="rv-start">Start time</label><input type="time" id="rv-start" value="' + esc(p.startTime || "") + '"></div>' +
@@ -2214,6 +2534,15 @@ const REVIEW = (function () {
       '<div class="row" role="group" aria-label="Estimate confidence" style="margin-top:8px"><span class="dim">confidence:</span>' +
       CORE.CONFIDENCES.map(c => '<button class="chip rv-conf" data-c="' + c + '" aria-pressed="' + (p.confidence === c ? "true" : "false") + '">' + c + "</button>").join("") +
       "</div>" +
+
+      '<h3>Quick impressions <span class="badge">optional · one tap each</span></h3>' +
+      quickRow("Attention", "stability", [["1", "mostly scattered"], ["3", "came and went"], ["5", "mostly steady"]], p.stability) +
+      quickRow("Breath clarity", "breathClarity", [["1", "faint"], ["3", "variable"], ["5", "clear"]], p.breathClarity) +
+      quickHindranceRow("Restlessness", "restlessness", p) +
+      quickHindranceRow("Drowsiness", "sloth", p) +
+      '<div class="field" style="margin-top:10px"><label for="rv-quicknote">What did you notice? (optional)</label>' +
+      '<textarea id="rv-quicknote" style="min-height:64px" placeholder="one or two honest sentences">' + esc(p.notes || "") + "</textarea></div>" +
+
       '<div id="rv-errors" style="color:var(--err);font-size:var(--fs-sm);margin-top:8px" aria-live="polite"></div>' +
       '<div class="row" style="margin-top:12px">' +
       '<button id="rv-save" class="primary big">' + (editingId ? "Save changes" : "Save session") + "</button>" +
@@ -2279,8 +2608,7 @@ const REVIEW = (function () {
       CORE.AFTER_STATES.map(a => '<option value="' + a + '"' + (p.afterStateReport === a ? " selected" : "") + ">" + a + "</option>").join("") + "</select></div>" +
       "</div></details>" +
 
-      '<details><summary>Notes & teacher review</summary><div style="margin-top:8px">' +
-      '<div class="field"><label for="rv-notes">Notes</label><textarea id="rv-notes">' + esc(p.notes || "") + "</textarea></div>" +
+      '<details><summary>Teacher review & original text</summary><div style="margin-top:8px">' +
       (p.journalText ? '<div class="field"><label>Original journal text (kept verbatim)</label><div class="card sub" style="font-size:var(--fs-sm)">' + esc(p.journalText) + "</div></div>" : "") +
       '<div class="grid2">' +
       '<div class="field"><label for="rv-review">Teacher review state</label><select id="rv-review">' +
@@ -2312,7 +2640,7 @@ const REVIEW = (function () {
     for (const f of ["energyBefore", "energyAfter", "calmBefore", "calmAfter"]) p[f] = numOrNull("#rv-" + f);
     p.afterStateReport = $("#rv-afterstate").value || null;
     p.qualities = UI.$$(".rv-quality:checked").map(el => el.value);
-    p.notes = $("#rv-notes").value;
+    p.notes = $("#rv-quicknote").value;
     p.teacherReview = $("#rv-review").value;
     p.teacherNotes = $("#rv-teachernotes").value || null;
     const nimCat = $("#rv-nim-cat").value;
@@ -2355,6 +2683,20 @@ const REVIEW = (function () {
     UI.$$(".rv-conf").forEach(b => b.onclick = () => { readForm(); pending.confidence = b.dataset.c; render(); });
     $("#rv-actual").onchange = () => { readForm(); if (CORE.isNum(pending.concMin) && pending.concMin > pending.actualMin) pending.concMin = pending.actualMin; render(); };
 
+    UI.$$(".rv-quick").forEach(b => b.onclick = () => {
+      readForm();
+      const f = b.dataset.f, v = parseInt(b.dataset.v, 10);
+      pending[f] = pending[f] === v ? null : v;   // tap again to clear
+      render();
+    });
+    UI.$$(".rv-quickh").forEach(b => b.onclick = () => {
+      readForm();
+      const h = b.dataset.h, v = b.dataset.v;
+      if (!pending.hindrances) pending.hindrances = {};
+      if (v) pending.hindrances[h] = v; else delete pending.hindrances[h];
+      if (!v && pending.dominantHindrance === h) pending.dominantHindrance = null;
+      render();
+    });
     UI.$$(".rv-hindrance").forEach(b => b.onclick = () => {
       readForm();
       const h = b.dataset.h, lvl = b.dataset.lvl;
@@ -2480,6 +2822,7 @@ const HISTORY = (function () {
         "<strong>" + esc(s.date) + "</strong>" + (s.startTime ? " · " + esc(s.startTime) : "") +
         " · " + CORE.fmtMin(s.actualMin) +
         " · contact " + (s.concMin !== null ? CORE.fmtMin(s.concMin) + " (" + r + ")" : "—") +
+        (CORE.isTestSession(s) ? '<span class="badge" style="color:var(--warn);border-color:var(--warn)">' + (s._demo ? "demo" : "test") + "</span>" : "") +
         (s.object ? '<span class="badge">' + esc(s.object) + "</span>" : "") +
         (s.entrySource ? '<span class="badge">' + esc(s.entrySource) + "</span>" : "") +
         (s.nimitta && s.nimitta.category !== "none" ? '<span class="badge gold">light report</span>' : "") +
@@ -2665,7 +3008,8 @@ const PROGRESS = (function () {
   function render() {
     const box = $("#progress-container");
     const today = STORE.todayStr();
-    const all = STORE.sessions();
+    const synthCount = STORE.sessions().filter(CORE.isTestSession).length;
+    const all = CORE.realSessions(STORE.sessions());   // demo/test entries never shape real statistics
     const sel = CORE.filterRange(all, range, today).sort((a, b) => (a.date + (a.startTime || "")) < (b.date + (b.startTime || "")) ? -1 : 1);
     const m = CORE.summaryMetrics(sel, today);
     const mAll = CORE.summaryMetrics(all, today);
@@ -2687,6 +3031,7 @@ const PROGRESS = (function () {
 
     // 30-day goal note (Gate 0)
     html += '<p class="faint" style="margin-top:8px">Gate 0 target: a 30-day unbroken streak before booking the first retreat. Current: ' + mAll.currentStreak + "/30.</p>";
+    if (synthCount) html += '<p class="faint">' + synthCount + " demo/test entries exist and are excluded from everything on this page.</p>";
 
     if (!sel.length) {
       html += '<div class="empty" style="margin-top:16px">No sessions in this range. Finish a sit and it will appear here.</div>';
@@ -3006,19 +3351,23 @@ const SETTINGS = (function () {
   }
 
   function exportJSON() {
-    // Deep copy and strip the AI key: backups are meant to be shared/stored; secrets are not.
+    // Deep copy; strip the AI key (backups get shared) and synthetic entries (never real data).
     const env = JSON.parse(JSON.stringify(STORE.env()));
     if (env.settings) delete env.settings.aiKey;
+    const before = env.sessions.length;
+    env.sessions = CORE.realSessions(env.sessions);
+    const excluded = before - env.sessions.length;
     const stamp = STORE.todayStr().replace(/-/g, "");
     download("sit-tracker-backup-" + stamp + ".json", JSON.stringify(env, null, 2));
     STORE.setSetting("lastExportAt", STORE.todayStr());
     APP.refreshBackupReminder();
     renderInfo();
-    UI.toast("Backup exported — keep a copy outside this device.");
+    UI.toast("Backup exported" + (excluded ? " (" + excluded + " demo/test entries excluded)" : "") + " — keep a copy outside this device.");
   }
   function exportCSV() {
+    const real = CORE.realSessions(STORE.sessions());
     const stamp = STORE.todayStr().replace(/-/g, "");
-    download("sit-tracker-sessions-" + stamp + ".csv", CORE.toCSV(STORE.sessions()), "text/csv");
+    download("sit-tracker-sessions-" + stamp + ".csv", CORE.toCSV(real), "text/csv");
     STORE.setSetting("lastExportAt", STORE.todayStr());
     APP.refreshBackupReminder();
     renderInfo();
@@ -3076,7 +3425,12 @@ const SETTINGS = (function () {
     renderHealth();
     const testCount = STORE.sessions().filter(CORE.isTestSession).length;
     const ts = $("#test-data-status");
-    if (ts) ts.textContent = testCount ? testCount + " synthetic test sessions are present — purge before relying on your statistics or exports." : "No test data present.";
+    if (ts) ts.textContent = testCount ? testCount + " synthetic entries present (excluded from statistics, exports, and reports)." : "No demo or test data present.";
+    const fc = $("#feedback-count");
+    if (fc) {
+      const n = STORE.getFeedback().length;
+      fc.textContent = n ? n + " feedback report" + (n > 1 ? "s" : "") + " stored locally." : "";
+    }
   }
 
   async function renderHealth() {
@@ -3149,7 +3503,7 @@ const SETTINGS = (function () {
 
     // developer: synthetic performance data
     $("#btn-seed-test").onclick = async () => {
-      const ok = await UI.confirmModal("Seed 1,000 synthetic sessions marked [TEST DATA]? They will appear in history, statistics, and any export you make until purged.", "Seed test data");
+      const ok = await UI.confirmModal("Seed 1,000 synthetic sessions marked [TEST DATA]? They appear in history (badged) but are excluded from statistics, streaks, exports, and reports. Remove them anytime with one tap.", "Seed test data");
       if (!ok) return;
       const t0 = performance.now();
       STORE.mergeImported(CORE.makeTestSessions(1000, STORE.todayStr(), STORE.nowIso()));
@@ -3185,6 +3539,160 @@ const SETTINGS = (function () {
   return { wire, renderInfo, runSelfTestsUI, exportJSON };
 })();
 
+/* ================= TODAY — home status strip ================= */
+const TODAY = (function () {
+  const { $, esc } = UI;
+
+  function isStandalone() {
+    return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+  }
+
+  function renderStatus() {
+    const el = $("#today-status");
+    if (!el) return;
+    const today = STORE.todayStr();
+    const real = CORE.realSessions(STORE.sessions());
+    const m = CORE.summaryMetrics(real, today);
+    const todays = real.filter(s => s.date === today);
+    const sortKey = s => s.date + (s.startTime || "");
+    const last = real.slice().sort((a, b) => sortKey(a) < sortKey(b) ? -1 : 1)[real.length - 1];
+    const satToday = todays.length > 0;
+    const todayMin = Math.round(todays.reduce((a, s) => a + (s.actualMin || 0), 0));
+    let pills = "";
+    pills += '<span class="pill' + (satToday ? " today-done" : "") + '">' + (satToday ? "✓ Sat " + todayMin + " min today" : "No sit yet today") + "</span>";
+    if (m.currentStreak > 0) pills += '<span class="pill">' + m.currentStreak + "-day streak</span>";
+    if (last && !satToday) pills += '<span class="pill">last sit: ' + esc(last.date) + " · " + Math.round(last.actualMin) + "′</span>";
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) pills += '<span class="pill"><span class="dot"></span>works offline</span>';
+    if (!isStandalone() && location.protocol.indexOf("http") === 0) pills += '<span class="pill"><a href="#" id="install-hint">install on phone →</a></span>';
+    el.innerHTML = '<div class="status-strip">' + pills + "</div>";
+    const hint = $("#install-hint");
+    if (hint) hint.onclick = (e) => { e.preventDefault(); UI.showTab("settings"); document.querySelector("#install-guide").scrollIntoView({ block: "center" }); };
+  }
+
+  return { renderStatus, isStandalone };
+})();
+
+/* ================= ONBOARD — first-launch introduction ================= */
+const ONBOARD = (function () {
+  const { $ } = UI;
+  const STEPS = [
+    { title: "Build a consistent meditation practice.", text: "This app helps you time sessions, record observations, and review your practice over time. Everything stays on this device — no account, no cloud." },
+    { title: "Start simply.", text: "Sit comfortably. Attend to the breath sensation near the nostrils. Count each in-and-out cycle from one to eight, then restart. That is the whole first practice." },
+    { title: "Record, do not exaggerate.", text: "After each sit, log what you directly noticed — nothing more. Traditional and scientific sources are kept separate from personal observations, and the app never certifies attainments." }
+  ];
+  let step = 0;
+
+  function saveState(patch) {
+    const cur = STORE.getSetting("onboarding", {});
+    STORE.setSetting("onboarding", Object.assign({}, cur, patch));
+  }
+
+  function maybeShow(hasActiveRecovery) {
+    const st = CORE.onboardingState(CORE.realSessions(STORE.sessions()).length, STORE.env().settings, hasActiveRecovery);
+    if (!st.show) return;
+    step = st.step;
+    render();
+    $("#onboard").hidden = false;
+  }
+
+  function finish(how) {
+    saveState({ done: true, step: 0 });
+    $("#onboard").hidden = true;
+    if (how === "start30") { UI.selectPreset("first"); UI.showTab("today"); TIMER.start(); }
+    if (how === "shorter") { UI.selectPreset("short"); UI.showTab("today"); window.scrollTo({ top: 0 }); UI.toast("Pick any practice card, then press Start."); }
+    if (how === "explore") { APP.loadDemo(); UI.showTab("journal"); } // demo entries are visible in history (Progress rightly excludes them)
+  }
+
+  function render() {
+    const s = STEPS[step];
+    $("#ob-dots").textContent = STEPS.map((_, i) => i === step ? "●" : "○").join(" ");
+    $("#ob-title").textContent = s.title;
+    $("#ob-text").textContent = s.text;
+    const last = step === STEPS.length - 1;
+    $("#ob-actions").innerHTML = last
+      ? '<button class="primary big" id="ob-start30">Start my first 30-minute sit</button>' +
+        '<button id="ob-shorter">Use a shorter practice</button>' +
+        '<button id="ob-explore">Explore first (loads demo data)</button>' +
+        '<button class="ghost" id="ob-skip">Skip</button>'
+      : '<button class="primary big" id="ob-next">Continue</button>' +
+        (step > 0 ? '<button id="ob-back">Back</button>' : "") +
+        '<button class="ghost" id="ob-skip">Skip</button>';
+    const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
+    on("#ob-next", () => { step++; saveState({ step }); render(); });
+    on("#ob-back", () => { step--; saveState({ step }); render(); });
+    on("#ob-skip", () => finish("skip"));
+    on("#ob-start30", () => finish("start30"));
+    on("#ob-shorter", () => finish("shorter"));
+    on("#ob-explore", () => finish("explore"));
+    $("#ob-actions button").focus();
+  }
+
+  return { maybeShow };
+})();
+
+/* ================= FEEDBACK — local-only family-beta reports ================= */
+const FEEDBACK = (function () {
+  const { $, esc } = UI;
+
+  function deviceLine() {
+    return (navigator.platform || "?") + " · " + (navigator.userAgent.match(/(iPhone|iPad|Android|Windows|Mac)[^;)]*/) || ["unknown"])[0] +
+      " · " + (TODAY.isStandalone() ? "installed app" : "browser tab") + " · " + window.innerWidth + "×" + window.innerHeight;
+  }
+
+  function open() {
+    const dlg = UI.modal(
+      "<h2>Send feedback</h2>" +
+      '<p class="dim">Local only — this builds a text report you can copy, download, or email yourself. Nothing is sent automatically.</p>' +
+      '<div class="field"><label for="fb-trying">What were you trying to do?</label><input type="text" id="fb-trying"></div>' +
+      '<div class="field"><label for="fb-confused">What was confusing?</label><textarea id="fb-confused" style="min-height:60px"></textarea></div>' +
+      '<div class="field"><label for="fb-broken">What didn\'t work?</label><textarea id="fb-broken" style="min-height:60px"></textarea></div>' +
+      '<div class="field"><label for="fb-impression">General impression?</label><input type="text" id="fb-impression"></div>' +
+      '<p class="faint">device (auto): ' + esc(deviceLine()) + "</p>" +
+      '<div class="row" style="justify-content:flex-end"><button id="fb-cancel">Cancel</button><button id="fb-make" class="primary">Create report</button></div>'
+    );
+    $("#fb-cancel").onclick = () => dlg.close();
+    $("#fb-make").onclick = () => {
+      const entry = {
+        trying: $("#fb-trying").value, confused: $("#fb-confused").value,
+        broken: $("#fb-broken").value, impression: $("#fb-impression").value
+      };
+      const text = CORE.formatFeedback(entry, {
+        date: STORE.todayStr(), device: deviceLine(),
+        sessions: CORE.realSessions(STORE.sessions()).length, appVersion: CORE.APP_VERSION
+      });
+      STORE.addFeedback(entry, text);
+      showReport(text);
+    };
+  }
+
+  function showReport(text) {
+    const dlg = UI.modal(
+      "<h2>Feedback report</h2>" +
+      '<textarea id="fb-out" style="min-height:200px;font-size:var(--fs-xs)" readonly>' + UI.esc(text) + "</textarea>" +
+      '<div class="row" style="margin-top:10px;justify-content:flex-end">' +
+      '<button id="fb-copy">Copy</button><button id="fb-dl">Download .txt</button>' +
+      '<button id="fb-mail">Open email draft</button><button id="fb-done" class="primary">Done</button></div>'
+    );
+    $("#fb-copy").onclick = async () => {
+      try { await navigator.clipboard.writeText(text); UI.toast("Copied."); }
+      catch (e) { $("#fb-out").select(); UI.toast("Select and copy manually (clipboard blocked)."); }
+    };
+    $("#fb-dl").onclick = () => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+      a.download = "sit-tracker-feedback-" + STORE.todayStr() + ".txt";
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+    };
+    $("#fb-mail").onclick = () => {
+      location.href = "mailto:?subject=" + encodeURIComponent("Sit Tracker beta feedback") + "&body=" + encodeURIComponent(text);
+    };
+    $("#fb-done").onclick = () => { dlg.close(); SETTINGS.renderInfo(); };
+  }
+
+  return { open };
+})();
+
 /* ================= APP — platform glue (backup reminder, PWA lifecycle) ================= */
 const APP = (function () {
   const { $ } = UI;
@@ -3193,7 +3701,7 @@ const APP = (function () {
     const el = $("#backup-reminder");
     if (!el) return;
     if (TIMER.state()) { el.hidden = true; return; } // never during a sit
-    const bs = CORE.backupStatus(STORE.sessions(), STORE.env().settings, STORE.todayStr());
+    const bs = CORE.backupStatus(CORE.realSessions(STORE.sessions()), STORE.env().settings, STORE.todayStr());
     el.hidden = !bs.remind;
     if (bs.remind) $("#backup-reminder-text").textContent = bs.reason + " A JSON export takes one tap.";
   }
@@ -3238,7 +3746,55 @@ const APP = (function () {
     }).catch(() => { /* registration failure must never break the app */ });
   }
 
-  return { refreshBackupReminder, wireBackupReminder, requestPersistence, registerSW };
+  function refreshDemoBanner() {
+    const el = $("#demo-banner");
+    if (!el) return;
+    const n = STORE.sessions().filter(CORE.isTestSession).length;
+    el.hidden = n === 0 || !!TIMER.state();
+  }
+
+  function loadDemo() {
+    if (STORE.sessions().some(s => s._demo)) { UI.toast("Demo data is already loaded."); refreshDemoBanner(); return; }
+    STORE.mergeImported(CORE.makeDemoSessions(STORE.todayStr(), STORE.nowIso()));
+    UI.toast("Demo data loaded — marked, isolated from your real statistics, removable in one tap.");
+    refreshDemoBanner();
+    HISTORY.render(); PROGRESS.render(); TODAY.renderStatus();
+  }
+
+  function removeDemo() {
+    const n = STORE.sessions().filter(CORE.isTestSession).length;
+    if (!n) { UI.toast("No demo or test data present."); return; }
+    STORE.purgeTestSessions();
+    UI.toast("Removed " + n + " demo/test entries. Real entries untouched.");
+    refreshDemoBanner();
+    HISTORY.render(); PROGRESS.render(); TODAY.renderStatus(); SETTINGS.renderInfo();
+  }
+
+  function renderInstallGuide() {
+    const el = $("#install-guide");
+    if (!el) return;
+    const ua = navigator.userAgent;
+    const isiOS = /iPad|iPhone|iPod/.test(ua);
+    const isAndroid = /Android/.test(ua);
+    const standalone = TODAY.isStandalone();
+    const onFile = location.protocol === "file:";
+    let steps;
+    if (standalone) steps = "<p class='conf-high'>✓ You are running the installed app.</p>";
+    else if (onFile) steps = "<p class='dim'>Installing needs the app served over http(s). On a computer on the same network: <code>python -m http.server 8080</code> in this folder, then open <code>http://&lt;computer-ip&gt;:8080/sit-tracker-v2.html</code> on the phone and follow the steps below. Opening the file directly keeps working without installing.</p>";
+    else if (isiOS) steps = "<ol style='margin-left:20px'><li>Open this page in <strong>Safari</strong></li><li>Tap the Share button</li><li>Choose <strong>Add to Home Screen</strong></li><li>Launch from the new icon</li></ol><p class='faint'>iOS note: the installed app starts with its own empty storage — use Export JSON here and Import inside the installed app to move your entries once. iOS cannot show an automatic install button.</p>";
+    else if (isAndroid) steps = "<ol style='margin-left:20px'><li>Open this page in <strong>Chrome</strong></li><li>Menu (⋮) → <strong>Install app</strong> (or tap the install prompt)</li><li>Launch from the icon</li></ol>";
+    else steps = "<p class='dim'>Desktop Chrome/Edge: click the install icon in the address bar. On a phone, open this same address in the phone's browser.</p>";
+    el.innerHTML = steps +
+      "<p><strong>After installing, verify offline works:</strong></p>" +
+      "<ol style='margin-left:20px;font-size:var(--fs-sm)'>" +
+      "<li>Open the installed app once while online</li>" +
+      "<li>Turn on airplane mode</li>" +
+      "<li>Reopen the app — it should load</li>" +
+      "<li>Open an old entry, then create a test entry</li>" +
+      "</ol>";
+  }
+
+  return { refreshBackupReminder, wireBackupReminder, requestPersistence, registerSW, refreshDemoBanner, loadDemo, removeDemo, renderInstallGuide };
 })();
 
 /* ================= BOOT ================= */
@@ -3248,21 +3804,12 @@ const APP = (function () {
   if (loaded.notes.length) console.info("[sit-tracker] migration:", loaded.notes.join(" | "));
 
   // tabs
-  ["sit", "review", "progress", "map", "journal", "settings"].forEach(name => {
+  ["today", "journal", "progress", "learn", "settings"].forEach(name => {
     UI.$("#tabbtn-" + name).onclick = () => UI.showTab(name);
   });
 
-  // sit tab wiring
-  UI.$$("#preset-row .chip").forEach(b => b.onclick = () => {
-    UI.$$("#preset-row .chip").forEach(x => x.setAttribute("aria-pressed", "false"));
-    b.setAttribute("aria-pressed", "true");
-    UI.$("#custom-min").value = "";
-    UI.renderTimer();
-  });
-  UI.$("#custom-min").addEventListener("input", () => {
-    if (UI.$("#custom-min").value) UI.$$("#preset-row .chip").forEach(x => x.setAttribute("aria-pressed", "false"));
-    UI.renderTimer();
-  });
+  // today tab wiring
+  UI.renderPresets();
   UI.$("#sit-object").addEventListener("change", () => {
     UI.$("#sit-object-custom").hidden = UI.$("#sit-object").value !== "custom";
   });
@@ -3281,7 +3828,8 @@ const APP = (function () {
     if (e.code !== "Space" || e.repeat) return;
     const tag = (e.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select" || tag === "button") return;
-    if (!UI.$("#tab-sit").classList.contains("active")) return;
+    if (!UI.$("#tab-today").classList.contains("active")) return;
+    if (!UI.$("#onboard").hidden) return;
     e.preventDefault();
     const snap = TIMER.snapshot();
     if (!snap) TIMER.start();
@@ -3304,9 +3852,24 @@ const APP = (function () {
   APP.refreshBackupReminder();
   APP.requestPersistence();
   APP.registerSW();
+  APP.refreshDemoBanner();
+  APP.renderInstallGuide();
+  TODAY.renderStatus();
+
+  // family beta wiring
+  UI.$("#beta-chip").onclick = () => FEEDBACK.open();
+  UI.$("#btn-feedback").onclick = () => FEEDBACK.open();
+  UI.$("#btn-try-demo").onclick = () => APP.loadDemo();
+  UI.$("#btn-remove-demo").onclick = () => APP.removeDemo();
+  UI.$("#btn-remove-demo-2").onclick = () => APP.removeDemo();
+  UI.$("#app-version-line").textContent = "Version " + CORE.APP_VERSION + " · schema v" + CORE.SCHEMA_VERSION + ".";
+
+  // first-launch onboarding — never over an active-sit recovery
+  const hasRecovery = !!TIMER.state() || !UI.$("#resume-banner").hidden;
+  ONBOARD.maybeShow(hasRecovery);
 
   // expose for automated verification
-  window.__sitTracker = { CORE, STORE, TIMER, AI, REVIEW, APP };
+  window.__sitTracker = { CORE, STORE, TIMER, AI, REVIEW, APP, ONBOARD, TODAY };
 
   if (new URLSearchParams(location.search).get("selftest") === "1") {
     UI.showTab("settings");
