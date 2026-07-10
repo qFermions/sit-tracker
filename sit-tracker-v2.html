@@ -1552,6 +1552,34 @@ const CORE = (function () {
     junkShape: { unexpected: true }
   };
 
+  // ---------- teacher workflow (pure rules) ----------
+  // Flagging upgrades none → flagged and never downgrades a later state.
+  // "reviewed" can only ever be chosen by the user by hand, never by code.
+  function nextReviewStateOnFlag(current) {
+    return (current === "discussed" || current === "reviewed") ? current : "flagged";
+  }
+
+  // Neutral summary of unusual-experience reports for the teacher report.
+  // Descriptive counts and dates only — no interpretation, no attainment language.
+  function unusualExperienceSummary(sessions) {
+    const nim = sessions.filter(s => s.nimitta && s.nimitta.category && s.nimitta.category !== "none");
+    const UNUSUAL_QUALITIES = ["brightness", "reducedBody", "reducedSpeech", "timeDistortion"];
+    const qual = sessions.filter(s => (s.qualities || []).some(q => UNUSUAL_QUALITIES.indexOf(q) >= 0));
+    const lines = [];
+    if (nim.length) {
+      const byCat = {};
+      for (const s of nim) byCat[s.nimitta.category] = (byCat[s.nimitta.category] || 0) + 1;
+      lines.push(nim.length + " session" + (nim.length === 1 ? "" : "s") + " included a light or image report (" +
+        Object.keys(byCat).map(c => NIMITTA_LABELS[c] + " ×" + byCat[c]).join(", ") + "): " +
+        nim.map(s => s.date).join(", ") + ".");
+    }
+    if (qual.length) {
+      lines.push(qual.length + " session" + (qual.length === 1 ? "" : "s") + " reported qualities such as brightness, reduced body awareness, reduced inner speech, or time distortion: " +
+        qual.map(s => s.date).join(", ") + ".");
+    }
+    return { count: nim.length + qual.length, lines };
+  }
+
   // ---------- backup reminder (calm, dismissible; pure decision logic) ----------
   // settings: lastExportAt 'YYYY-MM-DD'|null, backupSnoozeUntil 'YYYY-MM-DD'|null
   function backupStatus(sessions, settings, todayStr) {
@@ -2123,6 +2151,24 @@ const CORE = (function () {
     t("provider http summary", providerErrorSummary(new Error("provider returned HTTP 429")).indexOf("HTTP 429") > 0);
     t("provider generic summary mentions local parser", providerErrorSummary(new Error("weird")).indexOf("local parser") > 0);
 
+    // --- teacher workflow rules
+    t("flag from none", nextReviewStateOnFlag("none") === "flagged");
+    t("flag idempotent", nextReviewStateOnFlag("flagged") === "flagged");
+    t("flag never downgrades discussed", nextReviewStateOnFlag("discussed") === "discussed");
+    t("flag never downgrades reviewed", nextReviewStateOnFlag("reviewed") === "reviewed");
+    t("code never upgrades to reviewed", ["none", "flagged", "discussed"].every(s => nextReviewStateOnFlag(s) !== "reviewed"));
+    const unus = unusualExperienceSummary([
+      mk("2026-07-01", { nimitta: { category: "brief" } }),
+      mk("2026-07-02", { nimitta: { category: "brief" } }),
+      mk("2026-07-03", { qualities: ["timeDistortion"] }),
+      mk("2026-07-04", { nimitta: { category: "none" } }),
+      mk("2026-07-05", {})
+    ]);
+    t("unusual counts nimitta + qualities", unus.count === 3 && unus.lines.length === 2);
+    t("unusual lists dates", unus.lines[0].indexOf("2026-07-01") > 0 && unus.lines[1].indexOf("2026-07-03") > 0);
+    t("unusual neutral wording", unus.lines.every(l => !/attain|jhana|certif|prove/i.test(l)));
+    t("unusual empty when nothing reported", unusualExperienceSummary([mk("2026-07-05", {})]).lines.length === 0);
+
     // --- backup reminder logic
     const mkN = (count) => { const a = []; for (let i = 0; i < count; i++) a.push(mk(addDays(TODAY, -i))); return a; };
     t("backup: silent under 10 sessions", backupStatus(mkN(9), {}, TODAY).remind === false);
@@ -2229,6 +2275,7 @@ const CORE = (function () {
     parseJournal, validateDraft, draftToSession, parseStartTime, isNegated,
     buildProviderRequest, extractProviderText, parseProviderResponse, PROVIDER_INSTRUCTION,
     providerErrorSummary, MOCK_PROVIDER_RESPONSES,
+    nextReviewStateOnFlag, unusualExperienceSummary,
     runSelfTests
   };
 })();
@@ -3318,10 +3365,12 @@ const HISTORY = (function () {
       '<table class="kv">' + rows.join("") + "</table>" +
       '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
       '<button id="sd-close">Close</button>' +
+      '<button id="sd-flag">' + ((s.teacherReview || "none") === "none" ? "Flag for teacher…" : "Teacher note…") + "</button>" +
       '<button id="sd-edit" class="primary">Edit</button>' +
       '<button id="sd-delete" class="danger">Delete…</button></div>'
     );
     UI.$("#sd-close").onclick = () => dlg.close();
+    UI.$("#sd-flag").onclick = () => { dlg.close(); flagDialog(id); };
     UI.$("#sd-edit").onclick = () => { dlg.close(); REVIEW.edit(id); };
     UI.$("#sd-delete").onclick = async () => {
       dlg.close();
@@ -3334,41 +3383,132 @@ const HISTORY = (function () {
     };
   }
 
-  // Printable summary for a human teacher: last N days, plain language, no dashboards.
-  function teacherReport(days) {
-    days = days || 30;
+  // Flag a session for the teacher with an optional private note.
+  // State only ever upgrades none → flagged; discussed/reviewed are untouched.
+  function flagDialog(id) {
+    const s = STORE.getSession(id);
+    if (!s) return;
+    const cur = s.teacherReview || "none";
+    const dlg = UI.modal(
+      "<h2>" + (cur === "none" ? "Flag for teacher" : "Teacher note") + "</h2>" +
+      '<p class="dim">' + (cur === "none"
+        ? "Marks this session to bring up with your teacher. It appears in the flagged appendix of the printable report."
+        : "This session is already " + esc(CORE.REVIEW_LABELS[cur].toLowerCase()) + " — the note is updated without changing that.") + "</p>" +
+      '<div class="field"><label for="fl-note">Private note (what to ask or mention)</label>' +
+      '<textarea id="fl-note" style="min-height:70px">' + esc(s.teacherNotes || "") + "</textarea></div>" +
+      '<div class="row" style="justify-content:flex-end"><button id="fl-cancel">Cancel</button>' +
+      '<button id="fl-save" class="primary">' + (cur === "none" ? "Flag session" : "Save note") + "</button></div>"
+    );
+    UI.$("#fl-cancel").onclick = () => dlg.close();
+    UI.$("#fl-save").onclick = () => {
+      const note = UI.$("#fl-note").value.trim();
+      STORE.updateSession(id, Object.assign({}, s, {
+        teacherReview: CORE.nextReviewStateOnFlag(cur),
+        teacherNotes: note || null
+      }));
+      dlg.close();
+      UI.toast(cur === "none" ? "Flagged for teacher." : "Note saved.");
+      render();
+    };
+  }
+
+  // Printable summary for a human teacher: plain language, no dashboards.
+  // opts: {from, to, includeNotes}
+  function teacherReport(opts) {
     const today = STORE.todayStr();
-    const from = CORE.addDays(today, -(days - 1));
-    const sel = STORE.sessions().filter(s => s.date >= from && s.date <= today && !CORE.isTestSession(s))
+    const o = opts || {};
+    const from = o.from || CORE.addDays(today, -29);
+    const to = o.to || today;
+    const includeNotes = o.includeNotes !== false;
+    const sel = STORE.sessions().filter(s => s.date >= from && s.date <= to && !CORE.isTestSession(s))
       .sort((a, b) => (a.date + (a.startTime || "")) < (b.date + (b.startTime || "")) ? -1 : 1);
     const m = CORE.summaryMetrics(sel, today);
     const f = v => v === null ? "—" : v;
     const rows = sel.map(s =>
-      "<tr><td>" + esc(s.date) + (s.startTime ? " " + esc(s.startTime) : "") + "</td>" +
+      "<tr><td>" + esc(s.date) + (s.startTime ? " " + esc(s.startTime) : "") + ((s.teacherReview || "none") === "flagged" ? " ⚑" : "") + "</td>" +
       "<td>" + f(s.actualMin) + "</td>" +
       "<td>" + (s.concMin !== null ? s.concMin + (s.confidence ? " (" + s.confidence + ")" : "") : "—") + "</td>" +
       "<td>" + f(s.settleMin) + "</td>" +
       "<td>" + (s.dominantHindrance ? esc(CORE.HINDRANCE_LABELS[s.dominantHindrance]) : Object.keys(s.hindrances || {}).filter(k => s.hindrances[k]).map(k => esc(CORE.HINDRANCE_LABELS[k])).join(", ") || "—") + "</td>" +
       "<td>" + (s.nimitta ? esc(CORE.NIMITTA_LABELS[s.nimitta.category]) : "—") + "</td>" +
-      "<td>" + esc((s.notes || "").slice(0, 120)) + "</td></tr>"
+      (includeNotes ? "<td>" + esc((s.notes || "").slice(0, 120)) + "</td>" : "") + "</tr>"
     ).join("");
+    const cols = includeNotes ? 7 : 6;
+    const flagged = sel.filter(s => (s.teacherReview || "none") === "flagged");
+    const unusual = CORE.unusualExperienceSummary(sel);
     UI.$("#print-report").innerHTML =
-      "<h1>Practice record — last " + days + " days</h1>" +
+      "<h1>Practice record — " + esc(from) + " to " + esc(to) + "</h1>" +
       "<p>Prepared " + esc(today) + " for teacher review. All values are the practitioner's own reports.</p>" +
       "<h2>Summary</h2>" +
       "<p>" + m.sessions + " sessions · " + f(m.totalHours) + " h total · average " + f(m.avgDuration) + " min/session · " +
       "self-estimated contact average " + f(m.avgConc) + " min (" + m.concReportedCount + " sessions reported) · " +
       "average settling " + f(m.avgSettle) + " min · sat " + m.daysSatLast30 + " of the last 30 days.</p>" +
+      (unusual.lines.length ?
+        "<h2>Unusual-experience reports</h2>" +
+        unusual.lines.map(l => "<p>" + esc(l) + "</p>").join("") +
+        "<p>These are the practitioner's own neutral observations, recorded for discussion. They are not treated as signs of attainment.</p>"
+        : "") +
       "<h2>Sessions</h2>" +
-      "<table><tr><th>Date</th><th>Min</th><th>Contact est.</th><th>Settle</th><th>Hindrances</th><th>Light/image report</th><th>Notes</th></tr>" +
-      (rows || "<tr><td colspan='7'>No sessions in this range.</td></tr>") + "</table>" +
+      "<table><tr><th>Date</th><th>Min</th><th>Contact est.</th><th>Settle</th><th>Hindrances</th><th>Light/image report</th>" + (includeNotes ? "<th>Notes</th>" : "") + "</tr>" +
+      (rows || "<tr><td colspan='" + cols + "'>No sessions in this range.</td></tr>") + "</table>" +
+      (flagged.length ?
+        "<h2>Flagged for discussion (" + flagged.length + ")</h2>" +
+        flagged.map(s =>
+          "<p><strong>" + esc(s.date) + (s.startTime ? " " + esc(s.startTime) : "") + "</strong> — " + f(s.actualMin) + " min" +
+          (s.concMin !== null ? ", contact est. " + s.concMin + " min" : "") +
+          (s.teacherNotes ? "<br>Question / note: " + esc(s.teacherNotes) : "") +
+          (includeNotes && s.notes ? "<br>Session notes: " + esc(s.notes.slice(0, 240)) : "") + "</p>"
+        ).join("")
+        : "") +
       "<p class='foot'>Generated by Sit Tracker, a private local journal. Nothing in this record is verified or certified by software; " +
       "concentration estimates are subjective self-reports and light/image entries are neutral observations for discussion.</p>";
     window.print();
   }
 
+  // Small options dialog: range (30/90/custom) + notes column toggle.
+  function reportDialog() {
+    const today = STORE.todayStr();
+    const dlg = UI.modal(
+      "<h2>Teacher report</h2>" +
+      '<p class="dim">Prints a plain-language record for a human teacher. Demo/test entries are always excluded.</p>' +
+      '<div class="row" role="group" aria-label="Report range">' +
+      '<button class="chip" id="tr-30" aria-pressed="true">Last 30 days</button>' +
+      '<button class="chip" id="tr-90" aria-pressed="false">Last 90 days</button>' +
+      '<button class="chip" id="tr-custom" aria-pressed="false">Custom…</button></div>' +
+      '<div class="grid3" id="tr-range" hidden style="margin-top:8px">' +
+      '<div class="field"><label for="tr-from">From</label><input type="date" id="tr-from" value="' + CORE.addDays(today, -29) + '"></div>' +
+      '<div class="field"><label for="tr-to">To</label><input type="date" id="tr-to" value="' + today + '"></div></div>' +
+      '<label class="check" style="margin-top:8px"><input type="checkbox" id="tr-notes" checked> Include the notes column</label>' +
+      '<div class="row" style="justify-content:flex-end;margin-top:8px"><button id="tr-cancel">Cancel</button>' +
+      '<button id="tr-print" class="primary">Print report</button></div>'
+    );
+    let mode = "30";
+    const setMode = m => {
+      mode = m;
+      for (const id of ["tr-30", "tr-90", "tr-custom"]) UI.$("#" + id).setAttribute("aria-pressed", String(("tr-" + mode) === id));
+      UI.$("#tr-range").hidden = mode !== "custom";
+    };
+    UI.$("#tr-30").onclick = () => setMode("30");
+    UI.$("#tr-90").onclick = () => setMode("90");
+    UI.$("#tr-custom").onclick = () => setMode("custom");
+    UI.$("#tr-cancel").onclick = () => dlg.close();
+    UI.$("#tr-print").onclick = () => {
+      const today2 = STORE.todayStr();
+      let from = CORE.addDays(today2, -29), to = today2;
+      if (mode === "90") from = CORE.addDays(today2, -89);
+      if (mode === "custom") {
+        from = UI.$("#tr-from").value || from;
+        to = UI.$("#tr-to").value || to;
+        if (from > to) { const tmp = from; from = to; to = tmp; }
+      }
+      const includeNotes = UI.$("#tr-notes").checked;
+      dlg.close();
+      teacherReport({ from, to, includeNotes });
+    };
+  }
+
   function initFilters() {
-    UI.$("#btn-teacher-report").onclick = () => teacherReport(30);
+    UI.$("#btn-teacher-report").onclick = reportDialog;
     UI.$("#hist-filter-object").innerHTML = '<option value="">Any object</option>' + CORE.OBJECTS.map(o => '<option value="' + o + '">' + o + "</option>").join("");
     UI.$("#hist-filter-hindrance").innerHTML = '<option value="">Any hindrance</option>' + CORE.HINDRANCES.map(h => '<option value="' + h + '">' + esc(CORE.HINDRANCE_LABELS[h]) + "</option>").join("");
     for (const id of ["hist-search", "hist-filter-object", "hist-filter-hindrance", "hist-filter-nimitta", "hist-filter-source", "hist-filter-review"]) {
@@ -3376,7 +3516,7 @@ const HISTORY = (function () {
     }
   }
 
-  return { render, initFilters, detail, teacherReport };
+  return { render, initFilters, detail, teacherReport, reportDialog, flagDialog };
 })();
 
 /* ================= PROGRESS — metrics, charts, insights ================= */
