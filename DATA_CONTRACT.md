@@ -1,4 +1,4 @@
-# DATA_CONTRACT — persisted data, schema v4
+# DATA_CONTRACT — persisted data, schema v5
 
 This is the authoritative contract for any future client (iOS wrapper, sync tool).
 Stored names are permanent; changes require a `schemaVersion` bump + migration + tests.
@@ -6,7 +6,7 @@ Stored names are permanent; changes require a `schemaVersion` bump + migration +
 ## Envelope — localStorage key `jhanaTracker.v2`
 | Field | Type | Semantics |
 |---|---|---|
-| schemaVersion | int (4) | current schema; see version history below |
+| schemaVersion | int (5) | current schema; see version history below |
 | sessions | Session[] | append-mostly log; union-merge by `id` on import |
 | feedback | {at, entry, text}[] | local-only family-beta feedback reports (v4) |
 | settings | object | scalar preferences, last-write-wins (see Settings) |
@@ -43,6 +43,7 @@ Stored names are permanent; changes require a `schemaVersion` bump + migration +
 | timeline | Segment[]\|null | yes | `{kind, startMin, endMin}`, kind ∈ wandering, intermittent, mostly, continuous, dull, agitated, uncertain; non-overlapping, within duration |
 | timelineDerivedMin | number | yes | contact estimate derived from timeline weights (documented convention: 1/.75/.35/0) |
 | manualOverride | bool | no | true when saved concMin differs >0.5 from timelineDerivedMin |
+| timelineSource | 'manual'\|'markers'\|null | yes | provenance (v5): 'markers' = suggested from in-sit taps and left unedited; 'manual' = hand-entered or edited; null = no timeline |
 | markers | {atMin, kind}[]\|null | yes | live one-tap markers; kind ∈ steady, wandering, returned, dull, agitated, notable |
 | notes | string | no (may be '') | user notes |
 | journalText | string | yes | verbatim original journal text (AI-drafted sessions) |
@@ -77,9 +78,11 @@ timestamps, never stored.
   Migrated once into a fresh envelope; original keys never touched.
 - **v2**: envelope without entrySource / teacherReview / afterStateReport / markers / teacherNotes.
 - **v3** (2026-07-09): adds those five fields; unknown entrySource stays null.
-- **v4** (current, 2026-07-09 beta run): adds session `stability` + `breathClarity` (null = not
+- **v4** (2026-07-09 beta run): adds session `stability` + `breathClarity` (null = not
   reported), envelope `feedback[]`, settings `onboarding`. JSON exports exclude synthetic
   entries and the AI key.
+- **v5** (current, 2026-07-10 depth run): adds session `timelineSource` provenance;
+  migration marks every pre-v5 timeline `'manual'` (they were all hand-entered), else null.
 
 ## Sync contract (two devices, no accounts)
 Transport = the JSON export file (user's own cloud folder). Merge = union by session `id` +

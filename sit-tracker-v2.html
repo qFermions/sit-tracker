@@ -476,7 +476,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
 /*CORE-START*/
 /* Pure logic. No DOM, no localStorage, no fetch side-effects. Extractable and runnable under Node. */
 const CORE = (function () {
-  const SCHEMA_VERSION = 4;
+  const SCHEMA_VERSION = 5;
   const APP_VERSION = "4.0.0";
   const OBJECTS = ["nostril", "upperlip", "abdomen", "wholebody", "custom"];
   const HINDRANCES = ["sensualDesire", "illWill", "sloth", "restlessness", "doubt"];
@@ -557,6 +557,7 @@ const CORE = (function () {
       qualities: [],
       nimitta: null,
       timeline: null, timelineDerivedMin: null, manualOverride: false,
+      timelineSource: null,   // null · "manual" (hand-entered) · "markers" (suggested from in-sit taps)
       markers: null,
       notes: "", journalText: null,
       entrySource: null, teacherReview: "none", teacherNotes: null,
@@ -605,6 +606,7 @@ const CORE = (function () {
       const tv = validateTimeline(s.timeline, s.actualMin);
       if (!tv.ok) errors.push.apply(errors, tv.errors);
     }
+    if (s.timelineSource !== null && s.timelineSource !== undefined && ["manual", "markers"].indexOf(s.timelineSource) < 0) errors.push("invalid timelineSource");
     for (const scale of ["energyBefore", "energyAfter", "calmBefore", "calmAfter", "stability", "breathClarity"]) {
       const v = s[scale];
       if (v !== null && v !== undefined && (!isNum(v) || v < 1 || v > 5)) errors.push("invalid " + scale + " (1-5)");
@@ -663,6 +665,43 @@ const CORE = (function () {
       }
     }
     return { concMin: round1(conc), longestSteadyMin: round1(longest) };
+  }
+
+  // ---------- timeline suggested from in-sit markers ----------
+  // Convention, not a measurement: each state marker sets the state from its
+  // timestamp until the next state marker or the end of the sit.
+  //   steady → mostly steady ("continuous" would overclaim a self-noticed state)
+  //   wandering → wandering · returned → intermittent contact
+  //   dull → dull · agitated → agitated · notable = event only, never a state
+  // The span before the first marker is "wandering" when that marker is
+  // wandering/returned (noticing wandering means it was already under way),
+  // otherwise "uncertain". Same-minute taps: the last tap wins going forward.
+  const MARKER_STATE = { steady: "mostly", wandering: "wandering", returned: "intermittent", dull: "dull", agitated: "agitated" };
+  function timelineFromMarkers(markers, actualMin) {
+    if (!Array.isArray(markers) || !isNum(actualMin) || actualMin <= 0) return null;
+    const pts = markers
+      .filter(m => m && MARKER_STATE[m.kind] !== undefined && isNum(m.atMin))
+      .map(m => ({ at: round1(clamp(m.atMin, 0, actualMin)), kind: m.kind }))
+      .sort((a, b) => a.at - b.at);          // stable sort: same-minute taps keep tap order
+    if (!pts.length) return null;
+    const segs = [];
+    if (pts[0].at > 0) {
+      segs.push({
+        kind: (pts[0].kind === "wandering" || pts[0].kind === "returned") ? "wandering" : "uncertain",
+        startMin: 0, endMin: pts[0].at
+      });
+    }
+    for (let i = 0; i < pts.length; i++) {
+      const end = i + 1 < pts.length ? pts[i + 1].at : actualMin;
+      if (end > pts[i].at) segs.push({ kind: MARKER_STATE[pts[i].kind], startMin: pts[i].at, endMin: end });
+    }
+    const merged = [];
+    for (const s of segs) {
+      const prev = merged[merged.length - 1];
+      if (prev && prev.kind === s.kind && Math.abs(prev.endMin - s.startMin) < 0.001) prev.endMin = s.endMin;
+      else merged.push(s);
+    }
+    return merged.length ? merged : null;
   }
 
   // ---------- timer math (timestamp-based; survives refresh & tab sleep) ----------
@@ -920,7 +959,8 @@ const CORE = (function () {
   // ---------- migration ----------
   // Envelope: {schemaVersion, sessions, settings, map, savedAt}
   // v1 = legacy loose keys (janSits / janGates), v2 = envelope without entrySource/teacherReview/afterStateReport,
-  // v3 = + those fields, v4 = current (+ stability/breathClarity, envelope feedback[]).
+  // v3 = + those fields, v4 = + stability/breathClarity + envelope feedback[],
+  // v5 = current (+ timelineSource provenance; pre-v5 timelines were hand-entered).
   function migrate(rawEnvelope, legacy, nowIso, todayStr) {
     const notes = [];
     let env = rawEnvelope;
@@ -962,6 +1002,8 @@ const CORE = (function () {
         // v3 → v4: quick-log scales, unreported stays null
         if (up.stability === undefined) up.stability = null;
         if (up.breathClarity === undefined) up.breathClarity = null;
+        // v4 → v5: timeline provenance — every pre-v5 timeline was hand-entered
+        if (up.timelineSource === undefined) up.timelineSource = (Array.isArray(up.timeline) && up.timeline.length ? "manual" : null);
         up.v = SCHEMA_VERSION;
         return up;
       });
@@ -1477,6 +1519,32 @@ const CORE = (function () {
     t("timeline longest steady breaks on gap", dv2.longestSteadyMin === 8);
     t("timeline conc across gap", dv2.concMin === 13);
 
+    // --- timeline suggested from in-sit markers
+    t("markers: null in null out", timelineFromMarkers(null, 30) === null);
+    t("markers: empty gives null", timelineFromMarkers([], 30) === null);
+    t("markers: notable-only gives null", timelineFromMarkers([{ atMin: 5, kind: "notable" }], 30) === null);
+    t("markers: unknown kind filtered to null", timelineFromMarkers([{ atMin: 5, kind: "bliss" }], 30) === null);
+    t("markers: invalid duration gives null", timelineFromMarkers([{ atMin: 5, kind: "steady" }], null) === null && timelineFromMarkers([{ atMin: 5, kind: "steady" }], 0) === null);
+    t("markers: single steady = uncertain then mostly", JSON.stringify(timelineFromMarkers([{ atMin: 10, kind: "steady" }], 30)) === JSON.stringify([{ kind: "uncertain", startMin: 0, endMin: 10 }, { kind: "mostly", startMin: 10, endMin: 30 }]));
+    t("markers: first wandering backfills and merges", JSON.stringify(timelineFromMarkers([{ atMin: 10, kind: "wandering" }], 30)) === JSON.stringify([{ kind: "wandering", startMin: 0, endMin: 30 }]));
+    t("markers: first returned implies prior wandering", JSON.stringify(timelineFromMarkers([{ atMin: 5, kind: "returned" }], 30)) === JSON.stringify([{ kind: "wandering", startMin: 0, endMin: 5 }, { kind: "intermittent", startMin: 5, endMin: 30 }]));
+    const tfmOoo = timelineFromMarkers([{ atMin: 20, kind: "steady" }, { atMin: 5, kind: "wandering" }, { atMin: 12, kind: "returned" }, { atMin: 14, kind: "notable" }], 30);
+    t("markers: out-of-order sorted, notable ignored", JSON.stringify(tfmOoo) === JSON.stringify([{ kind: "wandering", startMin: 0, endMin: 12 }, { kind: "intermittent", startMin: 12, endMin: 20 }, { kind: "mostly", startMin: 20, endMin: 30 }]));
+    t("markers: suggestion passes timeline validation", validateTimeline(tfmOoo, 30).ok);
+    t("markers: derived conc from suggestion", deriveFromTimeline(tfmOoo).concMin === round1(0.35 * 8 + 0.75 * 10));
+    t("markers: at zero starts immediately", JSON.stringify(timelineFromMarkers([{ atMin: 0, kind: "steady" }], 30)) === JSON.stringify([{ kind: "mostly", startMin: 0, endMin: 30 }]));
+    t("markers: negative time clamped to zero", JSON.stringify(timelineFromMarkers([{ atMin: -5, kind: "steady" }], 30)) === JSON.stringify([{ kind: "mostly", startMin: 0, endMin: 30 }]));
+    t("markers: at end contributes no segment", JSON.stringify(timelineFromMarkers([{ atMin: 10, kind: "dull" }, { atMin: 30, kind: "steady" }], 30)) === JSON.stringify([{ kind: "uncertain", startMin: 0, endMin: 10 }, { kind: "dull", startMin: 10, endMin: 30 }]));
+    t("markers: past end clamped", JSON.stringify(timelineFromMarkers([{ atMin: 40, kind: "steady" }], 30)) === JSON.stringify([{ kind: "uncertain", startMin: 0, endMin: 30 }]));
+    t("markers: same-minute last tap wins", JSON.stringify(timelineFromMarkers([{ atMin: 10, kind: "steady" }, { atMin: 10, kind: "dull" }], 30)) === JSON.stringify([{ kind: "uncertain", startMin: 0, endMin: 10 }, { kind: "dull", startMin: 10, endMin: 30 }]));
+    t("markers: non-numeric times filtered", JSON.stringify(timelineFromMarkers([{ atMin: "x", kind: "steady" }, { atMin: 15, kind: "dull" }], 30)) === JSON.stringify([{ kind: "uncertain", startMin: 0, endMin: 15 }, { kind: "dull", startMin: 15, endMin: 30 }]));
+    const denseMarkers = []; for (let i = 1; i < 30; i++) denseMarkers.push({ atMin: i, kind: i % 2 ? "steady" : "wandering" });
+    const tfmDense = timelineFromMarkers(denseMarkers, 30);
+    t("markers: dense stream stays valid", validateTimeline(tfmDense, 30).ok && tfmDense.length === 30);
+    t("markers: non-round duration stays valid", validateTimeline(timelineFromMarkers([{ atMin: 3, kind: "steady" }], 27.3), 27.3).ok);
+    t("timelineSource markers accepted", validateSession(normalizeSession({ date: TODAY, actualMin: 30, timelineSource: "markers" }, NOW, TODAY)).ok);
+    t("timelineSource bad value rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, timelineSource: "guessed" }, NOW, TODAY)).ok);
+
     // --- timer math
     const T0 = 1000000000;
     let st = startTimerState(1800, 0, T0);
@@ -1623,6 +1691,15 @@ const CORE = (function () {
     t("v3→v4 keeps concMin", mig4.env.sessions[0].concMin === 12);
     t("v3→v4 keeps nimitta name", mig4.env.sessions[0].nimitta.category === "none");
     t("v4 envelope gets feedback array", Array.isArray(mig4.env.feedback));
+    // v4 → v5 specifics
+    const v4env = { schemaVersion: 4, sessions: [
+      { id: "v4a", date: "2026-07-01", actualMin: 30, timeline: [{ kind: "mostly", startMin: 0, endMin: 30 }] },
+      { id: "v4b", date: "2026-07-02", actualMin: 30 }
+    ], settings: {}, feedback: [] };
+    const mig5 = migrate(v4env, null, NOW, TODAY);
+    t("v4→v5 existing timeline marked manual", mig5.env.sessions[0].timelineSource === "manual");
+    t("v4→v5 no timeline stays null", mig5.env.sessions[1].timelineSource === null);
+    t("v4→v5 bumps version", mig5.env.schemaVersion === SCHEMA_VERSION);
     t("stability validated 1-5", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, stability: 6 }, NOW, TODAY)).ok);
     t("breathClarity null ok", validateSession(normalizeSession({ date: TODAY, actualMin: 30, breathClarity: null }, NOW, TODAY)).ok);
     t("breathClarity 3 ok", validateSession(normalizeSession({ date: TODAY, actualMin: 30, breathClarity: 3, stability: 5 }, NOW, TODAY)).ok);
@@ -1815,7 +1892,7 @@ const CORE = (function () {
     AFTER_STATES, SEGMENT_KINDS, SEGMENT_LABELS, SEGMENT_WEIGHTS, MARKER_KINDS, MAP_EVIDENCE, CSV_COLUMNS,
     clamp, round1, round2, isNum, isDateStr, isTimeStr, addDays, uid, fmtMin, fmtClock,
     blankSession, normalizeSession, validateSession, computeRatio,
-    validateTimeline, deriveFromTimeline,
+    validateTimeline, deriveFromTimeline, timelineFromMarkers,
     timerSnapshot, startTimerState, pauseTimerState, resumeTimerState, dueBells,
     computeStreaks, filterRange, summaryMetrics, timeOfDayBucket, insights, strengthLabel,
     toCSV, sessionFingerprint, parseImport, migrate,
@@ -2436,9 +2513,19 @@ const REVIEW = (function () {
   let pending = null;      // partial session being reviewed (unsaved) or edited
   let editingId = null;
 
+  // If the sit captured markers and no timeline was entered, pre-fill a
+  // suggested timeline (provenance "markers"); any hand edit flips it to "manual".
+  function suggestTimeline() {
+    if (pending.timeline && pending.timeline.length) return;
+    if (!(pending.markers && pending.markers.length)) return;
+    const sug = CORE.timelineFromMarkers(pending.markers, pending.actualMin);
+    if (sug) { pending.timeline = sug; pending.timelineSource = "markers"; }
+  }
+
   function openFor(partial) {
     pending = Object.assign({}, partial);
     editingId = null;
+    suggestTimeline();
     render();
     UI.showTab("journal");
     window.scrollTo({ top: 0 });
@@ -2451,6 +2538,7 @@ const REVIEW = (function () {
     if (!s) return;
     pending = JSON.parse(JSON.stringify(s));
     editingId = id;
+    suggestTimeline();
     render();
     UI.showTab("journal");
     window.scrollTo({ top: 0 });
@@ -2559,7 +2647,8 @@ const REVIEW = (function () {
       (p.markers && p.markers.length ? '<p class="faint">markers from the sit: ' + esc(p.markers.map(m => m.kind + "@" + m.atMin + "′").join(", ")) + "</p>" : "") +
       "</details>" +
 
-      '<details><summary>Session timeline (optional — derives the estimate from segments)</summary>' +
+      '<details' + (p.timelineSource === "markers" ? " open" : "") + '><summary>Session timeline (optional — derives the estimate from segments)</summary>' +
+      (p.timelineSource === "markers" ? '<p class="notice" style="margin-top:8px">Suggested from your in-sit markers — a convention, not a measurement. Edit or remove segments freely; editing marks the timeline as yours.</p>' : "") +
       '<div id="rv-timeline" style="margin-top:8px">' + timelineRows() + "</div>" +
       '<div class="row"><button id="rv-tl-add">+ Add segment</button>' +
       (derived ? '<span class="dim">timeline-derived estimate: <strong>' + derived.concMin + "′</strong> (longest steady " + derived.longestSteadyMin + "′)</span><button id=\"rv-tl-use\">Use derived values</button>" : "") +
@@ -2716,9 +2805,10 @@ const REVIEW = (function () {
       const last = pending.timeline[pending.timeline.length - 1];
       const start = last ? last.endMin : 0;
       pending.timeline.push({ kind: "intermittent", startMin: start, endMin: Math.min((pending.actualMin || 30), start + 5) });
+      pending.timelineSource = "manual";
       render();
     };
-    UI.$$(".tl-del").forEach(b => b.onclick = () => { readForm(); pending.timeline.splice(parseInt(b.dataset.i, 10), 1); if (!pending.timeline.length) pending.timeline = null; render(); });
+    UI.$$(".tl-del").forEach(b => b.onclick = () => { readForm(); pending.timeline.splice(parseInt(b.dataset.i, 10), 1); if (!pending.timeline.length) { pending.timeline = null; pending.timelineSource = null; } else { pending.timelineSource = "manual"; } render(); });
     UI.$$(".tl-kind,.tl-start,.tl-end").forEach(el => el.onchange = () => {
       readForm();
       const i = parseInt(el.dataset.i, 10);
@@ -2726,6 +2816,7 @@ const REVIEW = (function () {
       seg.kind = UI.$$(".tl-kind")[i].value;
       seg.startMin = parseFloat(UI.$$(".tl-start")[i].value) || 0;
       seg.endMin = parseFloat(UI.$$(".tl-end")[i].value) || 0;
+      pending.timelineSource = "manual";
       render();
     });
     const useBtn = $("#rv-tl-use");
@@ -2856,7 +2947,7 @@ const HISTORY = (function () {
     push("Energy before → after", (s.energyBefore ?? "—") + " → " + (s.energyAfter ?? "—"));
     push("Calm before → after", (s.calmBefore ?? "—") + " → " + (s.calmAfter ?? "—"));
     push("After-state", s.afterStateReport ? esc(s.afterStateReport) : null);
-    if (s.timeline && s.timeline.length) push("Timeline", s.timeline.map(t => esc(CORE.SEGMENT_LABELS[t.kind]) + " " + t.startMin + "–" + t.endMin + "′").join("<br>") + (s.timelineDerivedMin !== null && s.timelineDerivedMin !== undefined ? "<br><span class='faint'>derived estimate " + s.timelineDerivedMin + "′" + (s.manualOverride ? " (manually overridden)" : "") + "</span>" : ""));
+    if (s.timeline && s.timeline.length) push("Timeline", (s.timelineSource === "markers" ? '<span class="badge">suggested from in-sit markers</span><br>' : "") + s.timeline.map(t => esc(CORE.SEGMENT_LABELS[t.kind]) + " " + t.startMin + "–" + t.endMin + "′").join("<br>") + (s.timelineDerivedMin !== null && s.timelineDerivedMin !== undefined ? "<br><span class='faint'>derived estimate " + s.timelineDerivedMin + "′" + (s.manualOverride ? " (manually overridden)" : "") + "</span>" : ""));
     if (s.markers && s.markers.length) push("In-sit markers", s.markers.map(m => esc(m.kind) + " @ " + m.atMin + "′").join("<br>"));
     push("Notes", s.notes ? esc(s.notes) : null);
     if (s.journalText) push("Original journal", "<span style='font-size:var(--fs-xs)'>" + esc(s.journalText) + "</span>");
