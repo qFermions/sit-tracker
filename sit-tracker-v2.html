@@ -826,6 +826,119 @@ const CORE = (function () {
     return "weak";
   }
 
+  const byDateTime = (a, b) => (a.date + (a.startTime || "")) < (b.date + (b.startTime || "")) ? -1 : 1;
+  function daysBetween(a, b) { return Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 86400000); }
+  function rangeOf(sorted) { return sorted.length ? sorted[0].date + " → " + sorted[sorted.length - 1].date : "no sessions"; }
+  function pctFmt(x) { return Math.round(x * 100) + "%"; }
+  function notEnough(metric, n, why) {
+    return { text: "Not enough data yet — " + why, range: "all sessions", n, metric, strength: "insufficient" };
+  }
+
+  // Each insight answers one question over the whole log. All wording is
+  // descriptive ("association in your records"), never causal.
+  function insightTopHindrance(sessions) {
+    const sorted = sessions.filter(s => isDateStr(s.date)).slice().sort(byDateTime);
+    const counts = {};
+    let reporting = 0;
+    for (const s of sorted) {
+      const hs = s.hindrances || {};
+      const keys = Object.keys(hs).filter(k => hs[k]);
+      if (keys.length) reporting++;
+      for (const k of keys) counts[k] = (counts[k] || 0) + 1;
+    }
+    if (reporting < 5) return notEnough("hindrance frequency", sorted.length, "this needs at least 5 sessions with any hindrance recorded; there are " + reporting + ".");
+    const top = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+    return {
+      text: HINDRANCE_LABELS[top] + " was recorded most often: " + counts[top] + " of " + sorted.length +
+        " sessions (" + Math.round(counts[top] / sorted.length * 100) + "%). Recorded observations only — a session without an entry may simply not have been filled in.",
+      range: rangeOf(sorted), n: sorted.length, metric: "hindrance frequency", strength: strengthLabel(reporting)
+    };
+  }
+
+  function insightTimeOfDay(sessions) {
+    const rated = sessions.filter(s => isNum(s.ratio) && isDateStr(s.date)).slice().sort(byDateTime);
+    const buckets = { morning: [], afternoon: [], evening: [] };
+    for (const s of rated) { const b = timeOfDayBucket(s.startTime); if (b) buckets[b].push(s.ratio); }
+    const qual = Object.keys(buckets).filter(b => buckets[b].length >= 5);
+    if (qual.length < 2) return notEnough("concentration ratio by time of day", rated.length, "comparing times of day needs at least 5 rated sessions in each of two buckets (morning/afternoon/evening).");
+    const means = qual.map(b => ({ b, mean: avg(buckets[b]), n: buckets[b].length })).sort((x, y) => y.mean - x.mean);
+    const detail = means.map(m => m.b + " " + pctFmt(m.mean) + " (n=" + m.n + ")").join(" · ");
+    const base = { range: rangeOf(rated), n: means.reduce((a, m) => a + m.n, 0), metric: "avg concentration ratio by time of day", strength: strengthLabel(Math.min.apply(null, means.map(m => m.n))) };
+    if (means[0].mean - means[means.length - 1].mean < 0.05) {
+      return Object.assign(base, { text: "Self-reported concentration ratio looks similar across times of day: " + detail + ". No meaningful difference in your records." });
+    }
+    return Object.assign(base, { text: "Self-reported concentration ratio was highest in " + means[0].b + " sessions: " + detail + ". An association in your records, not a cause." });
+  }
+
+  function insightSettlingTrend(sessions) {
+    const withSettle = sessions.filter(s => isNum(s.settleMin) && isDateStr(s.date)).slice().sort(byDateTime);
+    if (withSettle.length < 10) return notEnough("settling time trend", withSettle.length, "a settling-time trend needs at least 10 sessions with minutes-to-settle reported; there are " + withSettle.length + ".");
+    const half = Math.floor(withSettle.length / 2);
+    const a = avg(withSettle.slice(0, half).map(s => s.settleMin));
+    const b = avg(withSettle.slice(-half).map(s => s.settleMin));
+    const base = { range: rangeOf(withSettle), n: withSettle.length, metric: "settling time, first half vs second half", strength: strengthLabel(withSettle.length) };
+    if (a === null || b === null || Math.abs(a - b) < 1) {
+      return Object.assign(base, { direction: "none", text: "Average self-reported settling time is roughly unchanged between your earlier and recent sessions (" + round1(a) + "′ vs " + round1(b) + "′, " + withSettle.length + " sessions with data)." });
+    }
+    return Object.assign(base, {
+      direction: b < a ? "down" : "up",
+      text: "Average self-reported settling time " + (b < a ? "decreased" : "increased") + " from " + round1(a) +
+        " to " + round1(b) + " minutes between your earlier and recent sessions (" + withSettle.length + " sessions with data)."
+    });
+  }
+
+  // What precedes low-ratio ("most scattered") sessions: compares the day-gap
+  // before the bottom-third contact-ratio sessions with the gap before the rest.
+  function insightScatteredPrecursors(sessions) {
+    const sorted = sessions.filter(s => isDateStr(s.date)).slice().sort(byDateTime);
+    const rated = sorted.filter(s => isNum(s.ratio));
+    if (rated.length < 12) return notEnough("day-gap preceding low-ratio sessions", rated.length, "characterizing what precedes low-contact sessions needs at least 12 sessions with a reported estimate; there are " + rated.length + ".");
+    const byRatio = rated.slice().sort((x, y) => x.ratio - y.ratio);
+    const k = Math.max(4, Math.floor(rated.length / 3));
+    const low = new Set(byRatio.slice(0, k).map(s => s.id));
+    const cutoff = byRatio[k - 1].ratio;
+    const idx = new Map(sorted.map((s, i) => [s.id, i]));
+    const lowGaps = [], otherGaps = [];
+    for (const s of rated) {
+      const i = idx.get(s.id);
+      if (i === 0) continue;                       // nothing precedes the first session
+      const gap = daysBetween(sorted[i - 1].date, s.date);
+      (low.has(s.id) ? lowGaps : otherGaps).push(gap);
+    }
+    if (lowGaps.length < 4 || otherGaps.length < 4) return notEnough("day-gap preceding low-ratio sessions", rated.length, "both comparison groups need at least 4 sessions with a preceding sit.");
+    const pLow = lowGaps.filter(g => g >= 2).length / lowGaps.length;
+    const pOther = otherGaps.filter(g => g >= 2).length / otherGaps.length;
+    const base = { range: rangeOf(rated), n: rated.length, metric: "day-gap preceding low-ratio sessions", strength: strengthLabel(Math.min(lowGaps.length, otherGaps.length)) };
+    if (Math.abs(pLow - pOther) >= 0.2) {
+      return Object.assign(base, {
+        direction: pLow > pOther ? "gap-before-low" : "gap-before-high",
+        text: "Your " + lowGaps.length + " lowest-contact sessions (ratio ≤ " + pctFmt(cutoff) + ") followed a gap of 2+ days since the previous sit " +
+          pctFmt(pLow) + " of the time; the other " + otherGaps.length + " rated sessions, " + pctFmt(pOther) + ". An association in your records, not a cause."
+      });
+    }
+    return Object.assign(base, {
+      direction: "none",
+      text: "No clear difference in the day-gap before your lowest-contact sessions (2+ day gaps preceded " + pctFmt(pLow) +
+        " of the " + lowGaps.length + " lowest vs " + pctFmt(pOther) + " of the other " + otherGaps.length + "). Nothing in your records currently distinguishes what precedes them."
+    });
+  }
+
+  // Canned questions surfaced in Progress; every answer is computed here,
+  // instantly and locally. The AI layer may rephrase an answer, never compute one.
+  const INSIGHT_QUESTIONS = [
+    { id: "scattered", q: "What usually precedes my most scattered sessions?" },
+    { id: "hindrance", q: "Which hindrance shows up most often?" },
+    { id: "timeofday", q: "When in the day do I sit most steadily?" },
+    { id: "settling", q: "Is my settling time changing?" }
+  ];
+  function answerQuestion(id, sessions) {
+    if (id === "scattered") return insightScatteredPrecursors(sessions);
+    if (id === "hindrance") return insightTopHindrance(sessions);
+    if (id === "timeofday") return insightTimeOfDay(sessions);
+    if (id === "settling") return insightSettlingTrend(sessions);
+    return null;
+  }
+
   function insights(sessions, todayStr) {
     const out = [];
     const sorted = sessions.slice().sort((a, b) => (a.date + (a.startTime || "")) < (b.date + (b.startTime || "")) ? -1 : 1);
@@ -865,21 +978,9 @@ const CORE = (function () {
         range: "all sessions", n: withRatio.length, metric: "time-of-day comparison", strength: "insufficient"
       });
     }
-    // 3. settling trend, first vs recent half (needs >= 10 with settleMin)
-    const withSettle = sorted.filter(s => isNum(s.settleMin));
-    if (withSettle.length >= 10) {
-      const half = Math.floor(withSettle.length / 2);
-      const a = avg(withSettle.slice(0, half).map(s => s.settleMin));
-      const b = avg(withSettle.slice(-half).map(s => s.settleMin));
-      if (a !== null && b !== null && Math.abs(a - b) >= 1) {
-        out.push({
-          text: "Average self-reported settling time " + (b < a ? "decreased" : "increased") + " from " + round1(a) +
-            " to " + round1(b) + " minutes between your earlier and recent sessions (" + withSettle.length + " sessions with data).",
-          range: withSettle[0].date + " → " + withSettle[withSettle.length - 1].date, n: withSettle.length,
-          metric: "settling time, first half vs second half", strength: strengthLabel(withSettle.length)
-        });
-      }
-    }
+    // 3. settling trend, first vs recent half (shown only when direction is clear)
+    const settle = insightSettlingTrend(sorted);
+    if (settle.strength !== "insufficient" && settle.direction !== "none") out.push(settle);
     // 4. object comparison
     const byObject = {};
     for (const s of withRatio) if (s.object) (byObject[s.object] = byObject[s.object] || []).push(s.ratio);
@@ -899,6 +1000,9 @@ const CORE = (function () {
         metric: "sessions with a light/image report", strength: strengthLabel(nimittaSessions.length)
       });
     }
+    // 6. day-gap preceding low-ratio sessions (shown only when the difference is clear)
+    const scattered = insightScatteredPrecursors(sorted);
+    if (scattered.strength !== "insufficient" && scattered.direction !== "none") out.push(scattered);
     return out;
   }
 
@@ -1627,6 +1731,44 @@ const CORE = (function () {
     t("insight nimitta counts reports not 'none'", ins3.some(i => i.metric.indexOf("light/image") >= 0 && i.n === 2));
     t("insight nimitta suggests teacher", ins3.some(i => i.text.indexOf("qualified teacher") > 0));
 
+    // --- canned questions (answered locally; every answer carries range/n/metric/strength)
+    t("daysBetween", daysBetween("2026-07-01", "2026-07-10") === 9);
+    t("answerQuestion unknown id", answerQuestion("astrology", []) === null);
+    t("questions list has 4 entries", INSIGHT_QUESTIONS.length === 4 && INSIGHT_QUESTIONS.every(q => q.id && q.q.indexOf("?") > 0));
+    for (const q of INSIGHT_QUESTIONS) {
+      const a = answerQuestion(q.id, []);
+      t("question '" + q.id + "' honest on empty", a && a.strength === "insufficient" && a.text.indexOf("Not enough data") === 0);
+    }
+    const topH = insightTopHindrance(hindranceSess);
+    t("top hindrance names restlessness", topH.text.indexOf("Restlessness") === 0 && topH.n === 10);
+    t("top hindrance insufficient under 5 reporting", insightTopHindrance(hindranceSess.slice(0, 4)).strength === "insufficient");
+    const todAns = insightTimeOfDay(modata);
+    t("time-of-day answer highest morning", todAns.text.indexOf("highest in morning") > 0 && todAns.strength === "weak");
+    const todFlat = [];
+    for (let i = 0; i < 6; i++) todFlat.push(mk(addDays(TODAY, -i), { concMin: 15, startTime: "06:00" }));
+    for (let i = 6; i < 12; i++) todFlat.push(mk(addDays(TODAY, -i), { concMin: 15, startTime: "19:00" }));
+    t("time-of-day similar when flat", insightTimeOfDay(todFlat).text.indexOf("similar across times of day") > 0);
+    const settleDown = [];
+    for (let i = 0; i < 10; i++) settleDown.push(mk(addDays(TODAY, -(9 - i)), { settleMin: i < 5 ? 10 : 4 }));
+    const sd = insightSettlingTrend(settleDown);
+    t("settling trend down", sd.direction === "down" && sd.text.indexOf("decreased") > 0);
+    const settleFlat = settleDown.map(s => Object.assign({}, s, { settleMin: 6 }));
+    t("settling trend none when flat", insightSettlingTrend(settleFlat).direction === "none");
+    t("settling insufficient under 10", insightSettlingTrend(settleDown.slice(0, 9)).strength === "insufficient");
+    // scattered-precursor fixture: 10 daily good sits, then 5 low sits each after a 3-day gap
+    const scat = [];
+    for (let i = 0; i < 10; i++) scat.push(mk(addDays("2026-06-01", i), { concMin: 20 }));
+    for (let i = 0; i < 5; i++) scat.push(mk(addDays("2026-06-10", 3 * (i + 1)), { concMin: 3 }));
+    const sc = insightScatteredPrecursors(scat);
+    t("scattered: gap precedes low sessions", sc.direction === "gap-before-low" && sc.text.indexOf("2+ days") > 0);
+    t("scattered: reports both groups", sc.text.indexOf("100%") > 0 && sc.text.indexOf("0%") > 0);
+    t("scattered: no causation words", !/because|causes|proves|therefore/i.test(sc.text));
+    t("scattered: insufficient under 12 rated", insightScatteredPrecursors(scat.slice(0, 11)).strength === "insufficient");
+    const scatFlat = [];
+    for (let i = 0; i < 15; i++) scatFlat.push(mk(addDays("2026-06-01", i), { concMin: 5 + i }));
+    t("scattered: honest none when daily", insightScatteredPrecursors(scatFlat).direction === "none");
+    t("insights list includes clear gap pattern", insights(scat, TODAY).some(i => i.metric === "day-gap preceding low-ratio sessions"));
+
     // --- CSV
     const csvS = normalizeSession({ date: TODAY, actualMin: 30, concMin: 16, notes: 'said "wait", then\nrelaxed', hindrances: { doubt: "mild" }, nimitta: { category: "brief" } }, NOW, TODAY);
     const csv = toCSV([csvS]);
@@ -1895,6 +2037,7 @@ const CORE = (function () {
     validateTimeline, deriveFromTimeline, timelineFromMarkers,
     timerSnapshot, startTimerState, pauseTimerState, resumeTimerState, dueBells,
     computeStreaks, filterRange, summaryMetrics, timeOfDayBucket, insights, strengthLabel,
+    daysBetween, INSIGHT_QUESTIONS, answerQuestion, insightScatteredPrecursors, insightTopHindrance, insightTimeOfDay, insightSettlingTrend,
     toCSV, sessionFingerprint, parseImport, migrate,
     backupStatus, makeTestSessions, isTestSession, realSessions, makeDemoSessions,
     PRESETS, presetById, onboardingState, formatFeedback, APP_VERSION,
@@ -3025,6 +3168,7 @@ const HISTORY = (function () {
 const PROGRESS = (function () {
   const { $, esc } = UI;
   let range = "30";
+  let askId = null;   // currently selected canned question
 
   function statCard(label, value, note) {
     return '<div class="stat"><div class="v">' + value + '</div><div class="l">' + esc(label) + "</div>" + (note ? '<div class="n">' + esc(note) + "</div>" : "") + "</div>";
@@ -3187,9 +3331,21 @@ const PROGRESS = (function () {
       '<div class="card sub" style="margin-bottom:8px"><p style="margin:0">' + esc(i.text) + "</p>" +
       '<div class="faint">range: ' + esc(i.range) + " · n=" + i.n + " · metric: " + esc(i.metric) + " · evidence strength: " + esc(i.strength) + "</div></div>"
     ).join("");
-    html += '<p class="honesty">All concentration values are self-reported estimates. Charts show associations only; nothing here demonstrates attainment or causation.</p>';
+
+    // canned questions, answered locally and instantly
+    html += '<h3 style="margin-top:16px">Ask about your practice</h3>';
+    html += '<div class="row" role="group" aria-label="Practice questions" style="flex-wrap:wrap">' +
+      CORE.INSIGHT_QUESTIONS.map(q => '<button class="chip ask-q" data-q="' + q.id + '" aria-pressed="' + (askId === q.id ? "true" : "false") + '">' + esc(q.q) + "</button>").join("") +
+      "</div>";
+    if (askId) {
+      const a = CORE.answerQuestion(askId, all);
+      if (a) html += '<div class="card sub" style="margin-top:8px" id="ask-answer"><p style="margin:0">' + esc(a.text) + "</p>" +
+        '<div class="faint">range: ' + esc(a.range) + " · n=" + a.n + " · metric: " + esc(a.metric) + " · evidence strength: " + esc(a.strength) + "</div></div>";
+    }
+    html += '<p class="honesty">All concentration values are self-reported estimates. Charts and answers show associations only; nothing here demonstrates attainment or causation.</p>';
 
     box.innerHTML = html;
+    UI.$$(".ask-q").forEach(b => b.onclick = () => { askId = askId === b.dataset.q ? null : b.dataset.q; render(); });
   }
 
   function initRange() {
