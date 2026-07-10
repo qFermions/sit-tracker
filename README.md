@@ -65,7 +65,7 @@ default, supported browsers) avoids the problem; a future native wrapper is the 
 ## Storage & backup
 
 - Data lives in this browser's `localStorage` under `jhanaTracker.v2` (versioned envelope,
-  schema v4 — see `DATA_CONTRACT.md`). The in-progress timer persists separately, so a
+  schema v5 — see `DATA_CONTRACT.md`). The in-progress timer persists separately, so a
   refresh or crash never loses a sit.
 - Legacy v1 keys (`janSits`, `janGates`) migrate automatically and are never deleted.
 - Data is **not encrypted**. It is as private as your browser profile.
@@ -78,6 +78,25 @@ default, supported browsers) avoids the problem; a future native wrapper is the 
   merging is union-by-id, so importing the same backup twice cannot create duplicates.
 - Two devices, no account: put the export file in your own iCloud/Drive folder and import
   on the other device. The file is transport, not truth — the merge handles overlaps.
+- Export filenames are date-and-time stamped (`sit-tracker-backup-YYYYMMDD-HHMM.json`),
+  so repeated exports never overwrite each other. Settings → storage health shows the
+  **age of the last backup** first — that number is the real safety margin.
+
+### Recovery procedure (data lost, browser reset, or new device)
+
+1. Locate your newest `sit-tracker-backup-*.json` (the filename carries date and time).
+2. Open the app the way you normally use it (same origin — see the note under "Run it").
+3. Settings → **Import JSON…** → pick the file. The preview shows new / duplicate /
+   invalid counts before anything is written; duplicates are skipped by id + fingerprint,
+   so importing an old backup over existing data cannot create doubles.
+4. Confirm. Sessions, settings-independent data, map state, and feedback records are
+   restored; **the AI API key is intentionally absent** from backups — re-enter it in
+   Settings if you use a provider.
+5. Verify: Progress shows your streak history; Journal shows the sessions; Settings →
+   storage health shows the session count. Then export once, so "last backup" reads *today*.
+
+This procedure is exercised by the test suite (field-level export→import equality) and was
+rehearsed live in a clean browser context during the 2026-07-10 run.
 
 ## AI journaling (optional)
 
