@@ -4,7 +4,23 @@ Every entry cites its evidence (RESEARCH_NOTES.md §n, PROJECT_STATE.md, or a da
 Protected differentiators (never trade away): no account, no paywall, offline, exportable
 data, evidence-honest labels (RESEARCH_NOTES §5).
 
-## Now (done in the 2026-07-09 family-beta run)
+## Now (done in the 2026-07-10 depth run)
+- Timeline suggested from in-sit markers (CORE.timelineFromMarkers, provenance-tracked,
+  manual always wins) — was "Next: auto-suggest timeline segments".
+- Deterministic insight engine: four canned questions in Progress answered locally with
+  range/n/metric/strength and hard minimum samples.
+- Journal parser round 2 (compounds, ranges, clock times, negations) + mock
+  provider-contract harness (valid/malformed/refusal/overclaim/timeout, no key).
+- Teacher workflow v2: flag-with-note, report range picker (30/90/custom), flagged
+  appendix, unusual-experience summary — was "Next: teacher report options".
+- Learn build-out from the two practice documents, epistemic badges incl. 'scientific
+  finding', in-app source viewers (offline-cached).
+- Bilingual scaffold: CORE.I18N with empty owner-filled Burmese slots; toggle hidden
+  until a screen is fully translated; no machine translation ever.
+- Data longevity: date+time export names, prominent last-backup age, tested + live
+  restore rehearsal, README recovery procedure. Schema v5 (timelineSource).
+
+### Earlier (2026-07-09 family-beta run)
 - First-launch onboarding (3 screens, skippable, step-resume, CORE-tested).
 - Today home: status strip, preset cards (30' recommended), cinematic timer (orb + arc).
 - Post-sit quick log (one-tap impressions -> schema v4 stability/breathClarity + hindrances).
@@ -29,10 +45,9 @@ data, evidence-honest labels (RESEARCH_NOTES §5).
 - Physical-device pass (iPhone Safari + Android Chrome): install, offline checklist, wake lock, print. Discovered: window-resize automation unreliable — test on real hardware.
 - Screen-reader pass (VoiceOver/NVDA) over onboarding, quick log, timer announcements.
 - Multi-tab timer guard (storage-event watch or Web Locks; currently last-writer-wins).
-- Auto-suggest timeline segments from in-sit markers (markers already captured;
-  reduces review friction — §5 "low-friction logging"; PROJECT_STATE known limitation).
-- Custom date range on Progress (CORE.filterRange already supports {from,to}).
-- Teacher report options: pick range (30/90/custom), include/exclude notes column — §10.
+- Custom date range on Progress (CORE.filterRange already supports {from,to}; the teacher
+  report already has one).
+- Owner fills the Burmese slots in CORE.I18N screen by screen (the toggle appears by itself).
 - Import preview: show which device/export a file came from (add exportedBy stamp) — §9.
 - iOS PWA data-move guide with screenshots (export in Safari → import in installed app) — §1.
 
