@@ -355,14 +355,71 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     <p>
       <span class="badge">practice guidance</span> how to practice ·
       <span class="badge gold">traditional claim</span> what the classical texts assert ·
+      <span class="badge">scientific finding</span> what studies have measured ·
       <span class="badge">personal record</span> what you yourself reported
     </p>
     <p class="dim" style="margin-bottom:0">The app records observations. The texts make the claims. The cushion settles the question.</p>
   </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">The practice, step by step <span class="badge">practice guidance</span></h3>
+    <p class="dim">Everything below is the same instruction the Today screen already gives you — spelled out.</p>
+    <details>
+      <summary>The daily sit script</summary>
+      <ol class="dim" style="line-height:1.7">
+        <li>Sit erect, eyes closed. Three slow breaths to settle.</li>
+        <li>Place attention where the breath touches — nostril rim or upper lip. One spot. Don't follow the breath inward or outward (the classical image: a gatekeeper checks people at the gate, he doesn't walk with them).</li>
+        <li>Know the breath as just in / out. Long as long, short as short. Don't control it.</li>
+        <li>Count: in-out "one" … in-out "eight", restart. Count after each breath ends. Drop counting once the mind stays settled 15–20 minutes without it.</li>
+        <li>Then know the beginning, middle, and end of each breath at the touch point.</li>
+        <li>When the breath becomes faint, do not breathe harder to find it. Keep attention on the spot and wait — calmness makes it reappear.</li>
+      </ol>
+      <p class="faint">Compressed from Pa-Auk Sayadaw, “Knowing and Seeing”, ch. 1 — the full text is in the source library below.</p>
+    </details>
+    <details>
+      <summary>Tuning energy on every sit</summary>
+      <p class="dim">The canon's master dial (SN 51.20): energy <strong>not too slack, not too tense; not constricted inward</strong> (drifting toward dullness), <strong>not scattered outward</strong> (drifting toward distraction). Check it once when you sit down and once mid-sit.</p>
+    </details>
+    <details>
+      <summary>If a light or image appears</summary>
+      <p class="dim"><span class="badge">practice guidance</span> The instruction from every source is the same: <strong>ignore it and stay with the breath.</strong> Chasing it, staring at it, or getting excited are the classic ways it dissolves. Record what you noticed afterwards in the Journal — the app stores it as a neutral observation.</p>
+      <p class="dim"><span class="badge gold">traditional claim</span> The texts describe such lights maturing gradually and eventually merging with the breath; they treat this as a long, teacher-guided stage, usually under retreat conditions.</p>
+    </details>
+  </div>
+
   <div id="map-container"></div>
+
+  <div class="card">
+    <h3 style="margin-top:0">The wider map <span class="badge gold">traditional claim</span></h3>
+    <p class="dim">Where this practice sits in the classical curriculum (Visuddhimagga; Pa-Auk lineage). Optional reading — none of it is needed for today's sit.</p>
+    <details>
+      <summary>What breath meditation reaches, and what it doesn't</summary>
+      <p class="dim">The tradition's own answer: breath meditation carries a practitioner to deep absorption (the four jhānas) and — combined with insight practice — to liberation, which the texts treat as the point of the whole path. The five “powers” described in scripture require switching to different meditation objects (kasinas) after absorption is mastered. Breath is the engine; kasinas are described as the steering wheel.</p>
+    </details>
+    <details>
+      <summary>The classical stage ladder, honestly labeled</summary>
+      <table class="kv" style="margin-top:8px">
+        <tr><td>Foundation & daily sitting</td><td><span class="badge">scientific finding</span> attention training at this level is well documented in modern practitioners</td></tr>
+        <tr><td>Access concentration & absorption</td><td><span class="badge">scientific finding</span> absorption states have been recorded in meditators under fMRI · <span class="badge gold">traditional claim</span> the detailed stage maps · best done with a teacher — intensive practice can destabilize</td></tr>
+        <tr><td>Kasina expansion, 8 attainments</td><td><span class="badge gold">traditional claim</span> full-time practitioner territory in every source</td></tr>
+        <tr><td>The five powers</td><td><span class="badge gold">traditional claim</span> described in detail in the texts; <strong>no verified case in recorded history</strong> — the tradition itself calls them rare</td></tr>
+        <tr><td>Liberation</td><td><span class="badge gold">traditional claim</span> reachable without any of the powers, on whatever concentration you have — the texts call this the only goal that matters</td></tr>
+      </table>
+    </details>
+    <details>
+      <summary>Commitment, realistically</summary>
+      <p class="dim">The sources are blunt about dose: the early stages ask for daily sitting and eventually retreat time; the deep stages are described as a renunciant's career, not a hobby. The insight track is explicitly compatible with ordinary life. Every source agrees on the floor: ethical conduct, one method at a time, and a qualified teacher once concentration deepens.</p>
+    </details>
+  </div>
+
   <div class="card">
     <h3 style="margin-top:0">Source library</h3>
-    <p class="dim">The full traditional reference lives beside this app as <code>abhinna-practice-manual.md</code> and <code>abhinna-6-roadmap.md</code> — reading them is optional and never required for daily practice.</p>
+    <p class="dim">The two reference documents live beside this app. Summaries above come from them; nothing here is required for daily practice.</p>
+    <div class="row">
+      <button id="btn-doc-manual">Read the practice manual</button>
+      <button id="btn-doc-roadmap">Read the roadmap</button>
+    </div>
+    <p class="faint" style="margin-top:8px">Primary texts referenced: Visuddhimagga (Ñāṇamoli trans.) · Pa-Auk Sayadaw, “Knowing and Seeing” · SN 51.20 · MN 118 · DN 2 — links inside the documents.</p>
   </div>
 </section>
 
@@ -4409,6 +4466,26 @@ const APP = (function () {
   ["today", "journal", "progress", "learn", "settings"].forEach(name => {
     UI.$("#tabbtn-" + name).onclick = () => UI.showTab(name);
   });
+
+  // Learn: full source documents on demand (fetched from the app folder; the
+  // summaries in Learn stand alone when the fetch is unavailable, e.g. file://)
+  const openDoc = async (file, title) => {
+    let text = null;
+    try {
+      const resp = await fetch(file);
+      if (resp.ok) text = await resp.text();
+    } catch (e) { /* fall through to the guidance message */ }
+    UI.modal(
+      "<h2>" + UI.esc(title) + "</h2>" +
+      (text
+        ? '<p class="dim">Unaltered source document (' + UI.esc(file) + ").</p><pre style='white-space:pre-wrap;font-size:var(--fs-xs);max-height:60vh;overflow:auto'>" + UI.esc(text) + "</pre>"
+        : '<p class="dim">The document could not be loaded here. It lives beside the app as <code>' + UI.esc(file) + "</code> — open it directly from the folder with any text editor.</p>") +
+      '<div class="row" style="justify-content:flex-end"><button id="doc-close" class="primary">Close</button></div>'
+    );
+    UI.$("#doc-close").onclick = () => UI.closeModal();
+  };
+  UI.$("#btn-doc-manual").onclick = () => openDoc("abhinna-practice-manual.md", "အဘိညာဉ် ၆ ပါး — Full Practice Manual");
+  UI.$("#btn-doc-roadmap").onclick = () => openDoc("abhinna-6-roadmap.md", "အဘိညာဉ် ၆ ပါး — Roadmap");
 
   // today tab wiring
   UI.renderPresets();

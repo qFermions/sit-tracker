@@ -5,6 +5,8 @@ const CACHE = "sit-tracker-" + SW_VERSION;
 const ASSETS = [
   "./sit-tracker-v2.html",
   "./manifest.json",
+  "./abhinna-practice-manual.md",
+  "./abhinna-6-roadmap.md",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
