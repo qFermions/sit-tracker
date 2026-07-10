@@ -192,15 +192,15 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
 </head>
 <body>
 <header class="app hide-zen">
-  <h1>Sit Tracker</h1><span class="mm">ဈာန် · breath first</span>
+  <h1>Sit Tracker</h1><span class="mm">ဈာန် · <span data-i18n="app.tagline">breath first</span></span>
   <button id="beta-chip" class="beta-chip" title="Send feedback">Private family beta</button>
 </header>
 <nav class="tabs hide-zen" role="tablist" aria-label="Sections">
-  <button role="tab" id="tabbtn-today" aria-selected="true" aria-controls="tab-today">Today</button>
-  <button role="tab" id="tabbtn-journal" aria-selected="false" aria-controls="tab-journal">Journal</button>
-  <button role="tab" id="tabbtn-progress" aria-selected="false" aria-controls="tab-progress">Progress</button>
-  <button role="tab" id="tabbtn-learn" aria-selected="false" aria-controls="tab-learn">Learn</button>
-  <button role="tab" id="tabbtn-settings" aria-selected="false" aria-controls="tab-settings">Settings</button>
+  <button role="tab" id="tabbtn-today" aria-selected="true" aria-controls="tab-today" data-i18n="tab.today">Today</button>
+  <button role="tab" id="tabbtn-journal" aria-selected="false" aria-controls="tab-journal" data-i18n="tab.journal">Journal</button>
+  <button role="tab" id="tabbtn-progress" aria-selected="false" aria-controls="tab-progress" data-i18n="tab.progress">Progress</button>
+  <button role="tab" id="tabbtn-learn" aria-selected="false" aria-controls="tab-learn" data-i18n="tab.learn">Learn</button>
+  <button role="tab" id="tabbtn-settings" aria-selected="false" aria-controls="tab-settings" data-i18n="tab.settings">Settings</button>
 </nav>
 <main>
 <div id="storage-warning" class="notice warn" hidden>Local storage is unavailable in this browser context. The app is running in memory only — data will be lost when the tab closes. Export regularly.</div>
@@ -247,7 +247,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     </div>
     <div class="timer-sub" id="timer-sub">planned 30 min</div>
     <div class="row" style="justify-content:center;margin-top:var(--sp-4)">
-      <button id="btn-start" class="primary big">Start sit</button>
+      <button id="btn-start" class="primary big" data-i18n="today.start">Start sit</button>
       <button id="btn-pause" class="big" hidden>Pause</button>
       <button id="btn-finish" hidden>Finish early</button>
       <button id="btn-reset" class="ghost" hidden>Reset</button>
@@ -265,7 +265,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
   </div>
 
   <div class="hide-zen" id="sit-config">
-    <h2 class="section-title">Choose a practice</h2>
+    <h2 class="section-title" data-i18n="today.choose">Choose a practice</h2>
     <div class="preset-grid" id="preset-grid" role="group" aria-label="Practice presets"></div>
 
     <details class="card sub" style="margin-top:var(--sp-3)">
@@ -459,6 +459,18 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <label for="bell-volume">Volume</label>
       <input type="range" id="bell-volume" min="0" max="100" value="60" style="max-width:200px">
       <button id="btn-test-bell">Test bell</button>
+    </div>
+  </div>
+
+  <div class="card" id="lang-card" hidden>
+    <h2>Language / ဘာသာစကား</h2>
+    <p class="dim">Shown because a Burmese translation exists for at least one screen. Untranslated text stays in English — nothing is machine-translated.</p>
+    <div class="row">
+      <label for="lang-select">Interface language</label>
+      <select id="lang-select" style="max-width:220px">
+        <option value="en">English</option>
+        <option value="my">မြန်မာ (Burmese)</option>
+      </select>
     </div>
   </div>
 
@@ -1609,6 +1621,51 @@ const CORE = (function () {
     junkShape: { unexpected: true }
   };
 
+  // ---------- bilingual scaffold ----------
+  // English defaults with EMPTY Burmese slots: the owner fills them by hand;
+  // machine translation is forbidden. tr() falls back to English whenever a
+  // slot is empty, and the language toggle only appears once at least one
+  // screen is completely translated (fullyTranslatedScreens).
+  const I18N = {
+    "app.tagline": { en: "breath first", my: "" },
+    "tab.today": { en: "Today", my: "" },
+    "tab.journal": { en: "Journal", my: "" },
+    "tab.progress": { en: "Progress", my: "" },
+    "tab.learn": { en: "Learn", my: "" },
+    "tab.settings": { en: "Settings", my: "" },
+    "today.start": { en: "Start sit", my: "" },
+    "today.choose": { en: "Choose a practice", my: "" },
+    "ob.title1": { en: "Build a consistent meditation practice.", my: "" },
+    "ob.text1": { en: "This app helps you time sessions, record observations, and review your practice over time. Everything stays on this device — no account, no cloud.", my: "" },
+    "ob.title2": { en: "Start simply.", my: "" },
+    "ob.text2": { en: "Sit comfortably. Attend to the breath sensation near the nostrils. Count each in-and-out cycle from one to eight, then restart. That is the whole first practice.", my: "" },
+    "ob.title3": { en: "Record, do not exaggerate.", my: "" },
+    "ob.text3": { en: "After each sit, log what you directly noticed — nothing more. Traditional and scientific sources are kept separate from personal observations, and the app never certifies attainments.", my: "" },
+    "ob.continue": { en: "Continue", my: "" },
+    "ob.back": { en: "Back", my: "" },
+    "ob.skip": { en: "Skip", my: "" },
+    "ob.start30": { en: "Start my first 30-minute sit", my: "" },
+    "ob.shorter": { en: "Use a shorter practice", my: "" },
+    "ob.explore": { en: "Explore first (loads demo data)", my: "" }
+  };
+  const I18N_SCREENS = {
+    chrome: ["app.tagline", "tab.today", "tab.journal", "tab.progress", "tab.learn", "tab.settings"],
+    today: ["today.start", "today.choose"],
+    onboarding: ["ob.title1", "ob.text1", "ob.title2", "ob.text2", "ob.title3", "ob.text3", "ob.continue", "ob.back", "ob.skip", "ob.start30", "ob.shorter", "ob.explore"]
+  };
+  function tr(key, lang, table) {
+    const tbl = table || I18N;
+    const e = tbl[key];
+    if (!e) return key;
+    if (lang && lang !== "en" && typeof e[lang] === "string" && e[lang].trim()) return e[lang];
+    return e.en;
+  }
+  function fullyTranslatedScreens(lang, table, screens) {
+    const tbl = table || I18N, scr = screens || I18N_SCREENS;
+    if (!lang || lang === "en") return Object.keys(scr);
+    return Object.keys(scr).filter(name => scr[name].every(k => tbl[k] && typeof tbl[k][lang] === "string" && tbl[k][lang].trim().length > 0));
+  }
+
   // ---------- teacher workflow (pure rules) ----------
   // Flagging upgrades none → flagged and never downgrades a later state.
   // "reviewed" can only ever be chosen by the user by hand, never by code.
@@ -2226,6 +2283,19 @@ const CORE = (function () {
     t("unusual neutral wording", unus.lines.every(l => !/attain|jhana|certif|prove/i.test(l)));
     t("unusual empty when nothing reported", unusualExperienceSummary([mk("2026-07-05", {})]).lines.length === 0);
 
+    // --- bilingual scaffold (owner-supplied strings only)
+    t("i18n falls back to English on empty slot", tr("tab.today", "my") === "Today");
+    t("i18n english direct", tr("tab.today", "en") === "Today");
+    t("i18n unknown key returns key", tr("nope.key", "my") === "nope.key");
+    const i18nTbl = { "a.x": { en: "X", my: "အိတ်" }, "a.y": { en: "Y", my: "" } };
+    const i18nScr = { a: ["a.x", "a.y"], b: ["a.x"] };
+    t("i18n uses provided translation", tr("a.x", "my", i18nTbl) === "အိတ်");
+    t("i18n empty slot falls back in custom table", tr("a.y", "my", i18nTbl) === "Y");
+    t("i18n screens: en always complete", fullyTranslatedScreens("en", i18nTbl, i18nScr).length === 2);
+    t("i18n screens: only fully translated qualify", JSON.stringify(fullyTranslatedScreens("my", i18nTbl, i18nScr)) === JSON.stringify(["b"]));
+    t("i18n every key has en text and a my slot", Object.keys(I18N).every(k => typeof I18N[k].my === "string" && typeof I18N[k].en === "string" && I18N[k].en.length > 0));
+    t("i18n screen keys all exist in table", Object.keys(I18N_SCREENS).every(s => I18N_SCREENS[s].every(k => I18N[k] !== undefined)));
+
     // --- backup reminder logic
     const mkN = (count) => { const a = []; for (let i = 0; i < count; i++) a.push(mk(addDays(TODAY, -i))); return a; };
     t("backup: silent under 10 sessions", backupStatus(mkN(9), {}, TODAY).remind === false);
@@ -2333,6 +2403,7 @@ const CORE = (function () {
     buildProviderRequest, extractProviderText, parseProviderResponse, PROVIDER_INSTRUCTION,
     providerErrorSummary, MOCK_PROVIDER_RESPONSES,
     nextReviewStateOnFlag, unusualExperienceSummary,
+    I18N, I18N_SCREENS, tr, fullyTranslatedScreens,
     runSelfTests
   };
 })();
@@ -4234,11 +4305,9 @@ const TODAY = (function () {
 /* ================= ONBOARD — first-launch introduction ================= */
 const ONBOARD = (function () {
   const { $ } = UI;
-  const STEPS = [
-    { title: "Build a consistent meditation practice.", text: "This app helps you time sessions, record observations, and review your practice over time. Everything stays on this device — no account, no cloud." },
-    { title: "Start simply.", text: "Sit comfortably. Attend to the breath sensation near the nostrils. Count each in-and-out cycle from one to eight, then restart. That is the whole first practice." },
-    { title: "Record, do not exaggerate.", text: "After each sit, log what you directly noticed — nothing more. Traditional and scientific sources are kept separate from personal observations, and the app never certifies attainments." }
-  ];
+  // strings come from the CORE i18n table (English until the owner supplies Burmese)
+  const lang = () => STORE.getSetting("language", "en");
+  const STEPS = () => [1, 2, 3].map(i => ({ title: CORE.tr("ob.title" + i, lang()), text: CORE.tr("ob.text" + i, lang()) }));
   let step = 0;
 
   function saveState(patch) {
@@ -4263,19 +4332,21 @@ const ONBOARD = (function () {
   }
 
   function render() {
-    const s = STEPS[step];
-    $("#ob-dots").textContent = STEPS.map((_, i) => i === step ? "●" : "○").join(" ");
+    const steps = STEPS();
+    const s = steps[step];
+    const T = k => UI.esc(CORE.tr(k, lang()));
+    $("#ob-dots").textContent = steps.map((_, i) => i === step ? "●" : "○").join(" ");
     $("#ob-title").textContent = s.title;
     $("#ob-text").textContent = s.text;
-    const last = step === STEPS.length - 1;
+    const last = step === steps.length - 1;
     $("#ob-actions").innerHTML = last
-      ? '<button class="primary big" id="ob-start30">Start my first 30-minute sit</button>' +
-        '<button id="ob-shorter">Use a shorter practice</button>' +
-        '<button id="ob-explore">Explore first (loads demo data)</button>' +
-        '<button class="ghost" id="ob-skip">Skip</button>'
-      : '<button class="primary big" id="ob-next">Continue</button>' +
-        (step > 0 ? '<button id="ob-back">Back</button>' : "") +
-        '<button class="ghost" id="ob-skip">Skip</button>';
+      ? '<button class="primary big" id="ob-start30">' + T("ob.start30") + "</button>" +
+        '<button id="ob-shorter">' + T("ob.shorter") + "</button>" +
+        '<button id="ob-explore">' + T("ob.explore") + "</button>" +
+        '<button class="ghost" id="ob-skip">' + T("ob.skip") + "</button>"
+      : '<button class="primary big" id="ob-next">' + T("ob.continue") + "</button>" +
+        (step > 0 ? '<button id="ob-back">' + T("ob.back") + "</button>" : "") +
+        '<button class="ghost" id="ob-skip">' + T("ob.skip") + "</button>";
     const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
     on("#ob-next", () => { step++; saveState({ step }); render(); });
     on("#ob-back", () => { step--; saveState({ step }); render(); });
@@ -4466,6 +4537,24 @@ const APP = (function () {
   ["today", "journal", "progress", "learn", "settings"].forEach(name => {
     UI.$("#tabbtn-" + name).onclick = () => UI.showTab(name);
   });
+
+  // language: apply saved choice; the toggle appears only once the owner has
+  // fully translated at least one screen (machine translation is never used)
+  const applyI18n = () => {
+    const lang = STORE.getSetting("language", "en");
+    UI.$$("[data-i18n]").forEach(el => { el.textContent = CORE.tr(el.dataset.i18n, lang); });
+  };
+  applyI18n();
+  const translated = CORE.fullyTranslatedScreens("my");
+  if (translated.length > 0) {
+    UI.$("#lang-card").hidden = false;
+    UI.$("#lang-select").value = STORE.getSetting("language", "en");
+    UI.$("#lang-select").onchange = () => {
+      STORE.setSetting("language", UI.$("#lang-select").value);
+      applyI18n();
+      UI.toast("Language updated. Untranslated text stays in English.");
+    };
+  }
 
   // Learn: full source documents on demand (fetched from the app folder; the
   // summaries in Learn stand alone when the fetch is unavailable, e.g. file://)

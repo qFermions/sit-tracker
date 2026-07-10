@@ -60,7 +60,9 @@ Stored names are permanent; changes require a `schemaVersion` bump + migration +
 `aiEnabled` bool · `aiEndpoint` string · `aiModel` string · `aiKey` string (plain text,
 local only; **stripped from every JSON export** — a restored backup requires re-entering the key) ·
 `bellVolume` 0–100 · `lastExportAt` 'YYYY-MM-DD'|null · `backupSnoozeUntil` 'YYYY-MM-DD'|null ·
-`onboarding` {done:bool, step:int} (first-launch introduction state, v4).
+`onboarding` {done:bool, step:int} (first-launch introduction state, v4) ·
+`language` 'en'|'my' (default 'en'; Burmese strings are owner-supplied in `CORE.I18N`,
+never machine-translated; the toggle only appears once ≥1 screen is fully translated).
 
 ## Map
 `{currentLevel: 0–5, levels: [{evidence, teacherNotes, reviewDate}] ×6}` with evidence ∈
