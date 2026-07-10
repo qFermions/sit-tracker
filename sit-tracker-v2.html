@@ -1,0 +1,3002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Sit Tracker — ဈာန်</title>
+<style>
+:root{
+  --bg:#0d1117; --bg2:#141b24; --bg3:#1b2430; --line:#26303d;
+  --fg:#dbe4ee; --fg-dim:#8b98a8; --fg-faint:#5c6875;
+  --accent:#7fb4d9; --accent-dim:#3d6a8a; --gold:#c9a86a;
+  --ok:#7fbf8e; --warn:#d9a86a; --err:#d97f7f;
+  --r:10px; --r-sm:6px;
+  --fs-xs:.75rem; --fs-sm:.85rem; --fs-md:1rem; --fs-lg:1.25rem; --fs-xl:1.6rem; --fs-timer:clamp(3rem,14vw,5.5rem);
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:36px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:var(--fs-md);line-height:1.55;min-height:100vh}
+body.zen .hide-zen{display:none !important}
+h1{font-size:var(--fs-lg);font-weight:600;letter-spacing:.02em}
+h2{font-size:var(--fs-lg);font-weight:600;margin-bottom:var(--sp-3)}
+h3{font-size:var(--fs-md);font-weight:600;margin:var(--sp-4) 0 var(--sp-2);color:var(--fg)}
+p{margin-bottom:var(--sp-2)}
+a{color:var(--accent)}
+small,.dim{color:var(--fg-dim);font-size:var(--fs-sm)}
+.faint{color:var(--fg-faint);font-size:var(--fs-xs)}
+header.app{display:flex;align-items:baseline;gap:var(--sp-3);padding:var(--sp-4) var(--sp-4) 0;max-width:860px;margin:0 auto}
+header.app .mm{color:var(--gold);font-size:var(--fs-sm)}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;max-width:860px;margin:var(--sp-3) auto 0;padding:0 var(--sp-4);scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex:0 0 auto;background:none;border:none;border-bottom:2px solid transparent;color:var(--fg-dim);padding:var(--sp-2) var(--sp-3);font-size:var(--fs-sm);cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+nav.tabs button:hover{color:var(--fg)}
+main{max-width:860px;margin:0 auto;padding:var(--sp-4);padding-bottom:var(--sp-6)}
+section[role="tabpanel"]{display:none}
+section[role="tabpanel"].active{display:block}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-4)}
+.card.sub{background:var(--bg3)}
+.row{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center}
+.row.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--sp-3)}
+@media(max-width:480px){.grid2{grid-template-columns:1fr}}
+button,.btn{font:inherit;cursor:pointer;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--bg3);color:var(--fg);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);min-height:40px}
+button:hover{border-color:var(--accent-dim)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent-dim);border-color:var(--accent-dim);color:#fff;font-weight:600}
+button.primary:hover{background:var(--accent);color:#08131c}
+button.big{font-size:var(--fs-md);padding:var(--sp-3) var(--sp-5);min-height:52px}
+button.danger{border-color:#5a2f2f;color:var(--err)}
+button.ghost{background:none;border-color:transparent;color:var(--fg-dim)}
+button.ghost:hover{color:var(--fg)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.chip{min-height:36px;padding:var(--sp-1) var(--sp-3);border-radius:18px}
+button.chip[aria-pressed="true"]{background:var(--accent-dim);border-color:var(--accent);color:#fff}
+input[type=text],input[type=number],input[type=password],input[type=date],input[type=time],input[type=url],select,textarea{font:inherit;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-sm);color:var(--fg);padding:var(--sp-2) var(--sp-3);min-height:40px;max-width:100%}
+input[type=number]{width:90px}
+textarea{width:100%;min-height:110px;resize:vertical}
+label{font-size:var(--fs-sm);color:var(--fg-dim)}
+.field{display:flex;flex-direction:column;gap:var(--sp-1);margin-bottom:var(--sp-3)}
+fieldset{border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-3)}
+legend{font-size:var(--fs-sm);color:var(--fg-dim);padding:0 var(--sp-2)}
+input[type=range]{width:100%;accent-color:var(--accent);min-height:40px}
+input[type=checkbox],input[type=radio]{width:18px;height:18px;accent-color:var(--accent)}
+.check{display:flex;align-items:center;gap:var(--sp-2);min-height:40px;font-size:var(--fs-sm);color:var(--fg)}
+/* timer */
+.timer-wrap{text-align:center;padding:var(--sp-5) var(--sp-3)}
+.timer-big{font-size:var(--fs-timer);font-variant-numeric:tabular-nums;font-weight:300;letter-spacing:.03em;line-height:1.1}
+.timer-sub{color:var(--fg-dim);font-variant-numeric:tabular-nums;margin-top:var(--sp-1)}
+.timer-phase{color:var(--gold);font-size:var(--fs-sm);min-height:1.4em;margin-bottom:var(--sp-2)}
+.markers-bar{display:flex;flex-wrap:wrap;gap:var(--sp-2);justify-content:center;margin-top:var(--sp-4)}
+.markers-bar button{font-size:var(--fs-xs);min-height:44px;flex:1 1 30%}
+.instructions{border-left:2px solid var(--gold);padding-left:var(--sp-3);font-size:var(--fs-sm);color:var(--fg-dim)}
+/* stat cards */
+.stat{background:var(--bg3);border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-3);min-height:74px}
+.stat .v{font-size:var(--fs-xl);font-weight:600;font-variant-numeric:tabular-nums}
+.stat .l{font-size:var(--fs-xs);color:var(--fg-dim)}
+.stat .n{font-size:var(--fs-xs);color:var(--fg-faint)}
+/* charts */
+.chart{margin:var(--sp-3) 0}
+.chart svg{width:100%;height:auto;display:block}
+.chart .cap{font-size:var(--fs-xs);color:var(--fg-dim);margin-top:var(--sp-1)}
+.empty{color:var(--fg-faint);font-size:var(--fs-sm);border:1px dashed var(--line);border-radius:var(--r-sm);padding:var(--sp-4);text-align:center}
+/* history */
+.sess-item{display:block;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-2)}
+.sess-item:hover{border-color:var(--accent-dim)}
+.badge{display:inline-block;font-size:var(--fs-xs);border:1px solid var(--line);border-radius:10px;padding:0 8px;color:var(--fg-dim);margin-left:var(--sp-1)}
+.badge.gold{color:var(--gold);border-color:var(--gold)}
+table.kv{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+table.kv td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.kv td:first-child{color:var(--fg-dim);width:44%}
+/* modal */
+dialog{background:var(--bg2);color:var(--fg);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-4);max-width:min(560px,92vw);max-height:85vh;overflow:auto}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+/* toast */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;max-width:90vw}
+#toast.show{opacity:1}
+.notice{border:1px solid var(--accent-dim);background:rgba(61,106,138,.12);border-radius:var(--r-sm);padding:var(--sp-3);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
+.notice.warn{border-color:var(--warn);background:rgba(217,168,106,.08)}
+.honesty{font-size:var(--fs-xs);color:var(--fg-faint);border-top:1px solid var(--line);padding-top:var(--sp-2);margin-top:var(--sp-3)}
+/* map */
+.level{border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-3);background:var(--bg2)}
+.level.current{border-color:var(--gold)}
+.level h3{margin-top:0}
+details{margin:var(--sp-2) 0}
+details summary{cursor:pointer;color:var(--fg-dim);font-size:var(--fs-sm);min-height:40px;display:flex;align-items:center}
+details[open] summary{color:var(--fg)}
+/* draft table */
+.draft-field{display:grid;grid-template-columns:130px 1fr auto;gap:var(--sp-2);align-items:center;padding:var(--sp-1) 0;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
+.draft-field .ev{grid-column:2/4;color:var(--fg-faint);font-size:var(--fs-xs);font-style:italic}
+.conf-high{color:var(--ok)}.conf-medium{color:var(--warn)}.conf-low{color:var(--err)}
+.diff-old{color:var(--err);text-decoration:line-through}
+.diff-new{color:var(--ok)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:400px){main{padding:var(--sp-3)}.card{padding:var(--sp-3)}}
+</style>
+</head>
+<body>
+<header class="app hide-zen">
+  <h1>Sit Tracker</h1><span class="mm">ဈာန် · breath first</span>
+</header>
+<nav class="tabs hide-zen" role="tablist" aria-label="Sections">
+  <button role="tab" id="tabbtn-sit" aria-selected="true" aria-controls="tab-sit">Sit</button>
+  <button role="tab" id="tabbtn-review" aria-selected="false" aria-controls="tab-review">Review</button>
+  <button role="tab" id="tabbtn-progress" aria-selected="false" aria-controls="tab-progress">Progress</button>
+  <button role="tab" id="tabbtn-map" aria-selected="false" aria-controls="tab-map">Practice Map</button>
+  <button role="tab" id="tabbtn-journal" aria-selected="false" aria-controls="tab-journal">Journal AI</button>
+  <button role="tab" id="tabbtn-settings" aria-selected="false" aria-controls="tab-settings">Settings</button>
+</nav>
+<main>
+<div id="storage-warning" class="notice warn" hidden>Local storage is unavailable in this browser context. The app is running in memory only — data will be lost when the tab closes. Export regularly.</div>
+
+<!-- ============ SIT ============ -->
+<section id="tab-sit" role="tabpanel" aria-labelledby="tabbtn-sit" class="active">
+  <div id="resume-banner" class="notice" hidden>
+    <strong>A sit was in progress.</strong> <span id="resume-detail"></span>
+    <div class="row" style="margin-top:8px">
+      <button id="btn-resume-timer" class="primary">Continue sit</button>
+      <button id="btn-discard-timer">Discard</button>
+    </div>
+  </div>
+
+  <div class="card timer-wrap">
+    <div class="timer-phase" id="timer-phase" aria-live="polite"></div>
+    <div class="timer-big" id="timer-display" role="timer" aria-live="off">30:00</div>
+    <div class="timer-sub" id="timer-sub">planned 30 min</div>
+    <div class="row" style="justify-content:center;margin-top:var(--sp-4)">
+      <button id="btn-start" class="primary big">Start sit</button>
+      <button id="btn-pause" class="big" hidden>Pause</button>
+      <button id="btn-finish" hidden>Finish early</button>
+      <button id="btn-reset" class="ghost" hidden>Reset</button>
+      <button id="btn-zen" class="ghost" hidden aria-pressed="false">Quiet screen</button>
+    </div>
+    <div class="markers-bar" id="markers-bar" hidden aria-label="Session markers">
+      <button data-marker="steady">Steady</button>
+      <button data-marker="wandering">Wandering</button>
+      <button data-marker="returned">Returned</button>
+      <button data-marker="dull">Dull</button>
+      <button data-marker="agitated">Agitated</button>
+      <button data-marker="notable">Notable</button>
+    </div>
+    <div class="faint" id="marker-log" style="margin-top:var(--sp-2)" aria-live="polite"></div>
+  </div>
+
+  <div class="card hide-zen" id="sit-config">
+    <h3 style="margin-top:0">Duration</h3>
+    <div class="row" id="preset-row" role="group" aria-label="Duration presets">
+      <button class="chip" data-min="20">20</button>
+      <button class="chip" data-min="30" aria-pressed="true">30</button>
+      <button class="chip" data-min="45">45</button>
+      <button class="chip" data-min="60">60</button>
+      <button class="chip" data-min="90">90</button>
+      <button class="chip" data-min="120">120</button>
+      <label class="row" style="gap:6px">custom
+        <input type="number" id="custom-min" min="1" max="480" step="1" aria-label="Custom duration in minutes"> min
+      </label>
+    </div>
+    <h3>Object</h3>
+    <div class="row">
+      <select id="sit-object" aria-label="Meditation object">
+        <option value="nostril">Nostril rim</option>
+        <option value="upperlip">Upper lip</option>
+        <option value="abdomen">Abdomen</option>
+        <option value="wholebody">Whole-body breath</option>
+        <option value="custom">Custom…</option>
+      </select>
+      <input type="text" id="sit-object-custom" placeholder="describe object" hidden aria-label="Custom object description">
+    </div>
+    <small>Changing objects is not automatically progress. The current practice is the nostril rim / upper lip.</small>
+    <h3>Options</h3>
+    <div class="grid2">
+      <label class="check"><input type="checkbox" id="opt-prep"> Preparation countdown <select id="opt-prep-sec" aria-label="Preparation seconds"><option value="10">10 s</option><option value="20" selected>20 s</option><option value="30">30 s</option><option value="60">60 s</option></select></label>
+      <label class="check"><input type="checkbox" id="opt-final" checked> Final bell</label>
+      <label class="check"><input type="checkbox" id="opt-interval"> Interval bell every <select id="opt-interval-min" aria-label="Interval bell minutes"><option value="5">5</option><option value="10" selected>10</option><option value="15">15</option></select> min</label>
+      <label class="check"><input type="checkbox" id="opt-wakelock" checked> Keep screen awake (if supported)</label>
+    </div>
+  </div>
+
+  <div class="card hide-zen instructions">
+    <strong style="color:var(--fg)">Current instructions — Gate 0, Foundation</strong><br>
+    Observe the natural breath at the nostril rim or upper lip. Count one full in-and-out cycle as one, from 1 through 8, then restart. When the mind wanders, return without commentary. When the breath becomes faint, wait — do not breathe harder.
+  </div>
+</section>
+
+<!-- ============ REVIEW (post-session + history) ============ -->
+<section id="tab-review" role="tabpanel" aria-labelledby="tabbtn-review">
+  <div id="review-container"></div>
+  <div class="card">
+    <div class="row between">
+      <h2 style="margin:0">History</h2>
+      <button id="btn-manual-entry">+ Manual entry</button>
+    </div>
+    <div class="row" style="margin-top:var(--sp-3)">
+      <input type="text" id="hist-search" placeholder="Search notes / journal…" aria-label="Search sessions" style="flex:1;min-width:140px">
+      <select id="hist-filter-object" aria-label="Filter by object"><option value="">Any object</option></select>
+      <select id="hist-filter-hindrance" aria-label="Filter by hindrance"><option value="">Any hindrance</option></select>
+      <select id="hist-filter-nimitta" aria-label="Filter by light report"><option value="">Any light report</option><option value="reported">Light reported</option><option value="none">No light</option></select>
+      <select id="hist-filter-source" aria-label="Filter by entry source"><option value="">Any source</option><option value="timer">Timer</option><option value="manual">Manual</option><option value="ai">AI draft</option><option value="imported">Imported</option></select>
+      <select id="hist-filter-review" aria-label="Filter by teacher review"><option value="">Any review state</option><option value="none">Not reviewed</option><option value="flagged">Flagged for teacher</option><option value="discussed">Discussed</option><option value="reviewed">Teacher reviewed</option></select>
+    </div>
+    <div id="history-list" style="margin-top:var(--sp-3)"></div>
+  </div>
+</section>
+
+<!-- ============ PROGRESS ============ -->
+<section id="tab-progress" role="tabpanel" aria-labelledby="tabbtn-progress">
+  <div class="row" id="range-row" role="group" aria-label="Time range">
+    <button class="chip" data-range="7">7 d</button>
+    <button class="chip" data-range="30" aria-pressed="true">30 d</button>
+    <button class="chip" data-range="90">90 d</button>
+    <button class="chip" data-range="year">This year</button>
+    <button class="chip" data-range="all">All</button>
+  </div>
+  <div id="progress-container" style="margin-top:var(--sp-3)"></div>
+</section>
+
+<!-- ============ PRACTICE MAP ============ -->
+<section id="tab-map" role="tabpanel" aria-labelledby="tabbtn-map">
+  <div id="map-container"></div>
+</section>
+
+<!-- ============ JOURNAL AI ============ -->
+<section id="tab-journal" role="tabpanel" aria-labelledby="tabbtn-journal">
+  <div class="card">
+    <h2>Journal → structured draft</h2>
+    <p class="dim">Write or dictate what actually happened. The parser produces a <strong>draft</strong> — nothing is saved until you review and confirm it. Unreported values stay empty; they are never guessed.</p>
+    <div class="notice" id="ai-engine-notice"></div>
+    <textarea id="journal-text" aria-label="Journal text" placeholder="Example: I sat for 30 minutes. The first seven minutes were scattered. I think I had about 16 minutes of real concentration…"></textarea>
+    <div class="row" style="margin-top:var(--sp-2)">
+      <button id="btn-parse" class="primary">Create draft</button>
+      <button id="btn-journal-clear" class="ghost">Clear</button>
+    </div>
+  </div>
+  <div id="draft-container"></div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="tab-settings" role="tabpanel" aria-labelledby="tabbtn-settings">
+  <div class="card">
+    <h2>Data</h2>
+    <p class="dim">Everything lives in this browser's localStorage (key <code>jhanaTracker.v2</code>). Browser data can be cleared by the OS or the user — export regularly. Data is <strong>not encrypted</strong> and never leaves this device unless you configure an AI provider or export it yourself.</p>
+    <div class="row">
+      <button id="btn-export-json" class="primary">Export JSON (full backup)</button>
+      <button id="btn-export-csv">Export CSV (sessions)</button>
+      <label class="btn" style="display:inline-flex;align-items:center">Import JSON… <input type="file" id="import-file" accept=".json,application/json" class="sr-only"></label>
+    </div>
+    <p class="faint" id="storage-info" style="margin-top:var(--sp-2)"></p>
+  </div>
+
+  <div class="card">
+    <h2>AI provider (optional)</h2>
+    <p class="dim">By default the Journal uses a <strong>local, deterministic parser</strong> — nothing leaves the device. If you configure a provider, journal text is sent to that endpoint when you press “Create draft”. The key is stored only in this browser's localStorage, in plain text.</p>
+    <label class="check"><input type="checkbox" id="ai-enabled"> Use external provider when configured</label>
+    <div class="grid2" style="margin-top:var(--sp-2)">
+      <div class="field"><label for="ai-endpoint">Endpoint URL</label><input type="url" id="ai-endpoint" placeholder="https://api.anthropic.com/v1/messages"></div>
+      <div class="field"><label for="ai-model">Model</label><input type="text" id="ai-model" placeholder="claude-haiku-4-5"></div>
+      <div class="field" style="grid-column:1/-1"><label for="ai-key">API key (stored locally, never committed)</label><input type="password" id="ai-key" autocomplete="off"></div>
+    </div>
+    <div class="row">
+      <button id="btn-ai-save">Save provider settings</button>
+      <button id="btn-ai-test">Test connection</button>
+    </div>
+    <p class="faint">If the provider fails or returns malformed output, the app falls back to the local parser automatically.</p>
+  </div>
+
+  <div class="card">
+    <h2>Bells</h2>
+    <div class="row">
+      <label for="bell-volume">Volume</label>
+      <input type="range" id="bell-volume" min="0" max="100" value="60" style="max-width:200px">
+      <button id="btn-test-bell">Test bell</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Self-tests</h2>
+    <p class="dim">Runs the built-in logic test suite (also runnable with <code>?selftest=1</code> or under Node — see README).</p>
+    <button id="btn-selftest">Run self-tests</button>
+    <pre id="selftest-out" style="white-space:pre-wrap;font-size:var(--fs-xs);margin-top:var(--sp-2)"></pre>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--err)">Danger zone</h2>
+    <p class="dim">Deletes the tracker envelope from this browser. Legacy v1 keys (<code>janSits</code>, <code>janGates</code>) are never touched. Export first.</p>
+    <button id="btn-wipe" class="danger">Delete all tracker data…</button>
+  </div>
+
+  <div class="honesty">This application records self-reported experience and observable practice patterns. It cannot verify jhāna, nimitta, attainments, or abilities, and it never claims to. Teacher review outranks anything this software computes.</div>
+</section>
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="modal"><div id="modal-body"></div></dialog>
+
+<script>
+"use strict";
+/*CORE-START*/
+/* Pure logic. No DOM, no localStorage, no fetch side-effects. Extractable and runnable under Node. */
+const CORE = (function () {
+  const SCHEMA_VERSION = 3;
+  const OBJECTS = ["nostril", "upperlip", "abdomen", "wholebody", "custom"];
+  const HINDRANCES = ["sensualDesire", "illWill", "sloth", "restlessness", "doubt"];
+  const HINDRANCE_LABELS = {
+    sensualDesire: "Sensual desire", illWill: "Ill will / aversion", sloth: "Sloth & torpor",
+    restlessness: "Restlessness & remorse", doubt: "Doubt"
+  };
+  const INTENSITIES = ["mild", "moderate", "strong"];
+  const QUALITIES = ["placement", "sustained", "bodilyEnergy", "ease", "unification", "equanimity",
+    "brightness", "reducedBody", "reducedSpeech", "timeDistortion", "other"];
+  const QUALITY_LABELS = {
+    placement: "Initial placement", sustained: "Sustained attention", bodilyEnergy: "Pleasant bodily energy",
+    ease: "Ease / happiness", unification: "Unification", equanimity: "Equanimity",
+    brightness: "Brightness or light", reducedBody: "Reduced body awareness",
+    reducedSpeech: "Reduced inner speech", timeDistortion: "Time distortion", other: "Other"
+  };
+  const NIMITTA_CATEGORIES = ["none", "uncertain", "brief", "flicker", "unstableImage", "stableImage", "brightField", "other"];
+  const NIMITTA_LABELS = {
+    none: "None reported", uncertain: "Marked uncertain", brief: "Brief light / visual event",
+    flicker: "Repeated flickering", unstableImage: "Unstable mental image",
+    stableImage: "Stable mental image", brightField: "Bright stable field", other: "Other"
+  };
+  const ENTRY_SOURCES = ["timer", "manual", "ai", "imported"];
+  const REVIEW_STATES = ["none", "flagged", "discussed", "reviewed"];
+  const REVIEW_LABELS = { none: "Not reviewed", flagged: "Flagged for teacher", discussed: "Discussed with teacher", reviewed: "Teacher reviewed" };
+  const CONFIDENCES = ["low", "medium", "high"];
+  const AFTER_STATES = ["calmer", "no change", "more agitated", "tired", "energized"];
+  const SEGMENT_KINDS = ["wandering", "intermittent", "mostly", "continuous", "dull", "agitated", "uncertain"];
+  const SEGMENT_LABELS = {
+    wandering: "Wandering", intermittent: "Intermittent contact", mostly: "Mostly steady",
+    continuous: "Continuous stable", dull: "Dull", agitated: "Agitated", uncertain: "Uncertain"
+  };
+  // Contact weight per segment kind — documented convention, not a measurement.
+  const SEGMENT_WEIGHTS = { wandering: 0, intermittent: 0.35, mostly: 0.75, continuous: 1, dull: 0, agitated: 0, uncertain: 0 };
+  const MARKER_KINDS = ["steady", "wandering", "returned", "dull", "agitated", "notable"];
+  const MAP_EVIDENCE = ["not-assessed", "self-reported", "repeated-pattern", "discussed", "teacher-reviewed"];
+
+  // ---------- small utils ----------
+  function clamp(n, lo, hi) { return Math.min(hi, Math.max(lo, n)); }
+  function round1(n) { return Math.round(n * 10) / 10; }
+  function round2(n) { return Math.round(n * 100) / 100; }
+  function isNum(n) { return typeof n === "number" && isFinite(n); }
+  function isDateStr(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s + "T00:00:00Z")); }
+  function isTimeStr(s) { return typeof s === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(s); }
+  function pad2(n) { return String(n).padStart(2, "0"); }
+  function addDays(dateStr, n) {
+    const d = new Date(dateStr + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function uid() {
+    return "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+  function fmtMin(n) {
+    if (n === null || n === undefined) return "—";
+    return (Math.round(n * 10) / 10) + " min";
+  }
+  function fmtClock(totalSec) {
+    totalSec = Math.max(0, Math.round(totalSec));
+    const h = Math.floor(totalSec / 3600), m = Math.floor((totalSec % 3600) / 60), s = totalSec % 60;
+    return h > 0 ? h + ":" + pad2(m) + ":" + pad2(s) : m + ":" + pad2(s);
+  }
+
+  // ---------- session schema ----------
+  function blankSession(nowIso, todayStr) {
+    return {
+      id: uid(), v: SCHEMA_VERSION,
+      date: todayStr || null, startTime: null, endTime: null,
+      plannedMin: null, actualMin: null,
+      concMin: null, ratio: null, confidence: null,
+      settleMin: null, longestSteadyMin: null,
+      wanderings: null, returns: null,
+      object: null, objectCustom: null, posture: null, phase: "foundation",
+      energyBefore: null, energyAfter: null, calmBefore: null, calmAfter: null,
+      afterStateReport: null,
+      hindrances: {}, dominantHindrance: null,
+      qualities: [],
+      nimitta: null,
+      timeline: null, timelineDerivedMin: null, manualOverride: false,
+      markers: null,
+      notes: "", journalText: null,
+      entrySource: null, teacherReview: "none", teacherNotes: null,
+      createdAt: nowIso || null, updatedAt: nowIso || null
+    };
+  }
+
+  function computeRatio(concMin, actualMin) {
+    if (!isNum(concMin) || !isNum(actualMin) || actualMin <= 0) return null;
+    return round2(clamp(concMin / actualMin, 0, 1));
+  }
+
+  function validateSession(s) {
+    const errors = [];
+    if (!s || typeof s !== "object") return { ok: false, errors: ["not an object"] };
+    if (typeof s.id !== "string" || !s.id) errors.push("missing id");
+    if (!isDateStr(s.date)) errors.push("invalid date");
+    if (!isNum(s.actualMin) || s.actualMin <= 0 || s.actualMin > 1440) errors.push("actualMin must be a positive number of minutes");
+    if (s.plannedMin !== null && s.plannedMin !== undefined && (!isNum(s.plannedMin) || s.plannedMin <= 0)) errors.push("invalid plannedMin");
+    if (s.startTime !== null && s.startTime !== undefined && !isTimeStr(s.startTime)) errors.push("invalid startTime");
+    if (s.concMin !== null && s.concMin !== undefined) {
+      if (!isNum(s.concMin) || s.concMin < 0) errors.push("concMin must be >= 0");
+      else if (isNum(s.actualMin) && s.concMin > s.actualMin + 0.001) errors.push("concentrated minutes cannot exceed actual duration");
+    }
+    if (s.confidence !== null && s.confidence !== undefined && CONFIDENCES.indexOf(s.confidence) < 0) errors.push("invalid confidence");
+    if (s.settleMin !== null && s.settleMin !== undefined && (!isNum(s.settleMin) || s.settleMin < 0)) errors.push("invalid settleMin");
+    if (s.longestSteadyMin !== null && s.longestSteadyMin !== undefined) {
+      if (!isNum(s.longestSteadyMin) || s.longestSteadyMin < 0) errors.push("invalid longestSteadyMin");
+      else if (isNum(s.actualMin) && s.longestSteadyMin > s.actualMin + 0.001) errors.push("longest steady period cannot exceed duration");
+    }
+    if (s.wanderings !== null && s.wanderings !== undefined && (!isNum(s.wanderings) || s.wanderings < 0)) errors.push("invalid wanderings");
+    if (s.object !== null && s.object !== undefined && OBJECTS.indexOf(s.object) < 0) errors.push("invalid object");
+    if (s.entrySource !== null && s.entrySource !== undefined && ENTRY_SOURCES.indexOf(s.entrySource) < 0) errors.push("invalid entrySource");
+    if (s.teacherReview !== null && s.teacherReview !== undefined && REVIEW_STATES.indexOf(s.teacherReview) < 0) errors.push("invalid teacherReview");
+    if (s.hindrances && typeof s.hindrances === "object") {
+      for (const k in s.hindrances) {
+        if (HINDRANCES.indexOf(k) < 0) errors.push("unknown hindrance: " + k);
+        else if (s.hindrances[k] !== null && INTENSITIES.indexOf(s.hindrances[k]) < 0) errors.push("invalid intensity for " + k);
+      }
+    }
+    if (s.dominantHindrance !== null && s.dominantHindrance !== undefined && HINDRANCES.indexOf(s.dominantHindrance) < 0) errors.push("invalid dominantHindrance");
+    if (s.nimitta !== null && s.nimitta !== undefined) {
+      if (typeof s.nimitta !== "object" || NIMITTA_CATEGORIES.indexOf(s.nimitta.category) < 0) errors.push("invalid nimitta report");
+    }
+    if (s.timeline !== null && s.timeline !== undefined) {
+      const tv = validateTimeline(s.timeline, s.actualMin);
+      if (!tv.ok) errors.push.apply(errors, tv.errors);
+    }
+    for (const scale of ["energyBefore", "energyAfter", "calmBefore", "calmAfter"]) {
+      const v = s[scale];
+      if (v !== null && v !== undefined && (!isNum(v) || v < 1 || v > 5)) errors.push("invalid " + scale + " (1-5)");
+    }
+    if (s.afterStateReport !== null && s.afterStateReport !== undefined && AFTER_STATES.indexOf(s.afterStateReport) < 0) errors.push("invalid afterStateReport");
+    return { ok: errors.length === 0, errors };
+  }
+
+  // Fill a partial object into a full valid-shaped session (does not validate values).
+  function normalizeSession(partial, nowIso, todayStr) {
+    const base = blankSession(nowIso, todayStr);
+    const s = Object.assign({}, base, partial || {});
+    s.v = SCHEMA_VERSION;
+    if (!s.id || typeof s.id !== "string") s.id = uid();
+    if (s.hindrances === null || typeof s.hindrances !== "object") s.hindrances = {};
+    if (!Array.isArray(s.qualities)) s.qualities = [];
+    if (typeof s.notes !== "string") s.notes = s.notes == null ? "" : String(s.notes);
+    s.ratio = computeRatio(s.concMin, s.actualMin);
+    if (!s.createdAt) s.createdAt = nowIso || null;
+    s.updatedAt = nowIso || s.updatedAt || null;
+    return s;
+  }
+
+  // ---------- timeline ----------
+  function validateTimeline(segments, actualMin) {
+    const errors = [];
+    if (!Array.isArray(segments)) return { ok: false, errors: ["timeline must be a list"] };
+    let prevEnd = -1;
+    const sorted = segments.slice().sort((a, b) => a.startMin - b.startMin);
+    for (const seg of sorted) {
+      if (!seg || SEGMENT_KINDS.indexOf(seg.kind) < 0) { errors.push("invalid segment kind"); continue; }
+      if (!isNum(seg.startMin) || !isNum(seg.endMin) || seg.startMin < 0 || seg.endMin <= seg.startMin) errors.push("invalid segment bounds");
+      else {
+        if (isNum(actualMin) && seg.endMin > actualMin + 0.001) errors.push("segment extends past session end");
+        if (seg.startMin < prevEnd - 0.001) errors.push("segments overlap");
+        prevEnd = Math.max(prevEnd, seg.endMin);
+      }
+    }
+    return { ok: errors.length === 0, errors };
+  }
+
+  function deriveFromTimeline(segments) {
+    if (!Array.isArray(segments) || segments.length === 0) return { concMin: null, longestSteadyMin: null };
+    let conc = 0, longest = 0, run = 0, prevEnd = null;
+    const sorted = segments.slice().sort((a, b) => a.startMin - b.startMin);
+    for (const seg of sorted) {
+      const w = SEGMENT_WEIGHTS[seg.kind] || 0;
+      const len = Math.max(0, seg.endMin - seg.startMin);
+      conc += w * len;
+      if (w >= 0.75) {
+        run = (prevEnd !== null && Math.abs(seg.startMin - prevEnd) < 0.001 && run > 0) ? run + len : len;
+        longest = Math.max(longest, run);
+        prevEnd = seg.endMin;
+      } else {
+        run = 0; prevEnd = seg.endMin;
+      }
+    }
+    return { concMin: round1(conc), longestSteadyMin: round1(longest) };
+  }
+
+  // ---------- timer math (timestamp-based; survives refresh & tab sleep) ----------
+  // state: {phase:'idle'|'prep'|'running'|'paused'|'done', plannedSec, prepSec, startMs, pausedAtMs, pausedTotalMs}
+  function timerSnapshot(st, nowMs) {
+    if (!st || st.phase === "idle" || !isNum(st.startMs)) {
+      return { mode: "idle", elapsedSec: 0, remainingSec: (st && st.plannedSec) || 0, prepRemainingSec: 0, overSec: 0 };
+    }
+    const anchor = st.phase === "paused" ? st.pausedAtMs : nowMs;
+    const raw = (anchor - st.startMs - (st.pausedTotalMs || 0)) / 1000;
+    if (raw < 0) {
+      return { mode: st.phase === "paused" ? "paused" : "prep", elapsedSec: 0, remainingSec: st.plannedSec, prepRemainingSec: Math.ceil(-raw), overSec: 0 };
+    }
+    if (raw >= st.plannedSec) {
+      return { mode: "done", elapsedSec: st.plannedSec, remainingSec: 0, prepRemainingSec: 0, overSec: Math.floor(raw - st.plannedSec) };
+    }
+    return {
+      mode: st.phase === "paused" ? "paused" : "running",
+      elapsedSec: raw, remainingSec: st.plannedSec - raw, prepRemainingSec: 0, overSec: 0
+    };
+  }
+
+  function startTimerState(plannedSec, prepSec, nowMs) {
+    return { phase: "running", plannedSec, prepSec: prepSec || 0, startMs: nowMs + (prepSec || 0) * 1000, pausedAtMs: null, pausedTotalMs: 0 };
+  }
+  function pauseTimerState(st, nowMs) {
+    if (!st || st.phase !== "running") return st;
+    return Object.assign({}, st, { phase: "paused", pausedAtMs: nowMs });
+  }
+  function resumeTimerState(st, nowMs) {
+    if (!st || st.phase !== "paused") return st;
+    return Object.assign({}, st, { phase: "running", pausedAtMs: null, pausedTotalMs: (st.pausedTotalMs || 0) + (nowMs - st.pausedAtMs) });
+  }
+  // Bells crossed between two elapsed marks. Capped at 1 so a sleeping tab never rings a backlog.
+  function dueBells(intervalSec, prevElapsed, curElapsed) {
+    if (!intervalSec || intervalSec <= 0) return 0;
+    const n = Math.floor(curElapsed / intervalSec) - Math.floor(prevElapsed / intervalSec);
+    return clamp(n, 0, 1);
+  }
+
+  // ---------- streaks & metrics ----------
+  function computeStreaks(sessions, todayStr) {
+    const dates = new Set(sessions.filter(s => isDateStr(s.date)).map(s => s.date));
+    let current = 0;
+    let cursor = dates.has(todayStr) ? todayStr : addDays(todayStr, -1);
+    while (dates.has(cursor)) { current++; cursor = addDays(cursor, -1); }
+    let longest = 0;
+    const sorted = Array.from(dates).sort();
+    let run = 0, prev = null;
+    for (const d of sorted) {
+      run = (prev !== null && addDays(prev, 1) === d) ? run + 1 : 1;
+      longest = Math.max(longest, run);
+      prev = d;
+    }
+    return { current, longest };
+  }
+
+  function filterRange(sessions, range, todayStr) {
+    if (range === "all" || !range) return sessions.slice();
+    let from;
+    if (range === "year") from = todayStr.slice(0, 4) + "-01-01";
+    else if (typeof range === "object" && range.from) {
+      const to = range.to || todayStr;
+      return sessions.filter(s => s.date >= range.from && s.date <= to);
+    }
+    else from = addDays(todayStr, -(parseInt(range, 10) - 1));
+    return sessions.filter(s => s.date >= from && s.date <= todayStr);
+  }
+
+  function avg(list) {
+    const xs = list.filter(isNum);
+    if (!xs.length) return null;
+    return xs.reduce((a, b) => a + b, 0) / xs.length;
+  }
+
+  function summaryMetrics(sessions, todayStr) {
+    const n = sessions.length;
+    const totalMin = sessions.reduce((a, s) => a + (isNum(s.actualMin) ? s.actualMin : 0), 0);
+    const concSessions = sessions.filter(s => isNum(s.concMin));
+    const totalConc = concSessions.reduce((a, s) => a + s.concMin, 0);
+    const streaks = computeStreaks(sessions, todayStr);
+    return {
+      sessions: n,
+      totalHours: round1(totalMin / 60),
+      totalConcHours: concSessions.length ? round1(totalConc / 60) : null,
+      concReportedCount: concSessions.length,
+      avgDuration: n ? round1(totalMin / n) : null,
+      avgConc: concSessions.length ? round1(totalConc / concSessions.length) : null,
+      avgRatio: (function () { const r = avg(sessions.map(s => s.ratio)); return r === null ? null : round2(r); })(),
+      avgSettle: (function () { const r = avg(sessions.map(s => s.settleMin)); return r === null ? null : round1(r); })(),
+      bestSteady: (function () {
+        const xs = sessions.map(s => s.longestSteadyMin).filter(isNum);
+        return xs.length ? round1(Math.max.apply(null, xs)) : null;
+      })(),
+      currentStreak: streaks.current,
+      longestStreak: streaks.longest
+    };
+  }
+
+  function timeOfDayBucket(startTime) {
+    if (!isTimeStr(startTime)) return null;
+    const h = parseInt(startTime.slice(0, 2), 10);
+    if (h < 12) return "morning";
+    if (h < 17) return "afternoon";
+    return "evening";
+  }
+
+  // ---------- pattern insights (deterministic; AI never computes these) ----------
+  function strengthLabel(n) {
+    if (n >= 20) return "reasonably supported";
+    if (n >= 10) return "moderate";
+    return "weak";
+  }
+
+  function insights(sessions, todayStr) {
+    const out = [];
+    const sorted = sessions.slice().sort((a, b) => (a.date + (a.startTime || "")) < (b.date + (b.startTime || "")) ? -1 : 1);
+    // 1. hindrance frequency, last 10 sessions
+    const last10 = sorted.slice(-10);
+    if (last10.length >= 5) {
+      const counts = {};
+      for (const s of last10) for (const h in (s.hindrances || {})) if (s.hindrances[h]) counts[h] = (counts[h] || 0) + 1;
+      const top = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+      if (top && counts[top] >= 3) {
+        out.push({
+          text: HINDRANCE_LABELS[top] + " was reported in " + counts[top] + " of your last " + last10.length + " sessions.",
+          range: last10[0].date + " → " + last10[last10.length - 1].date, n: last10.length,
+          metric: "hindrance frequency", strength: strengthLabel(last10.length)
+        });
+      }
+    }
+    // 2. morning vs evening concentration ratio
+    const withRatio = sorted.filter(s => isNum(s.ratio));
+    const morning = withRatio.filter(s => timeOfDayBucket(s.startTime) === "morning");
+    const evening = withRatio.filter(s => timeOfDayBucket(s.startTime) === "evening");
+    if (morning.length >= 5 && evening.length >= 5) {
+      const m = avg(morning.map(s => s.ratio)), e = avg(evening.map(s => s.ratio));
+      if (m !== null && e !== null && Math.abs(m - e) >= 0.05) {
+        const hi = m > e ? "morning" : "evening";
+        out.push({
+          text: "Your self-reported concentration ratio was higher in " + hi + " sessions (" +
+            Math.round(Math.max(m, e) * 100) + "% vs " + Math.round(Math.min(m, e) * 100) + "%), based on " +
+            morning.length + " morning and " + evening.length + " evening sessions. This is an association, not a cause.",
+          range: "sessions with a reported ratio", n: morning.length + evening.length,
+          metric: "avg concentration ratio by time of day", strength: strengthLabel(Math.min(morning.length, evening.length))
+        });
+      }
+    } else if (withRatio.length >= 5) {
+      out.push({
+        text: "There is not enough data yet to compare times of day (need at least 5 morning and 5 evening sessions with a reported ratio).",
+        range: "all sessions", n: withRatio.length, metric: "time-of-day comparison", strength: "insufficient"
+      });
+    }
+    // 3. settling trend, first vs recent half (needs >= 10 with settleMin)
+    const withSettle = sorted.filter(s => isNum(s.settleMin));
+    if (withSettle.length >= 10) {
+      const half = Math.floor(withSettle.length / 2);
+      const a = avg(withSettle.slice(0, half).map(s => s.settleMin));
+      const b = avg(withSettle.slice(-half).map(s => s.settleMin));
+      if (a !== null && b !== null && Math.abs(a - b) >= 1) {
+        out.push({
+          text: "Average self-reported settling time " + (b < a ? "decreased" : "increased") + " from " + round1(a) +
+            " to " + round1(b) + " minutes between your earlier and recent sessions (" + withSettle.length + " sessions with data).",
+          range: withSettle[0].date + " → " + withSettle[withSettle.length - 1].date, n: withSettle.length,
+          metric: "settling time, first half vs second half", strength: strengthLabel(withSettle.length)
+        });
+      }
+    }
+    // 4. object comparison
+    const byObject = {};
+    for (const s of withRatio) if (s.object) (byObject[s.object] = byObject[s.object] || []).push(s.ratio);
+    const objectsWithEnough = Object.keys(byObject).filter(k => byObject[k].length >= 5);
+    if (Object.keys(byObject).length >= 2 && objectsWithEnough.length < 2) {
+      out.push({
+        text: "There is not enough data to compare meditation objects (need at least 5 rated sessions per object).",
+        range: "all sessions", n: withRatio.length, metric: "object comparison", strength: "insufficient"
+      });
+    }
+    // 5. repeated light reports
+    const nimittaSessions = sorted.filter(s => s.nimitta && s.nimitta.category && s.nimitta.category !== "none");
+    if (nimittaSessions.length >= 2) {
+      out.push({
+        text: "A light or image report appeared in " + nimittaSessions.length + " sessions. Consider discussing repeated or destabilizing experiences with a qualified teacher.",
+        range: nimittaSessions[0].date + " → " + nimittaSessions[nimittaSessions.length - 1].date, n: nimittaSessions.length,
+        metric: "sessions with a light/image report", strength: strengthLabel(nimittaSessions.length)
+      });
+    }
+    return out;
+  }
+
+  // ---------- CSV ----------
+  const CSV_COLUMNS = ["id", "date", "startTime", "endTime", "plannedMin", "actualMin", "concMin", "ratio",
+    "confidence", "settleMin", "longestSteadyMin", "wanderings", "returns", "object", "objectCustom", "posture", "phase",
+    "energyBefore", "energyAfter", "calmBefore", "calmAfter", "afterStateReport", "dominantHindrance", "hindrances",
+    "qualities", "nimittaCategory", "entrySource", "teacherReview", "createdAt", "updatedAt", "notes"];
+
+  function csvEscape(v) {
+    if (v === null || v === undefined) return "";
+    const s = String(v);
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function toCSV(sessions) {
+    const rows = [CSV_COLUMNS.join(",")];
+    for (const s of sessions) {
+      const flat = Object.assign({}, s, {
+        hindrances: Object.keys(s.hindrances || {}).filter(k => s.hindrances[k]).map(k => k + ":" + s.hindrances[k]).join(";"),
+        qualities: (s.qualities || []).join(";"),
+        nimittaCategory: s.nimitta ? s.nimitta.category : ""
+      });
+      rows.push(CSV_COLUMNS.map(c => csvEscape(flat[c])).join(","));
+    }
+    return rows.join("\r\n");
+  }
+
+  // ---------- import / export ----------
+  function sessionFingerprint(s) {
+    return [s.date, s.startTime || "", isNum(s.actualMin) ? Math.round(s.actualMin) : ""].join("|");
+  }
+
+  function parseImport(text, existingSessions, nowIso) {
+    let data;
+    try { data = JSON.parse(text); }
+    catch (e) { return { ok: false, error: "Not valid JSON: " + e.message }; }
+    let incoming;
+    if (Array.isArray(data)) incoming = data;
+    else if (data && Array.isArray(data.sessions)) incoming = data.sessions;
+    else return { ok: false, error: "Unrecognized format: expected a full backup ({sessions:[…]}) or a session array." };
+    const existingIds = new Set(existingSessions.map(s => s.id));
+    const existingFp = new Set(existingSessions.map(sessionFingerprint));
+    const fresh = [], duplicates = [], invalid = [];
+    const seenIncoming = new Set();
+    for (const raw of incoming) {
+      const s = normalizeSession(raw, nowIso, null);
+      const v = validateSession(s);
+      if (!v.ok) { invalid.push({ session: raw, errors: v.errors }); continue; }
+      const fp = sessionFingerprint(s);
+      if (existingIds.has(s.id) || existingFp.has(fp) || seenIncoming.has(fp)) { duplicates.push(s); continue; }
+      seenIncoming.add(fp);
+      fresh.push(s);
+    }
+    return { ok: true, fresh, duplicates, invalid, total: incoming.length, importedSettings: (data && !Array.isArray(data) && data.settings) ? data.settings : null };
+  }
+
+  // ---------- migration ----------
+  // Envelope: {schemaVersion, sessions, settings, map, savedAt}
+  // v1 = legacy loose keys (janSits / janGates), v2 = envelope without entrySource/teacherReview/afterStateReport, v3 = current.
+  function migrate(rawEnvelope, legacy, nowIso, todayStr) {
+    const notes = [];
+    let env = rawEnvelope;
+    if (!env || typeof env !== "object") {
+      env = { schemaVersion: SCHEMA_VERSION, sessions: [], settings: {}, map: null, savedAt: nowIso };
+      // absorb legacy v1 keys non-destructively
+      if (legacy && Array.isArray(legacy.janSits) && legacy.janSits.length) {
+        let migrated = 0;
+        for (const old of legacy.janSits) {
+          if (!old || typeof old !== "object") continue;
+          const s = normalizeSession({
+            date: old.date || old.d || null,
+            actualMin: isNum(old.minutes) ? old.minutes : (isNum(old.min) ? old.min : (isNum(old.duration) ? old.duration : null)),
+            concMin: isNum(old.focusMinutes) ? old.focusMinutes : (isNum(old.focus) ? old.focus : (isNum(old.conc) ? old.conc : null)),
+            notes: typeof old.note === "string" ? old.note : (typeof old.notes === "string" ? old.notes : ""),
+            nimitta: old.nimitta && typeof old.nimitta === "object" && NIMITTA_CATEGORIES.indexOf(old.nimitta.category) >= 0 ? old.nimitta : null,
+            entrySource: "imported",
+            _legacy: old
+          }, nowIso, todayStr);
+          if (validateSession(s).ok) { env.sessions.push(s); migrated++; }
+        }
+        notes.push("Migrated " + migrated + " of " + legacy.janSits.length + " legacy v1 sessions (originals kept untouched under key janSits).");
+      }
+      if (legacy && legacy.janGates !== undefined && legacy.janGates !== null) {
+        env.legacyGates = legacy.janGates;
+        notes.push("Preserved legacy janGates content inside the envelope for reference.");
+      }
+    }
+    const fromVersion = env.schemaVersion || 2;
+    if (fromVersion < SCHEMA_VERSION) {
+      env.sessions = (env.sessions || []).map(s => {
+        const up = Object.assign({}, s);
+        if (up.entrySource === undefined) up.entrySource = null;      // unknown, not guessed
+        if (up.teacherReview === undefined) up.teacherReview = "none";
+        if (up.afterStateReport === undefined) up.afterStateReport = null;
+        if (up.markers === undefined) up.markers = null;
+        if (up.teacherNotes === undefined) up.teacherNotes = null;
+        up.v = SCHEMA_VERSION;
+        return up;
+      });
+      notes.push("Upgraded envelope schema v" + fromVersion + " → v" + SCHEMA_VERSION + ".");
+      env.schemaVersion = SCHEMA_VERSION;
+    }
+    if (!env.settings || typeof env.settings !== "object") env.settings = {};
+    if (!Array.isArray(env.sessions)) env.sessions = [];
+    if (env.map === undefined) env.map = null;
+    return { env, notes };
+  }
+
+  // ---------- journal parser (deterministic, local) ----------
+  const WORDNUMS = {
+    one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+    eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17,
+    eighteen: 18, nineteen: 19, twenty: 20, "twenty-five": 25, thirty: 30, "forty-five": 45, forty: 40,
+    fifty: 50, sixty: 60, ninety: 90, "a couple of": 2, "a few": 3, half: 0.5
+  };
+  const NUMPAT = "(\\d+(?:\\.\\d+)?|" + Object.keys(WORDNUMS).sort((a, b) => b.length - a.length).join("|") + ")";
+  function toNumber(tok) {
+    if (/^\d/.test(tok)) return parseFloat(tok);
+    return WORDNUMS[tok.toLowerCase()] !== undefined ? WORDNUMS[tok.toLowerCase()] : null;
+  }
+  const HEDGE_RE = /\b(about|around|maybe|roughly|approximately|approx|perhaps|possibly|i think|i guess|i believe|not sure|sort of|kind of|ish|or so)\b/gi;
+
+  function hedgeConfidence(text, index, length) {
+    const win = sentenceAround(text, index);
+    const m = win.match(HEDGE_RE);
+    const count = m ? m.length : 0;
+    if (/not sure|no idea|can'?t tell/i.test(win)) return "low";
+    if (count >= 2) return "low";
+    if (count === 1) return "medium";
+    return "high";
+  }
+
+  function firstMatch(text, patterns) {
+    for (const p of patterns) {
+      const re = new RegExp(p, "i");
+      const m = re.exec(text);
+      if (m) {
+        const numTok = m[1];
+        const val = numTok !== undefined ? toNumber(numTok) : null;
+        if (numTok === undefined || val !== null) {
+          return { value: val, index: m.index, length: m[0].length, evidence: m[0].trim().slice(0, 80) };
+        }
+      }
+    }
+    return null;
+  }
+
+  function parseJournal(text) {
+    const t = String(text || "").replace(/\s+/g, " ").trim();
+    const conf = {};   // aiConfidence: per-field {value, confidence, evidence}
+    const draft = {
+      date: null, startTime: null,
+      plannedMin: null, actualMin: null, concMin: null, confidence: null,
+      settleMin: null, longestSteadyMin: null, wanderings: null, returns: null,
+      hindrances: {}, dominantHindrance: null,
+      nimitta: null, afterStateReport: null, qualities: [],
+      notes: "", journalText: String(text || ""),
+      aiConfidence: conf, warnings: [], questions: []
+    };
+    if (!t) { draft.questions.push("The journal entry is empty — what happened during the sit?"); return draft; }
+
+    const M = "\\s*-?\\s*min(?:ute)?s?\\b";
+    function grab(field, patterns) {
+      const m = firstMatch(t, patterns);
+      if (m && m.value !== null) {
+        draft[field] = m.value;
+        conf[field] = { value: m.value, confidence: hedgeConfidence(t, m.index, m.length), evidence: m.evidence };
+      }
+    }
+    grab("actualMin", [
+      "sat(?:\\s+\\w+){0,3}?\\s+for\\s+" + NUMPAT + M,
+      NUMPAT + "[ -]min(?:ute)?s?\\s+(?:sit|session|meditation)",
+      "\\bdid\\s+(?:a\\s+)?" + NUMPAT + M,
+      "\\bsat\\s+" + NUMPAT + M,
+      "session\\s+(?:was|lasted)\\s+" + NUMPAT + M
+    ]);
+    grab("settleMin", [
+      "first\\s+" + NUMPAT + "\\s+min\\w*\\s+(?:were|was)\\s+(?:pretty\\s+|very\\s+|quite\\s+|all\\s+)?(?:scattered|restless|unsettled|choppy|over the place|noisy|rough)",
+      "took\\s+(?:me\\s+)?(?:about\\s+|around\\s+|maybe\\s+)?" + NUMPAT + "\\s*min\\w*\\s+to\\s+settle",
+      "settled?\\s+(?:down\\s+)?(?:after|around|at|by)\\s+(?:about\\s+|the\\s+)?" + NUMPAT + M
+    ]);
+    grab("concMin", [
+      NUMPAT + "\\s*min\\w*\\s+of\\s+(?:real\\s+|genuine\\s+|good\\s+|actual\\s+|solid\\s+|true\\s+)?(?:concentration|contact|focus|stability|stillness|being with the breath)",
+      "(?:concentrated|focused|with the breath)\\s+for\\s+(?:about\\s+|around\\s+|maybe\\s+)?" + NUMPAT + M
+    ]);
+    grab("longestSteadyMin", [
+      "longest[^.!?]*?\\b" + NUMPAT + "\\b\\s*min",
+      "best\\s+(?:stretch|run|period)[^.!?]*?\\b" + NUMPAT + "\\b\\s*min"
+    ]);
+    grab("wanderings", [
+      "wandered[^.!?]*?\\b" + NUMPAT + "\\b\\s*times",
+      "\\b" + NUMPAT + "\\b\\s+(?:major\\s+|big\\s+)?wander\\w*",
+      "lost\\s+(?:the\\s+breath|it)[^.!?]*?\\b" + NUMPAT + "\\b\\s*times"
+    ]);
+    grab("returns", [
+      "(?:came\\s+back|returned)[^.!?]*?\\b" + NUMPAT + "\\b\\s*times"
+    ]);
+
+    // overall confidence for the concentration estimate
+    if (conf.concMin) draft.confidence = conf.concMin.confidence;
+
+    // hindrances
+    const HKEYS = [
+      { key: "restlessness", re: /restless\w*|agitat\w*|antsy|jumpy|remorse/i },
+      { key: "sloth", re: /sleepy|drowsy|dull\w*|sloth|torpor|heavy[- ]?headed|nodding off|foggy/i },
+      { key: "illWill", re: /anger|angry|irritat\w*|annoy\w*|aversion|ill[- ]?will|resent\w*|frustrat\w*/i },
+      { key: "sensualDesire", re: /craving|sensual|lust|desire for|fantasi\w*|daydream\w* about/i },
+      { key: "doubt", re: /\bdoubt\w*|skeptic\w*|questioning (?:the|whether|if)|is this working/i }
+    ];
+    for (const h of HKEYS) {
+      const m = h.re.exec(t);
+      if (!m) continue;
+      const sentence = sentenceAround(t, m.index);
+      let intensity = "moderate";
+      if (/\b(slight\w*|mild\w*|a bit|a little|touch of)\b/i.test(sentence)) intensity = "mild";
+      if (/\b(strong\w*|intense|heavy|severe|overwhelming|very)\b/i.test(sentence)) intensity = "strong";
+      draft.hindrances[h.key] = intensity;
+      conf["hindrance:" + h.key] = { value: intensity, confidence: "medium", evidence: sentence.trim().slice(0, 80) };
+      if (/\b(strongest|worst|dominant|main|biggest|most)\b/i.test(sentence)) {
+        draft.dominantHindrance = h.key;
+        draft.hindrances[h.key] = "strong";
+        conf["hindrance:" + h.key].value = "strong";
+        conf.dominantHindrance = { value: h.key, confidence: "high", evidence: sentence.trim().slice(0, 80) };
+      }
+    }
+
+    // light / image report — only when the text says something about it
+    const nim = detectNimitta(t);
+    if (nim) {
+      draft.nimitta = { category: nim.category };
+      conf.nimitta = { value: nim.category, confidence: nim.confidence, evidence: nim.evidence };
+    }
+
+    // after-state
+    const after = /\b(?:felt|feeling|was)\s+(calmer|more calm|calm(?:er)?|settled|peaceful|lighter|more agitated|agitated|worse|restless|tired|drained|exhausted|energi[sz]ed|refreshed)\b[^.!?]*\b(?:after\w*|when i (?:finished|got up)|at the end)\b|\b(?:after\w*)[^.!?]*\b(?:felt|feeling)\s+(calmer|calm|settled|peaceful|agitated|tired|energi[sz]ed|refreshed)\b/i;
+    const am = after.exec(t);
+    if (am) {
+      const word = (am[1] || am[2] || "").toLowerCase();
+      let state = null;
+      if (/calm|settled|peaceful|lighter/.test(word)) state = "calmer";
+      else if (/agitated|worse|restless/.test(word)) state = "more agitated";
+      else if (/tired|drained|exhausted/.test(word)) state = "tired";
+      else if (/energi|refreshed/.test(word)) state = "energized";
+      if (state) {
+        draft.afterStateReport = state;
+        conf.afterStateReport = { value: state, confidence: "high", evidence: am[0].trim().slice(0, 80) };
+      }
+    }
+
+    // cross-field sanity — warn, never silently fix
+    if (isNum(draft.concMin) && isNum(draft.actualMin) && draft.concMin > draft.actualMin) {
+      draft.warnings.push("Estimated concentrated minutes (" + draft.concMin + ") exceed the sit duration (" + draft.actualMin + "). Please correct one of them.");
+    }
+    if (isNum(draft.longestSteadyMin) && isNum(draft.actualMin) && draft.longestSteadyMin > draft.actualMin) {
+      draft.warnings.push("Longest steady period exceeds the sit duration. Please correct.");
+    }
+    // clarifying questions — only for essentials, max 3
+    if (draft.actualMin === null) draft.questions.push("How many minutes did you sit? (required to save)");
+    if (draft.questions.length > 3) draft.questions = draft.questions.slice(0, 3);
+    return draft;
+  }
+
+  function sentenceAround(text, index) {
+    const start = Math.max(text.lastIndexOf(".", index), text.lastIndexOf("!", index), text.lastIndexOf("?", index)) + 1;
+    let end = text.length;
+    for (const ch of [".", "!", "?"]) {
+      const i = text.indexOf(ch, index);
+      if (i >= 0 && i < end) end = i + 1;
+    }
+    return text.slice(start, end);
+  }
+
+  function detectNimitta(t) {
+    if (/\bno (?:light|lights|visuals?|nimitta|glow)\b|didn'?t (?:see|notice) any(?:thing| light| glow)?/i.test(t)) {
+      const m = /\bno (?:light|lights|visuals?|nimitta|glow)\b|didn'?t (?:see|notice) any(?:thing| light| glow)?/i.exec(t);
+      return { category: "none", confidence: "high", evidence: m[0] };
+    }
+    const flicker = /flicker\w*/i.exec(t);
+    if (flicker) {
+      const sent = sentenceAround(t, flicker.index);
+      return { category: "flicker", confidence: /not sure|unsure|uncertain/i.test(sent) ? "low" : "medium", evidence: sent.trim().slice(0, 80) };
+    }
+    const uncertain = /(?:not sure|unsure|uncertain|might have|may have|couldn'?t tell)[^.!?]{0,60}(?:light|glow|image|visual)|(?:light|glow|image)[^.!?]{0,40}(?:not sure|unsure|uncertain)/i.exec(t);
+    if (uncertain) return { category: "uncertain", confidence: "medium", evidence: uncertain[0].slice(0, 80) };
+    const stable = /(?:stable|steady|fixed)[^.!?]{0,30}(?:light|image|glow|field)|(?:light|image|glow)[^.!?]{0,30}(?:stayed|stable|steady)/i.exec(t);
+    if (stable) return { category: "stableImage", confidence: "medium", evidence: stable[0].slice(0, 80) };
+    const brief = /(?:saw|noticed|there was|appeared)[^.!?]{0,40}(?:light|glow|brightness|white \w+)|(?:light|glow)[^.!?]{0,30}(?:appeared|showed up|came)|brief (?:light|flash|glow)/i.exec(t);
+    if (brief) return { category: "brief", confidence: "medium", evidence: brief[0].slice(0, 80) };
+    return null; // nothing said → stays unreported (null), never assumed "none"
+  }
+
+  // ---------- draft validation & conversion ----------
+  function validateDraft(d) {
+    const errors = [];
+    if (!d || typeof d !== "object") return { ok: false, errors: ["draft is not an object"] };
+    for (const f of ["actualMin", "plannedMin", "concMin", "settleMin", "longestSteadyMin", "wanderings", "returns"]) {
+      const v = d[f];
+      if (v !== null && v !== undefined && (!isNum(v) || v < 0)) errors.push(f + " must be a non-negative number or null");
+    }
+    if (isNum(d.concMin) && isNum(d.actualMin) && d.concMin > d.actualMin) errors.push("concentrated minutes exceed duration");
+    if (d.confidence !== null && d.confidence !== undefined && CONFIDENCES.indexOf(d.confidence) < 0) errors.push("invalid confidence");
+    if (d.dominantHindrance !== null && d.dominantHindrance !== undefined && HINDRANCES.indexOf(d.dominantHindrance) < 0) errors.push("invalid dominantHindrance");
+    if (d.hindrances && typeof d.hindrances === "object") {
+      for (const k in d.hindrances) {
+        if (HINDRANCES.indexOf(k) < 0) errors.push("unknown hindrance " + k);
+        else if (d.hindrances[k] !== null && INTENSITIES.indexOf(d.hindrances[k]) < 0) errors.push("invalid intensity for " + k);
+      }
+    }
+    if (d.nimitta !== null && d.nimitta !== undefined && (typeof d.nimitta !== "object" || NIMITTA_CATEGORIES.indexOf(d.nimitta.category) < 0)) errors.push("invalid light/image report");
+    if (d.afterStateReport !== null && d.afterStateReport !== undefined && AFTER_STATES.indexOf(d.afterStateReport) < 0) errors.push("invalid afterStateReport");
+    if (d.date !== null && d.date !== undefined && !isDateStr(d.date)) errors.push("invalid date");
+    return { ok: errors.length === 0, errors };
+  }
+
+  function draftToSession(draft, nowIso, todayStr) {
+    return normalizeSession({
+      date: draft.date || todayStr,
+      startTime: draft.startTime || null,
+      plannedMin: draft.plannedMin, actualMin: draft.actualMin,
+      concMin: draft.concMin, confidence: draft.confidence,
+      settleMin: draft.settleMin, longestSteadyMin: draft.longestSteadyMin,
+      wanderings: draft.wanderings, returns: draft.returns,
+      hindrances: draft.hindrances || {}, dominantHindrance: draft.dominantHindrance || null,
+      nimitta: draft.nimitta || null, afterStateReport: draft.afterStateReport || null,
+      qualities: draft.qualities || [],
+      notes: draft.notes || "", journalText: draft.journalText || null,
+      entrySource: "ai",
+      aiConfidence: draft.aiConfidence || null
+    }, nowIso, todayStr);
+  }
+
+  // ---------- external provider (pure request/response shaping; fetch lives outside CORE) ----------
+  const PROVIDER_INSTRUCTION = 'Extract meditation session facts from the user\'s journal text. Reply with ONLY a JSON object, no prose, with exactly these keys: {"actualMin":number|null,"plannedMin":number|null,"concMin":number|null,"confidence":"low"|"medium"|"high"|null,"settleMin":number|null,"longestSteadyMin":number|null,"wanderings":number|null,"returns":number|null,"hindrances":{"sensualDesire"|"illWill"|"sloth"|"restlessness"|"doubt":"mild"|"moderate"|"strong"},"dominantHindrance":string|null,"nimitta":{"category":"none"|"uncertain"|"brief"|"flicker"|"unstableImage"|"stableImage"|"brightField"|"other"}|null,"afterStateReport":"calmer"|"no change"|"more agitated"|"tired"|"energized"|null,"notes":string}. Use null for anything not stated. NEVER guess or invent a number. If the writer hedges (about, maybe, I think), lower confidence. Preserve the writer\'s uncertainty in notes.';
+
+  function buildProviderRequest(text, cfg) {
+    const url = (cfg.endpoint || "").trim();
+    if (!url) return null;
+    if (/anthropic\.com/i.test(url)) {
+      return {
+        url,
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": cfg.apiKey || "",
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: cfg.model || "claude-haiku-4-5",
+          max_tokens: 1000,
+          system: PROVIDER_INSTRUCTION,
+          messages: [{ role: "user", content: String(text) }]
+        })
+      };
+    }
+    return {
+      url,
+      headers: Object.assign({ "content-type": "application/json" }, cfg.apiKey ? { authorization: "Bearer " + cfg.apiKey } : {}),
+      body: JSON.stringify({
+        model: cfg.model || "",
+        messages: [{ role: "system", content: PROVIDER_INSTRUCTION }, { role: "user", content: String(text) }]
+      })
+    };
+  }
+
+  function extractProviderText(json) {
+    if (!json || typeof json !== "object") return null;
+    if (Array.isArray(json.content) && json.content[0] && typeof json.content[0].text === "string") return json.content[0].text;   // anthropic
+    if (Array.isArray(json.choices) && json.choices[0] && json.choices[0].message && typeof json.choices[0].message.content === "string") return json.choices[0].message.content; // openai-style
+    if (typeof json.text === "string") return json.text;
+    return null;
+  }
+
+  function parseProviderResponse(rawText, originalJournal) {
+    if (typeof rawText !== "string") return { ok: false, errors: ["provider returned no text"] };
+    const m = rawText.match(/\{[\s\S]*\}/);
+    if (!m) return { ok: false, errors: ["no JSON object found in provider output"] };
+    let obj;
+    try { obj = JSON.parse(m[0]); }
+    catch (e) { return { ok: false, errors: ["provider JSON malformed: " + e.message] }; }
+    const draft = {
+      date: null, startTime: null,
+      plannedMin: numOrNull(obj.plannedMin), actualMin: numOrNull(obj.actualMin),
+      concMin: numOrNull(obj.concMin),
+      confidence: CONFIDENCES.indexOf(obj.confidence) >= 0 ? obj.confidence : null,
+      settleMin: numOrNull(obj.settleMin), longestSteadyMin: numOrNull(obj.longestSteadyMin),
+      wanderings: numOrNull(obj.wanderings), returns: numOrNull(obj.returns),
+      hindrances: {}, dominantHindrance: HINDRANCES.indexOf(obj.dominantHindrance) >= 0 ? obj.dominantHindrance : null,
+      nimitta: (obj.nimitta && typeof obj.nimitta === "object" && NIMITTA_CATEGORIES.indexOf(obj.nimitta.category) >= 0) ? { category: obj.nimitta.category } : null,
+      afterStateReport: AFTER_STATES.indexOf(obj.afterStateReport) >= 0 ? obj.afterStateReport : null,
+      qualities: [], notes: typeof obj.notes === "string" ? obj.notes : "",
+      journalText: String(originalJournal || ""),
+      aiConfidence: { _provider: { value: "external", confidence: "medium", evidence: "values extracted by the configured AI provider — verify before saving" } },
+      warnings: [], questions: []
+    };
+    if (obj.hindrances && typeof obj.hindrances === "object") {
+      for (const k in obj.hindrances) {
+        if (HINDRANCES.indexOf(k) >= 0 && INTENSITIES.indexOf(obj.hindrances[k]) >= 0) draft.hindrances[k] = obj.hindrances[k];
+      }
+    }
+    const v = validateDraft(draft);
+    if (!v.ok) return { ok: false, errors: v.errors };
+    if (isNum(draft.concMin) && isNum(draft.actualMin) && draft.concMin > draft.actualMin) {
+      return { ok: false, errors: ["provider output failed validation: concentrated > duration"] };
+    }
+    return { ok: true, draft };
+  }
+
+  function numOrNull(v) { return isNum(v) && v >= 0 ? v : null; }
+
+  // ---------- self tests ----------
+  function runSelfTests() {
+    let passed = 0, failed = 0;
+    const failures = [];
+    function t(name, cond) {
+      if (cond) passed++;
+      else { failed++; failures.push(name); }
+    }
+    const NOW = "2026-07-09T06:30:00.000Z", TODAY = "2026-07-09";
+
+    // --- utils
+    t("clamp low", clamp(-5, 0, 10) === 0);
+    t("clamp high", clamp(15, 0, 10) === 10);
+    t("addDays forward", addDays("2026-07-09", 1) === "2026-07-10");
+    t("addDays back over month", addDays("2026-07-01", -1) === "2026-06-30");
+    t("addDays over year", addDays("2025-12-31", 1) === "2026-01-01");
+    t("fmtClock minutes", fmtClock(1830) === "30:30");
+    t("fmtClock hours", fmtClock(3661) === "1:01:01");
+    t("fmtClock zero", fmtClock(0) === "0:00");
+    t("isDateStr valid", isDateStr("2026-02-28") === true);
+    t("isDateStr garbage", isDateStr("2026-13-99") === false);
+    t("isTimeStr valid", isTimeStr("23:59") === true);
+    t("isTimeStr invalid", isTimeStr("24:00") === false);
+
+    // --- ratio
+    t("ratio basic", computeRatio(15, 30) === 0.5);
+    t("ratio null conc", computeRatio(null, 30) === null);
+    t("ratio null actual", computeRatio(15, null) === null);
+    t("ratio zero duration", computeRatio(15, 0) === null);
+    t("ratio clamped at 1", computeRatio(40, 30) === 1);
+    t("ratio zero conc ok", computeRatio(0, 30) === 0);
+
+    // --- session validation
+    const good = normalizeSession({ date: TODAY, actualMin: 30, concMin: 16, entrySource: "timer" }, NOW, TODAY);
+    t("valid session ok", validateSession(good).ok);
+    t("normalize computes ratio", good.ratio === round2(16 / 30));
+    t("normalize keeps nulls null", good.settleMin === null && good.wanderings === null && good.calmBefore === null);
+    t("normalize sets schema v", good.v === SCHEMA_VERSION);
+    t("conc > actual rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, concMin: 31 }, NOW, TODAY)).ok);
+    t("conc == actual accepted", validateSession(normalizeSession({ date: TODAY, actualMin: 30, concMin: 30 }, NOW, TODAY)).ok);
+    t("negative conc rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, concMin: -1 }, NOW, TODAY)).ok);
+    t("missing date rejected", !validateSession(normalizeSession({ actualMin: 30, date: null }, NOW, null)).ok);
+    t("zero duration rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 0 }, NOW, TODAY)).ok);
+    t("bad hindrance key rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, hindrances: { anger: "mild" } }, NOW, TODAY)).ok);
+    t("bad intensity rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, hindrances: { doubt: "huge" } }, NOW, TODAY)).ok);
+    t("good hindrance accepted", validateSession(normalizeSession({ date: TODAY, actualMin: 30, hindrances: { doubt: "mild", sloth: "strong" } }, NOW, TODAY)).ok);
+    t("bad nimitta rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, nimitta: { category: "confirmed jhana" } }, NOW, TODAY)).ok);
+    t("nimitta none accepted", validateSession(normalizeSession({ date: TODAY, actualMin: 30, nimitta: { category: "none" } }, NOW, TODAY)).ok);
+    t("bad entrySource rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, entrySource: "magic" }, NOW, TODAY)).ok);
+    t("null entrySource allowed", validateSession(normalizeSession({ date: TODAY, actualMin: 30, entrySource: null }, NOW, TODAY)).ok);
+    t("bad teacherReview rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, teacherReview: "certified" }, NOW, TODAY)).ok);
+    t("calm scale bounds", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, calmAfter: 6 }, NOW, TODAY)).ok);
+    t("longest steady > duration rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, longestSteadyMin: 45 }, NOW, TODAY)).ok);
+    t("bad startTime rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, startTime: "9am" }, NOW, TODAY)).ok);
+    t("good startTime accepted", validateSession(normalizeSession({ date: TODAY, actualMin: 30, startTime: "06:15" }, NOW, TODAY)).ok);
+
+    // --- timeline
+    const tl = [{ kind: "wandering", startMin: 0, endMin: 7 }, { kind: "intermittent", startMin: 7, endMin: 14 }, { kind: "continuous", startMin: 14, endMin: 23 }, { kind: "mostly", startMin: 23, endMin: 30 }];
+    t("timeline valid", validateTimeline(tl, 30).ok);
+    t("timeline overlap rejected", !validateTimeline([{ kind: "mostly", startMin: 0, endMin: 10 }, { kind: "dull", startMin: 5, endMin: 12 }], 30).ok);
+    t("timeline past end rejected", !validateTimeline([{ kind: "mostly", startMin: 0, endMin: 40 }], 30).ok);
+    t("timeline bad kind rejected", !validateTimeline([{ kind: "jhana", startMin: 0, endMin: 5 }], 30).ok);
+    t("timeline zero-length rejected", !validateTimeline([{ kind: "dull", startMin: 5, endMin: 5 }], 30).ok);
+    const dv = deriveFromTimeline(tl);
+    t("timeline conc derivation", dv.concMin === round1(0 * 7 + 0.35 * 7 + 1 * 9 + 0.75 * 7));
+    t("timeline longest steady merges adjacent", dv.longestSteadyMin === 16);
+    t("timeline empty gives nulls", deriveFromTimeline([]).concMin === null);
+    const dv2 = deriveFromTimeline([{ kind: "continuous", startMin: 0, endMin: 5 }, { kind: "wandering", startMin: 5, endMin: 10 }, { kind: "continuous", startMin: 10, endMin: 18 }]);
+    t("timeline longest steady breaks on gap", dv2.longestSteadyMin === 8);
+    t("timeline conc across gap", dv2.concMin === 13);
+
+    // --- timer math
+    const T0 = 1000000000;
+    let st = startTimerState(1800, 0, T0);
+    t("timer starts running", timerSnapshot(st, T0 + 1000).mode === "running");
+    t("timer elapsed 60s", Math.round(timerSnapshot(st, T0 + 60000).elapsedSec) === 60);
+    t("timer remaining", Math.round(timerSnapshot(st, T0 + 60000).remainingSec) === 1740);
+    t("timer sleep reconciliation", Math.round(timerSnapshot(st, T0 + 900000).elapsedSec) === 900); // 15 min gap = 15 min elapsed
+    t("timer done at planned", timerSnapshot(st, T0 + 1800000).mode === "done");
+    t("timer done elapsed capped", timerSnapshot(st, T0 + 9999999).elapsedSec === 1800);
+    t("timer overSec tracked", timerSnapshot(st, T0 + 1860000).overSec === 60);
+    st = pauseTimerState(st, T0 + 300000);
+    t("timer paused mode", timerSnapshot(st, T0 + 999000).mode === "paused");
+    t("timer paused elapsed frozen", Math.round(timerSnapshot(st, T0 + 999000).elapsedSec) === 300);
+    st = resumeTimerState(st, T0 + 600000);
+    t("timer resume subtracts pause", Math.round(timerSnapshot(st, T0 + 660000).elapsedSec) === 360);
+    t("pause on non-running no-op", pauseTimerState({ phase: "idle" }, T0).phase === "idle");
+    t("resume on non-paused no-op", resumeTimerState(st, T0).phase === "running");
+    const stPrep = startTimerState(1800, 20, T0);
+    t("prep mode before start", timerSnapshot(stPrep, T0 + 5000).mode === "prep");
+    t("prep remaining counts down", timerSnapshot(stPrep, T0 + 5000).prepRemainingSec === 15);
+    t("prep transitions to running", timerSnapshot(stPrep, T0 + 21000).mode === "running");
+    t("prep elapsed excludes prep", Math.round(timerSnapshot(stPrep, T0 + 80000).elapsedSec) === 60);
+    t("idle snapshot", timerSnapshot(null, T0).mode === "idle");
+    t("bells: one due", dueBells(600, 590, 610) === 1);
+    t("bells: none due", dueBells(600, 300, 400) === 0);
+    t("bells: sleep backlog capped at 1", dueBells(600, 0, 3000) === 1);
+    t("bells: disabled", dueBells(0, 0, 3000) === 0);
+
+    // --- streaks
+    const mk = (date, extra) => normalizeSession(Object.assign({ date, actualMin: 30 }, extra || {}), NOW, TODAY);
+    t("streak empty", computeStreaks([], TODAY).current === 0 && computeStreaks([], TODAY).longest === 0);
+    t("streak single today", computeStreaks([mk(TODAY)], TODAY).current === 1);
+    t("streak yesterday only survives", computeStreaks([mk("2026-07-08")], TODAY).current === 1);
+    t("streak broken two days ago", computeStreaks([mk("2026-07-07")], TODAY).current === 0);
+    const streakSess = [mk("2026-07-05"), mk("2026-07-06"), mk("2026-07-07"), mk("2026-07-08"), mk("2026-07-09"), mk("2026-07-01")];
+    t("streak run of 5", computeStreaks(streakSess, TODAY).current === 5);
+    t("longest streak", computeStreaks(streakSess, TODAY).longest === 5);
+    t("streak dup dates count once", computeStreaks([mk(TODAY), mk(TODAY)], TODAY).current === 1);
+    t("longest across gap", computeStreaks([mk("2026-06-01"), mk("2026-06-02"), mk("2026-06-03"), mk("2026-07-09")], TODAY).longest === 3);
+
+    // --- range filtering + metrics
+    const many = [mk("2026-07-09", { concMin: 15, startTime: "06:00", settleMin: 5 }), mk("2026-07-03", { concMin: 20 }), mk("2026-05-01"), mk("2025-12-31")];
+    t("range 7d", filterRange(many, "7", TODAY).length === 2);
+    t("range 90d", filterRange(many, "90", TODAY).length === 3);
+    t("range year", filterRange(many, "year", TODAY).length === 3);
+    t("range all", filterRange(many, "all", TODAY).length === 4);
+    t("range custom", filterRange(many, { from: "2026-07-01", to: "2026-07-05" }, TODAY).length === 1);
+    const sm = summaryMetrics(many, TODAY);
+    t("metrics session count", sm.sessions === 4);
+    t("metrics total hours", sm.totalHours === 2);
+    t("metrics avg duration", sm.avgDuration === 30);
+    t("metrics avg conc only over reported", sm.avgConc === 17.5);
+    t("metrics conc reported count", sm.concReportedCount === 2);
+    t("metrics avg settle", sm.avgSettle === 5);
+    const smEmpty = summaryMetrics([], TODAY);
+    t("metrics empty safe", smEmpty.sessions === 0 && smEmpty.avgDuration === null && smEmpty.avgRatio === null && smEmpty.totalConcHours === null);
+    t("metrics single session", summaryMetrics([mk(TODAY, { concMin: 10 })], TODAY).avgRatio === round2(10 / 30));
+    t("timeOfDay morning", timeOfDayBucket("06:00") === "morning");
+    t("timeOfDay afternoon", timeOfDayBucket("13:00") === "afternoon");
+    t("timeOfDay evening", timeOfDayBucket("19:30") === "evening");
+    t("timeOfDay null", timeOfDayBucket(null) === null);
+
+    // --- insights honesty
+    t("insights empty on no data", insights([], TODAY).length === 0);
+    t("insights none from 2 sessions", insights([mk(TODAY, { concMin: 10 }), mk("2026-07-08", { concMin: 20 })], TODAY).filter(i => i.strength !== "insufficient").length === 0);
+    const hindranceSess = [];
+    for (let i = 0; i < 10; i++) hindranceSess.push(mk(addDays(TODAY, -i), { hindrances: i < 6 ? { restlessness: "moderate" } : {} }));
+    const ins = insights(hindranceSess, TODAY);
+    t("insight hindrance frequency", ins.some(i => i.text.indexOf("Restlessness") === 0 && i.text.indexOf("6 of your last 10") > 0));
+    t("insight exposes n", ins.every(i => typeof i.n === "number" && i.n > 0));
+    t("insight exposes strength", ins.every(i => ["weak", "moderate", "reasonably supported", "insufficient"].indexOf(i.strength) >= 0));
+    t("insight no causation words", ins.every(i => !/because|causes|proves|therefore/i.test(i.text)));
+    const modata = [];
+    for (let i = 0; i < 8; i++) modata.push(mk(addDays(TODAY, -i), { concMin: 20, startTime: "06:00" }));
+    for (let i = 8; i < 15; i++) modata.push(mk(addDays(TODAY, -i), { concMin: 10, startTime: "19:00" }));
+    const ins2 = insights(modata, TODAY);
+    t("insight morning vs evening", ins2.some(i => i.metric.indexOf("time of day") >= 0 && i.text.indexOf("8 morning and 7 evening") > 0));
+    const nimSess = [mk(TODAY, { nimitta: { category: "brief" } }), mk("2026-07-05", { nimitta: { category: "flicker" } }), mk("2026-07-06", { nimitta: { category: "none" } })];
+    const ins3 = insights(nimSess, TODAY);
+    t("insight nimitta counts reports not 'none'", ins3.some(i => i.metric.indexOf("light/image") >= 0 && i.n === 2));
+    t("insight nimitta suggests teacher", ins3.some(i => i.text.indexOf("qualified teacher") > 0));
+
+    // --- CSV
+    const csvS = normalizeSession({ date: TODAY, actualMin: 30, concMin: 16, notes: 'said "wait", then\nrelaxed', hindrances: { doubt: "mild" }, nimitta: { category: "brief" } }, NOW, TODAY);
+    const csv = toCSV([csvS]);
+    const lines = csv.split("\r\n");
+    t("csv has header + row", lines.length === 2);
+    t("csv header cols", lines[0].split(",").length === CSV_COLUMNS.length);
+    t("csv escapes quotes/newlines", csv.indexOf('"said ""wait"", then\nrelaxed"') > 0);
+    t("csv hindrance serialization", csv.indexOf("doubt:mild") > 0);
+    t("csv nimitta category", lines[1].indexOf("brief") > 0);
+    t("csv empty list is just header", toCSV([]).split("\r\n").length === 1);
+
+    // --- import
+    const existing = [normalizeSession({ id: "keepme", date: "2026-07-01", startTime: "06:00", actualMin: 30 }, NOW, TODAY)];
+    const impGood = parseImport(JSON.stringify({ schemaVersion: 3, sessions: [{ id: "n1", date: "2026-07-02", actualMin: 25 }] }), existing, NOW);
+    t("import ok", impGood.ok && impGood.fresh.length === 1 && impGood.invalid.length === 0);
+    const impDupId = parseImport(JSON.stringify([{ id: "keepme", date: "2026-07-03", actualMin: 20 }]), existing, NOW);
+    t("import duplicate by id", impDupId.ok && impDupId.duplicates.length === 1 && impDupId.fresh.length === 0);
+    const impDupFp = parseImport(JSON.stringify([{ id: "other", date: "2026-07-01", startTime: "06:00", actualMin: 30 }]), existing, NOW);
+    t("import duplicate by fingerprint", impDupFp.ok && impDupFp.duplicates.length === 1);
+    const impBad = parseImport("{not json", existing, NOW);
+    t("import malformed json rejected", impBad.ok === false && /JSON/i.test(impBad.error));
+    const impWrong = parseImport(JSON.stringify({ hello: "world" }), existing, NOW);
+    t("import unrecognized shape rejected", impWrong.ok === false);
+    const impInvalid = parseImport(JSON.stringify([{ id: "x", date: "not-a-date", actualMin: 30 }, { id: "y", date: "2026-07-04", actualMin: -5 }]), existing, NOW);
+    t("import invalid sessions quarantined", impInvalid.ok && impInvalid.invalid.length === 2 && impInvalid.fresh.length === 0);
+    t("import invalid carries reasons", impInvalid.invalid[0].errors.length > 0);
+    const impIntraDup = parseImport(JSON.stringify([{ id: "a1", date: "2026-07-05", startTime: "07:00", actualMin: 30 }, { id: "a2", date: "2026-07-05", startTime: "07:00", actualMin: 30 }]), [], NOW);
+    t("import dedupes within file", impIntraDup.fresh.length === 1 && impIntraDup.duplicates.length === 1);
+    // round trip
+    const rt = parseImport(JSON.stringify({ schemaVersion: 3, sessions: existing }), [], NOW);
+    t("export/import round trip", rt.ok && rt.fresh.length === 1 && rt.fresh[0].id === "keepme" && rt.fresh[0].actualMin === 30);
+
+    // --- migration
+    const legacy = { janSits: [{ date: "2026-06-01", minutes: 30, focusMinutes: 12, note: "old sit" }, { d: "2026-06-02", min: 45 }, { bogus: true }], janGates: { gate: 0 } };
+    const mig = migrate(null, legacy, NOW, TODAY);
+    t("v1 migration count", mig.env.sessions.length === 2);
+    t("v1 migration maps minutes", mig.env.sessions[0].actualMin === 30);
+    t("v1 migration maps focus", mig.env.sessions[0].concMin === 12);
+    t("v1 migration alt keys", mig.env.sessions[1].actualMin === 45 && mig.env.sessions[1].date === "2026-06-02");
+    t("v1 migration keeps original", mig.env.sessions[0]._legacy && mig.env.sessions[0]._legacy.note === "old sit");
+    t("v1 migration marks imported", mig.env.sessions[0].entrySource === "imported");
+    t("v1 migration preserves gates", mig.env.legacyGates && mig.env.legacyGates.gate === 0);
+    t("v1 migration notes", mig.notes.length >= 2);
+    t("migration sets schema version", mig.env.schemaVersion === SCHEMA_VERSION);
+    const v2env = { schemaVersion: 2, sessions: [{ id: "v2s", date: "2026-06-05", actualMin: 30, concMin: 10, nimitta: { category: "brief" } }], settings: { theme: "dark" } };
+    const mig2 = migrate(v2env, null, NOW, TODAY);
+    t("v2→v3 bumps version", mig2.env.schemaVersion === 3);
+    t("v2→v3 adds entrySource as null", mig2.env.sessions[0].entrySource === null);
+    t("v2→v3 adds teacherReview", mig2.env.sessions[0].teacherReview === "none");
+    t("v2→v3 keeps nimitta name", mig2.env.sessions[0].nimitta.category === "brief");
+    t("v2→v3 keeps settings", mig2.env.settings.theme === "dark");
+    t("v2→v3 records note", mig2.notes.some(n => n.indexOf("v2") >= 0 && n.indexOf("v3") >= 0));
+    const mig3 = migrate(mig2.env, null, NOW, TODAY);
+    t("v3 idempotent", mig3.env.schemaVersion === 3 && mig3.notes.length === 0);
+    const migFresh = migrate(null, null, NOW, TODAY);
+    t("fresh install empty env", migFresh.env.sessions.length === 0 && migFresh.env.schemaVersion === 3);
+
+    // --- journal parser: the canonical example from the spec
+    const sample = "I sat for 30 minutes. The first seven minutes were scattered. Then the breath got clearer. I think I had about 16 minutes of real concentration. My longest stretch was maybe nine minutes. I wandered badly four times. Restlessness was strongest. No light. I felt calmer afterward.";
+    const d = parseJournal(sample);
+    t("parse duration 30", d.actualMin === 30);
+    t("parse settling 7", d.settleMin === 7);
+    t("parse conc 16", d.concMin === 16);
+    t("parse conc hedge downgrade", d.aiConfidence.concMin.confidence === "low"); // "I think" + "about"
+    t("parse overall confidence follows conc", d.confidence === "low");
+    t("parse longest 9 (word number)", d.longestSteadyMin === 9);
+    t("parse longest hedge", d.aiConfidence.longestSteadyMin.confidence === "medium"); // "maybe"
+    t("parse wandering 4 (word number)", d.wanderings === 4);
+    t("parse dominant restlessness", d.dominantHindrance === "restlessness");
+    t("parse restlessness strong", d.hindrances.restlessness === "strong");
+    t("parse nimitta none", d.nimitta && d.nimitta.category === "none");
+    t("parse after calmer", d.afterStateReport === "calmer");
+    t("parse preserves original text", d.journalText === sample);
+    t("parse evidence recorded", d.aiConfidence.actualMin.evidence.indexOf("30") >= 0);
+    t("parse no warnings on sane input", d.warnings.length === 0);
+    t("parse no questions when duration present", d.questions.length === 0);
+
+    // parser: never invent
+    const sparse = parseJournal("Sat this morning. Mind was everywhere.");
+    t("parse sparse duration null", sparse.actualMin === null);
+    t("parse sparse conc null", sparse.concMin === null);
+    t("parse sparse settle null", sparse.settleMin === null);
+    t("parse sparse nimitta stays null (unreported ≠ none)", sparse.nimitta === null);
+    t("parse sparse asks for duration", sparse.questions.length >= 1 && /minutes/i.test(sparse.questions[0]));
+    t("parse sparse max 3 questions", sparse.questions.length <= 3);
+    const empty = parseJournal("");
+    t("parse empty safe", empty.actualMin === null && empty.questions.length === 1);
+    t("parse empty no hindrances", Object.keys(empty.hindrances).length === 0);
+
+    // parser: variants
+    const v1 = parseJournal("Did a 45 minute sit, took me about 10 minutes to settle. Concentrated for maybe 25 minutes. Felt sleepy the whole time. Saw a brief light near the end.");
+    t("parse variant duration", v1.actualMin === 45);
+    t("parse variant settle", v1.settleMin === 10);
+    t("parse variant conc", v1.concMin === 25);
+    t("parse variant hedged conc", v1.aiConfidence.concMin.confidence !== "high");
+    t("parse variant sloth detected", v1.hindrances.sloth !== undefined);
+    t("parse variant nimitta brief", v1.nimitta && v1.nimitta.category === "brief");
+    const v2 = parseJournal("60 min session. No real focus, wandered maybe 12 times, doubt was strong - is this working at all?");
+    t("parse variant2 duration", v2.actualMin === 60);
+    t("parse variant2 wanderings", v2.wanderings === 12);
+    t("parse variant2 doubt strong", v2.hindrances.doubt === "strong");
+    const v3 = parseJournal("Sat for twenty minutes, flickering lights kept appearing, not sure what that was. Slight irritation at noise outside.");
+    t("parse word-number twenty", v3.actualMin === 20);
+    t("parse flicker category", v3.nimitta && v3.nimitta.category === "flicker");
+    t("parse mild ill will", v3.hindrances.illWill === "mild");
+    const v4 = parseJournal("Sat for 30 minutes with 40 minutes of concentration.");
+    t("parse impossible conc warned", v4.warnings.length === 1);
+    t("parse impossible conc NOT auto-fixed", v4.concMin === 40 && v4.actualMin === 30);
+    t("draft validation catches conc>duration", !validateDraft(v4).ok);
+
+    // --- draft validation & conversion
+    t("draft valid on good sample", validateDraft(d).ok);
+    t("draft invalid confidence", !validateDraft({ actualMin: 30, confidence: "certain" }).ok);
+    t("draft invalid hindrance", !validateDraft({ actualMin: 30, hindrances: { pride: "mild" } }).ok);
+    t("draft invalid nimitta", !validateDraft({ actualMin: 30, nimitta: { category: "jhana" } }).ok);
+    t("draft null fields ok", validateDraft({ actualMin: null, concMin: null }).ok);
+    const conv = draftToSession(d, NOW, TODAY);
+    t("draft→session valid", validateSession(conv).ok);
+    t("draft→session marks ai source", conv.entrySource === "ai");
+    t("draft→session keeps journal text", conv.journalText === sample);
+    t("draft→session keeps aiConfidence", conv.aiConfidence && conv.aiConfidence.concMin.confidence === "low");
+    t("draft→session defaults date to today", conv.date === TODAY);
+    t("draft→session computes ratio", conv.ratio === round2(16 / 30));
+
+    // --- provider adapter (pure parts, mocked)
+    const req = buildProviderRequest("hello", { endpoint: "https://api.anthropic.com/v1/messages", apiKey: "k", model: "m" });
+    t("provider anthropic url", req.url.indexOf("anthropic") > 0);
+    t("provider anthropic header", req.headers["x-api-key"] === "k");
+    t("provider anthropic body has system", JSON.parse(req.body).system.indexOf("NEVER guess") > 0);
+    const reqG = buildProviderRequest("hello", { endpoint: "https://example.com/v1/chat", apiKey: "k2" });
+    t("provider generic bearer", reqG.headers.authorization === "Bearer k2");
+    t("provider no endpoint → null", buildProviderRequest("x", { endpoint: "" }) === null);
+    t("provider extract anthropic", extractProviderText({ content: [{ type: "text", text: "{}" }] }) === "{}");
+    t("provider extract openai", extractProviderText({ choices: [{ message: { content: "hi" } }] }) === "hi");
+    t("provider extract garbage null", extractProviderText({ nope: 1 }) === null);
+    const provGood = parseProviderResponse('Here you go: {"actualMin":30,"concMin":16,"confidence":"medium","hindrances":{"restlessness":"strong"},"nimitta":{"category":"none"},"notes":"user hedged"}', "orig");
+    t("provider response parsed", provGood.ok && provGood.draft.actualMin === 30);
+    t("provider response hindrance kept", provGood.draft.hindrances.restlessness === "strong");
+    t("provider response keeps original journal", provGood.draft.journalText === "orig");
+    t("provider response flags external origin", provGood.draft.aiConfidence._provider !== undefined);
+    const provBadJson = parseProviderResponse("I could not parse that", "orig");
+    t("provider no-json rejected", !provBadJson.ok);
+    const provMalformed = parseProviderResponse('{"actualMin":30,,}', "orig");
+    t("provider malformed rejected", !provMalformed.ok);
+    const provInvented = parseProviderResponse('{"actualMin":30,"concMin":45}', "orig");
+    t("provider conc>duration rejected", !provInvented.ok);
+    const provWeird = parseProviderResponse('{"actualMin":"thirty","hindrances":{"pride":"huge"},"nimitta":{"category":"unlocked"}}', "orig");
+    t("provider bad types coerced to null/dropped", provWeird.ok && provWeird.draft.actualMin === null && Object.keys(provWeird.draft.hindrances).length === 0 && provWeird.draft.nimitta === null);
+
+    // --- forbidden wording guard: nothing in CORE's user-facing strings certifies attainment
+    const corpus = [PROVIDER_INSTRUCTION, JSON.stringify(NIMITTA_LABELS), JSON.stringify(REVIEW_LABELS), JSON.stringify(SEGMENT_LABELS), JSON.stringify(QUALITY_LABELS)].join(" ");
+    t("no 'confirmed nimitta' wording", !/confirmed nimitta/i.test(corpus));
+    t("no 'unlocked' wording", !/unlocked/i.test(corpus));
+    t("no 'you reached access concentration'", !/reached access concentration/i.test(corpus));
+    t("no 'entered jhāna' claims", !/you entered jh/i.test(corpus));
+    t("no 'verified your state'", !/verified your state/i.test(corpus));
+
+    return { passed, failed, total: passed + failed, failures };
+  }
+
+  return {
+    SCHEMA_VERSION, OBJECTS, HINDRANCES, HINDRANCE_LABELS, INTENSITIES, QUALITIES, QUALITY_LABELS,
+    NIMITTA_CATEGORIES, NIMITTA_LABELS, ENTRY_SOURCES, REVIEW_STATES, REVIEW_LABELS, CONFIDENCES,
+    AFTER_STATES, SEGMENT_KINDS, SEGMENT_LABELS, SEGMENT_WEIGHTS, MARKER_KINDS, MAP_EVIDENCE, CSV_COLUMNS,
+    clamp, round1, round2, isNum, isDateStr, isTimeStr, addDays, uid, fmtMin, fmtClock,
+    blankSession, normalizeSession, validateSession, computeRatio,
+    validateTimeline, deriveFromTimeline,
+    timerSnapshot, startTimerState, pauseTimerState, resumeTimerState, dueBells,
+    computeStreaks, filterRange, summaryMetrics, timeOfDayBucket, insights, strengthLabel,
+    toCSV, sessionFingerprint, parseImport, migrate,
+    parseJournal, validateDraft, draftToSession,
+    buildProviderRequest, extractProviderText, parseProviderResponse, PROVIDER_INSTRUCTION,
+    runSelfTests
+  };
+})();
+/*CORE-END*/
+
+/* ================= STORE — persistence behind an adapter ================= */
+const STORE = (function () {
+  const KEY = "jhanaTracker.v2";
+  const TIMER_KEY = "jhanaTracker.v2.timer";
+  const LEGACY_SITS = "janSits", LEGACY_GATES = "janGates"; // read-only, never written or deleted
+
+  const memory = {};
+  let usable = false;
+  try {
+    localStorage.setItem(KEY + ".probe", "1");
+    localStorage.removeItem(KEY + ".probe");
+    usable = true;
+  } catch (e) { usable = false; }
+
+  const adapter = {
+    available: usable,
+    get(k) { try { return usable ? localStorage.getItem(k) : (k in memory ? memory[k] : null); } catch (e) { return memory[k] || null; } },
+    set(k, v) {
+      memory[k] = v;
+      if (!usable) return false;
+      try { localStorage.setItem(k, v); return true; }
+      catch (e) { UI.toast("Could not write to localStorage (" + e.name + "). Export your data now."); return false; }
+    },
+    remove(k) { delete memory[k]; if (usable) try { localStorage.removeItem(k); } catch (e) { } }
+  };
+
+  let env = null;
+  let migrationNotes = [];
+
+  function nowIso() { return new Date().toISOString(); }
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  function load() {
+    let raw = adapter.get(KEY), parsed = null;
+    if (raw) {
+      try { parsed = JSON.parse(raw); }
+      catch (e) {
+        // never discard bytes we can't parse — quarantine them under a recovery key
+        adapter.set(KEY + ".recovered-" + Date.now(), raw);
+        migrationNotes.push("Stored envelope was unreadable; the raw content was preserved under a recovery key and a fresh envelope was created.");
+      }
+    }
+    let legacy = null;
+    if (!parsed) {
+      const ls = adapter.get(LEGACY_SITS), lg = adapter.get(LEGACY_GATES);
+      legacy = {};
+      try { if (ls) legacy.janSits = JSON.parse(ls); } catch (e) { }
+      try { if (lg) legacy.janGates = JSON.parse(lg); } catch (e) { }
+    }
+    const result = CORE.migrate(parsed, legacy, nowIso(), todayStr());
+    env = result.env;
+    migrationNotes = migrationNotes.concat(result.notes);
+    if (result.notes.length || !raw) save();
+    return { env, notes: migrationNotes };
+  }
+
+  function save() {
+    env.savedAt = nowIso();
+    return adapter.set(KEY, JSON.stringify(env));
+  }
+
+  function sessions() { return env.sessions; }
+  function getSession(id) { return env.sessions.find(s => s.id === id) || null; }
+
+  function addSession(partial) {
+    const s = CORE.normalizeSession(partial, nowIso(), todayStr());
+    const v = CORE.validateSession(s);
+    if (!v.ok) return { ok: false, errors: v.errors };
+    env.sessions.push(s);
+    save();
+    return { ok: true, session: s };
+  }
+  function updateSession(id, patch) {
+    const i = env.sessions.findIndex(s => s.id === id);
+    if (i < 0) return { ok: false, errors: ["session not found"] };
+    const merged = CORE.normalizeSession(Object.assign({}, env.sessions[i], patch, { id, createdAt: env.sessions[i].createdAt }), nowIso(), todayStr());
+    const v = CORE.validateSession(merged);
+    if (!v.ok) return { ok: false, errors: v.errors };
+    env.sessions[i] = merged;
+    save();
+    return { ok: true, session: merged };
+  }
+  function deleteSession(id) {
+    const i = env.sessions.findIndex(s => s.id === id);
+    if (i < 0) return false;
+    env.sessions.splice(i, 1);
+    save();
+    return true;
+  }
+  function mergeImported(list) {
+    for (const s of list) env.sessions.push(s);
+    save();
+  }
+
+  function getSetting(k, dflt) { return (env.settings && k in env.settings) ? env.settings[k] : dflt; }
+  function setSetting(k, v) { env.settings[k] = v; save(); }
+
+  function getMap() {
+    if (!env.map) env.map = { currentLevel: 0, levels: CORE.MAP_EVIDENCE && [0, 1, 2, 3, 4, 5].map(() => ({ evidence: "not-assessed", teacherNotes: "", reviewDate: null })) };
+    return env.map;
+  }
+  function saveMap() { save(); }
+
+  // timer state persisted under its own key so ticking never rewrites session data
+  function saveTimer(st) { adapter.set(TIMER_KEY, JSON.stringify(st)); }
+  function loadTimer() {
+    const raw = adapter.get(TIMER_KEY);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  }
+  function clearTimer() { adapter.remove(TIMER_KEY); }
+
+  function wipe() {
+    adapter.remove(KEY);
+    adapter.remove(TIMER_KEY);
+    // legacy keys janSits/janGates intentionally untouched
+    env = CORE.migrate(null, null, nowIso(), todayStr()).env;
+    save();
+  }
+
+  function storageInfo() {
+    const raw = adapter.get(KEY) || "";
+    return {
+      available: adapter.available,
+      bytes: raw.length,
+      sessions: env ? env.sessions.length : 0,
+      schemaVersion: env ? env.schemaVersion : null,
+      savedAt: env ? env.savedAt : null
+    };
+  }
+
+  return {
+    load, save, sessions, getSession, addSession, updateSession, deleteSession, mergeImported,
+    getSetting, setSetting, getMap, saveMap, saveTimer, loadTimer, clearTimer, wipe,
+    storageInfo, nowIso, todayStr, adapter, notes: () => migrationNotes, env: () => env
+  };
+})();
+
+/* ================= AUDIO — WebAudio bells, no assets ================= */
+const AUDIO = (function () {
+  let ctx = null;
+  function ensure() {
+    if (!ctx) {
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+    }
+    if (ctx.state === "suspended") ctx.resume().catch(() => { });
+    return ctx;
+  }
+  function bell(times) {
+    const c = ensure();
+    if (!c) return;
+    const vol = CORE.clamp((STORE.getSetting("bellVolume", 60)) / 100, 0, 1);
+    if (vol === 0) return;
+    times = times || 1;
+    for (let i = 0; i < times; i++) {
+      const t0 = c.currentTime + i * 1.4;
+      for (const [freq, gainMul] of [[523.25, 1], [1046.5, 0.4], [1568, 0.15]]) {
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = "sine"; o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.35 * vol * gainMul, t0 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.6);
+        o.connect(g).connect(c.destination);
+        o.start(t0); o.stop(t0 + 2.8);
+      }
+    }
+  }
+  return { bell, ensure };
+})();
+
+/* ================= TIMER — timestamp-based, survives refresh & sleep ================= */
+const TIMER = (function () {
+  let st = null;            // CORE timer state + session context
+  let handle = null;        // single interval loop guard
+  let lastElapsed = 0;
+  let wakeLock = null;
+  let lastPersist = 0;
+
+  function cfgFromUI() {
+    const prep = UI.$("#opt-prep").checked ? parseInt(UI.$("#opt-prep-sec").value, 10) : 0;
+    const obj = UI.$("#sit-object").value;
+    return {
+      plannedMin: UI.selectedMinutes(),
+      prepSec: prep,
+      bellsEverySec: UI.$("#opt-interval").checked ? parseInt(UI.$("#opt-interval-min").value, 10) * 60 : 0,
+      finalBell: UI.$("#opt-final").checked,
+      wantWakeLock: UI.$("#opt-wakelock").checked,
+      object: obj,
+      objectCustom: obj === "custom" ? (UI.$("#sit-object-custom").value.trim() || null) : null
+    };
+  }
+
+  async function acquireWakeLock() {
+    if (!st || !st.ctx.wantWakeLock || !("wakeLock" in navigator)) return;
+    try { wakeLock = await navigator.wakeLock.request("screen"); } catch (e) { /* unsupported or denied — timestamps keep time correct anyway */ }
+  }
+  function releaseWakeLock() {
+    if (wakeLock) { wakeLock.release().catch(() => { }); wakeLock = null; }
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && st && st.core.phase === "running") acquireWakeLock();
+  });
+
+  function start() {
+    const cfg = cfgFromUI();
+    if (!CORE.isNum(cfg.plannedMin) || cfg.plannedMin <= 0) { UI.toast("Choose a duration first."); return; }
+    AUDIO.ensure(); // user gesture unlocks audio
+    const now = Date.now();
+    const d = new Date();
+    st = {
+      core: CORE.startTimerState(Math.round(cfg.plannedMin * 60), cfg.prepSec, now),
+      ctx: Object.assign({}, cfg, {
+        date: STORE.todayStr(),
+        startTime: String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"),
+        markers: []
+      })
+    };
+    lastElapsed = 0;
+    persist(true);
+    acquireWakeLock();
+    loop();
+    UI.renderTimer();
+  }
+
+  function loop() {
+    if (handle) { clearInterval(handle); handle = null; }  // never two loops
+    handle = setInterval(tick, 250);
+    tick();
+  }
+  function stopLoop() { if (handle) { clearInterval(handle); handle = null; } }
+
+  function tick() {
+    if (!st) { stopLoop(); return; }
+    const snap = CORE.timerSnapshot(st.core, Date.now());
+    if (snap.mode === "running") {
+      if (st.ctx.bellsEverySec && CORE.dueBells(st.ctx.bellsEverySec, lastElapsed, snap.elapsedSec)) AUDIO.bell(1);
+      lastElapsed = snap.elapsedSec;
+      if (Date.now() - lastPersist > 15000) persist();
+    }
+    if (snap.mode === "done") { complete(st.core.plannedSec); return; }
+    UI.paintTimer(snap, st);
+  }
+
+  function pause() {
+    if (!st || st.core.phase !== "running") return;
+    const snap = CORE.timerSnapshot(st.core, Date.now());
+    if (snap.mode === "prep") { reset(false); return; } // pausing during prep just cancels
+    st.core = CORE.pauseTimerState(st.core, Date.now());
+    persist(true);
+    UI.renderTimer();
+  }
+  function resume() {
+    if (!st || st.core.phase !== "paused") return;
+    st.core = CORE.resumeTimerState(st.core, Date.now());
+    persist(true);
+    loop();
+    UI.renderTimer();
+  }
+
+  function finishEarly() {
+    if (!st) return;
+    const snap = CORE.timerSnapshot(st.core, Date.now());
+    if (snap.elapsedSec < 10) { UI.toast("Less than 10 seconds elapsed — use Reset instead."); return; }
+    complete(snap.elapsedSec);
+  }
+
+  async function reset(ask) {
+    if (ask !== false) {
+      const ok = await UI.confirmModal("Reset the timer? The elapsed time and markers of this sit will be discarded and nothing will be saved.", "Reset");
+      if (!ok) return;
+    }
+    stopLoop(); releaseWakeLock();
+    st = null; STORE.clearTimer();
+    UI.setZen(false);
+    UI.renderTimer();
+  }
+
+  function complete(actualSec) {
+    stopLoop(); releaseWakeLock();
+    if (st.ctx.finalBell) AUDIO.bell(3);
+    const ctx = st.ctx;
+    const markers = ctx.markers || [];
+    const endD = new Date();
+    const pending = {
+      date: ctx.date,
+      startTime: ctx.startTime,
+      endTime: String(endD.getHours()).padStart(2, "0") + ":" + String(endD.getMinutes()).padStart(2, "0"),
+      plannedMin: CORE.round1(st.core.plannedSec / 60),
+      actualMin: CORE.round1(actualSec / 60),
+      object: ctx.object, objectCustom: ctx.objectCustom,
+      markers: markers.length ? markers : null,
+      wanderings: markers.filter(m => m.kind === "wandering").length || null,
+      returns: markers.filter(m => m.kind === "returned").length || null,
+      entrySource: "timer"
+    };
+    st = null; STORE.clearTimer();
+    UI.setZen(false);
+    UI.renderTimer();
+    REVIEW.openFor(pending);
+    UI.toast("Sit complete — take 30 seconds to record what happened.");
+  }
+
+  function addMarker(kind) {
+    if (!st) return;
+    const snap = CORE.timerSnapshot(st.core, Date.now());
+    if (snap.mode !== "running") return;
+    st.ctx.markers.push({ atMin: CORE.round1(snap.elapsedSec / 60), kind });
+    persist(true);
+    UI.paintMarkerLog(st);
+  }
+
+  function persist(force) {
+    if (!st) return;
+    lastPersist = Date.now();
+    STORE.saveTimer(st);
+  }
+
+  // On boot: restore a sit that was interrupted by refresh/close.
+  function restore() {
+    const saved = STORE.loadTimer();
+    if (!saved || !saved.core || saved.core.phase === "idle") return;
+    const snap = CORE.timerSnapshot(saved.core, Date.now());
+    if (snap.mode === "done") {
+      st = saved;
+      complete(saved.core.plannedSec);
+      UI.toast("Your sit finished while the app was closed — review it below.");
+      return;
+    }
+    // offer to continue
+    UI.$("#resume-banner").hidden = false;
+    UI.$("#resume-detail").textContent = "Elapsed " + CORE.fmtClock(snap.elapsedSec) + " of " + CORE.fmtClock(saved.core.plannedSec) + (snap.mode === "paused" ? " (paused)" : "") + ".";
+    UI.$("#btn-resume-timer").onclick = () => {
+      st = saved;
+      lastElapsed = CORE.timerSnapshot(st.core, Date.now()).elapsedSec;
+      UI.$("#resume-banner").hidden = true;
+      if (st.core.phase === "running") { loop(); acquireWakeLock(); }
+      UI.renderTimer();
+    };
+    UI.$("#btn-discard-timer").onclick = () => {
+      STORE.clearTimer();
+      UI.$("#resume-banner").hidden = true;
+    };
+  }
+
+  return {
+    start, pause, resume, finishEarly, reset, addMarker, restore,
+    state: () => st,
+    snapshot: () => st ? CORE.timerSnapshot(st.core, Date.now()) : null
+  };
+})();
+
+/* ================= AI — provider adapter with local deterministic fallback ================= */
+const AI = (function () {
+  let fetchImpl = (...a) => window.fetch(...a); // injectable for testing
+
+  function cfg() {
+    return {
+      enabled: !!STORE.getSetting("aiEnabled", false),
+      endpoint: STORE.getSetting("aiEndpoint", ""),
+      apiKey: STORE.getSetting("aiKey", ""),
+      model: STORE.getSetting("aiModel", "")
+    };
+  }
+  function configured() {
+    const c = cfg();
+    return c.enabled && !!c.endpoint;
+  }
+
+  async function callProvider(text) {
+    const req = CORE.buildProviderRequest(text, cfg());
+    if (!req) throw new Error("no endpoint configured");
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 20000);
+    try {
+      const resp = await fetchImpl(req.url, { method: "POST", headers: req.headers, body: req.body, signal: ctrl.signal });
+      if (!resp.ok) throw new Error("provider returned HTTP " + resp.status);
+      const json = await resp.json();
+      const raw = CORE.extractProviderText(json);
+      const parsed = CORE.parseProviderResponse(raw, text);
+      if (!parsed.ok) throw new Error("provider output rejected: " + parsed.errors.join("; "));
+      return parsed.draft;
+    } finally { clearTimeout(to); }
+  }
+
+  // Always returns a draft; reports which engine produced it.
+  async function requestDraft(text) {
+    if (configured()) {
+      try {
+        const draft = await callProvider(text);
+        return { draft, engine: "provider", fallback: null };
+      } catch (e) {
+        return { draft: CORE.parseJournal(text), engine: "local", fallback: String(e.message || e) };
+      }
+    }
+    return { draft: CORE.parseJournal(text), engine: "local", fallback: null };
+  }
+
+  async function testConnection() {
+    if (!cfg().endpoint) return { ok: false, message: "No endpoint configured." };
+    try {
+      const draft = await callProvider("I sat for 5 minutes as a connection test.");
+      return { ok: true, message: "Provider responded with a valid draft (extracted duration: " + draft.actualMin + " min)." };
+    } catch (e) {
+      return { ok: false, message: "Provider call failed: " + (e.message || e) + " — the app will use the local parser." };
+    }
+  }
+
+  return { requestDraft, testConnection, configured, cfg, _setFetch: f => { fetchImpl = f; } };
+})();
+
+/* ================= UI helpers ================= */
+const UI = (function () {
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  let toastTimer = null;
+  function toast(msg) {
+    const el = $("#toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 3500);
+  }
+  function modal(html) {
+    const dlg = $("#modal");
+    $("#modal-body").innerHTML = html;
+    dlg.showModal();
+    return dlg;
+  }
+  function closeModal() { $("#modal").close(); }
+  function confirmModal(message, actionLabel) {
+    return new Promise(resolve => {
+      const dlg = modal(
+        "<p>" + esc(message) + "</p>" +
+        '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
+        '<button id="cm-cancel">Cancel</button>' +
+        '<button id="cm-ok" class="danger">' + esc(actionLabel || "Confirm") + "</button></div>"
+      );
+      $("#cm-ok").onclick = () => { dlg.close(); resolve(true); };
+      $("#cm-cancel").onclick = () => { dlg.close(); resolve(false); };
+      dlg.oncancel = () => resolve(false);
+    });
+  }
+
+  /* ---- tabs ---- */
+  const TABS = ["sit", "review", "progress", "map", "journal", "settings"];
+  function showTab(name) {
+    for (const tb of TABS) {
+      $("#tab-" + tb).classList.toggle("active", tb === name);
+      $("#tabbtn-" + tb).setAttribute("aria-selected", tb === name ? "true" : "false");
+    }
+    if (name === "progress") PROGRESS.render();
+    if (name === "review") HISTORY.render();
+    if (name === "map") MAP.render();
+    if (name === "journal") JOURNAL.renderEngineNotice();
+    if (name === "settings") SETTINGS.renderInfo();
+  }
+
+  /* ---- sit tab ---- */
+  function selectedMinutes() {
+    const custom = parseFloat($("#custom-min").value);
+    if (CORE.isNum(custom) && custom > 0) return custom;
+    const pressed = $("#preset-row button[aria-pressed='true']");
+    return pressed ? parseInt(pressed.dataset.min, 10) : 30;
+  }
+
+  function renderTimer() {
+    const st = TIMER.state();
+    const running = !!st;
+    $("#btn-start").hidden = running;
+    $("#btn-pause").hidden = !running;
+    $("#btn-finish").hidden = !running;
+    $("#btn-reset").hidden = !running;
+    $("#btn-zen").hidden = !running;
+    $("#markers-bar").hidden = !running;
+    $("#sit-config").style.display = running ? "none" : "";
+    if (!running) {
+      const min = selectedMinutes();
+      $("#timer-display").textContent = CORE.fmtClock(min * 60);
+      $("#timer-sub").textContent = "planned " + min + " min";
+      $("#timer-phase").textContent = "";
+      $("#marker-log").textContent = "";
+      setZen(false);
+    } else {
+      paintTimer(TIMER.snapshot(), st);
+      paintMarkerLog(st);
+    }
+  }
+
+  function paintTimer(snap, st) {
+    const disp = $("#timer-display");
+    if (snap.mode === "prep") {
+      disp.textContent = String(snap.prepRemainingSec);
+      $("#timer-phase").textContent = "settling in…";
+      $("#timer-sub").textContent = "sit begins shortly";
+    } else {
+      disp.textContent = CORE.fmtClock(snap.remainingSec);
+      $("#timer-phase").textContent = snap.mode === "paused" ? "paused" : "";
+      $("#timer-sub").textContent = "elapsed " + CORE.fmtClock(snap.elapsedSec) + " · planned " + CORE.fmtClock(st.core.plannedSec);
+    }
+    $("#btn-pause").textContent = snap.mode === "paused" ? "Resume" : "Pause";
+  }
+
+  function paintMarkerLog(st) {
+    const ms = (st.ctx.markers || []);
+    $("#marker-log").textContent = ms.length
+      ? ms.slice(-4).map(m => m.kind + " @ " + CORE.fmtMin(m.atMin)).join(" · ") + (ms.length > 4 ? " · +" + (ms.length - 4) + " more" : "")
+      : "";
+  }
+
+  function setZen(on) {
+    document.body.classList.toggle("zen", !!on);
+    $("#btn-zen").setAttribute("aria-pressed", on ? "true" : "false");
+    $("#btn-zen").textContent = on ? "Show screen" : "Quiet screen";
+  }
+
+  return { $, $$, esc, toast, modal, closeModal, confirmModal, showTab, selectedMinutes, renderTimer, paintTimer, paintMarkerLog, setZen };
+})();
+
+/* ================= REVIEW — post-session form + editing ================= */
+const REVIEW = (function () {
+  const { $, esc } = UI;
+  let pending = null;      // partial session being reviewed (unsaved) or edited
+  let editingId = null;
+
+  function openFor(partial) {
+    pending = Object.assign({}, partial);
+    editingId = null;
+    render();
+    UI.showTab("review");
+    window.scrollTo({ top: 0 });
+  }
+  function openManual() {
+    openFor({ date: STORE.todayStr(), entrySource: "manual", plannedMin: null, actualMin: 30, object: null });
+  }
+  function edit(id) {
+    const s = STORE.getSession(id);
+    if (!s) return;
+    pending = JSON.parse(JSON.stringify(s));
+    editingId = id;
+    render();
+    UI.showTab("review");
+    window.scrollTo({ top: 0 });
+  }
+  function close() {
+    pending = null; editingId = null;
+    render();
+  }
+
+  function hindranceRows() {
+    return CORE.HINDRANCES.map(h => {
+      const cur = (pending.hindrances || {})[h] || "";
+      return '<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:4px 0">' +
+        '<span style="font-size:var(--fs-sm)">' + esc(CORE.HINDRANCE_LABELS[h]) + "</span>" +
+        '<span class="row" role="group" aria-label="' + esc(CORE.HINDRANCE_LABELS[h]) + ' intensity">' +
+        ["", "mild", "moderate", "strong"].map(lvl =>
+          '<button class="chip rv-hindrance" data-h="' + h + '" data-lvl="' + lvl + '" aria-pressed="' + ((cur || "") === lvl ? "true" : "false") + '">' + (lvl || "none") + "</button>"
+        ).join("") +
+        '<label class="check" style="min-height:auto"><input type="radio" name="rv-dominant" class="rv-dominant" value="' + h + '"' + (pending.dominantHindrance === h ? " checked" : "") + " aria-label=\"dominant\"> dom.</label>" +
+        "</span></div>";
+    }).join("");
+  }
+
+  function timelineRows() {
+    const tl = pending.timeline || [];
+    return tl.map((seg, i) =>
+      '<div class="row" data-i="' + i + '" style="margin-bottom:4px">' +
+      '<select class="tl-kind" data-i="' + i + '" aria-label="Segment kind">' +
+      CORE.SEGMENT_KINDS.map(k => '<option value="' + k + '"' + (seg.kind === k ? " selected" : "") + ">" + esc(CORE.SEGMENT_LABELS[k]) + "</option>").join("") +
+      "</select>" +
+      '<input type="number" class="tl-start" data-i="' + i + '" value="' + seg.startMin + '" min="0" step="0.5" aria-label="Segment start minute"> →' +
+      '<input type="number" class="tl-end" data-i="' + i + '" value="' + seg.endMin + '" min="0" step="0.5" aria-label="Segment end minute"> min' +
+      '<button class="ghost tl-del" data-i="' + i + '" aria-label="Remove segment">✕</button>' +
+      "</div>"
+    ).join("");
+  }
+
+  function render() {
+    const box = $("#review-container");
+    if (!pending) { box.innerHTML = ""; return; }
+    const p = pending;
+    const actual = CORE.isNum(p.actualMin) ? p.actualMin : 0;
+    const conc = CORE.isNum(p.concMin) ? p.concMin : null;
+    const ratio = CORE.computeRatio(conc, actual);
+    const derived = p.timeline && p.timeline.length ? CORE.deriveFromTimeline(p.timeline) : null;
+    const mismatch = derived && CORE.isNum(conc) && CORE.isNum(derived.concMin) && Math.abs(conc - derived.concMin) > 0.5;
+
+    box.innerHTML =
+      '<div class="card" id="review-card">' +
+      '<div class="row between"><h2 style="margin:0">' + (editingId ? "Edit session" : "Session review") + '</h2>' +
+      '<button id="rv-close" class="ghost">Close without saving</button></div>' +
+      '<p class="dim">' + (editingId ? "Editing a saved session." : "The one number that matters: your honest estimate of minutes in genuine contact with the breath. It is self-reported — there is no wrong answer.") + "</p>" +
+      '<div class="grid3">' +
+      '<div class="field"><label for="rv-date">Date</label><input type="date" id="rv-date" value="' + esc(p.date || "") + '"></div>' +
+      '<div class="field"><label for="rv-start">Start time</label><input type="time" id="rv-start" value="' + esc(p.startTime || "") + '"></div>' +
+      '<div class="field"><label for="rv-actual">Actual duration (min)</label><input type="number" id="rv-actual" min="0.5" step="0.5" value="' + actual + '"></div>' +
+      "</div>" +
+
+      '<h3>Estimated minutes of genuine breath contact <span class="badge">self-reported</span></h3>' +
+      '<div class="row">' +
+      '<button id="rv-conc-minus" aria-label="Decrease estimate">−1</button>' +
+      '<input type="range" id="rv-conc-slider" min="0" max="' + actual + '" step="0.5" value="' + (conc === null ? 0 : conc) + '" style="flex:1" aria-label="Estimated concentrated minutes">' +
+      '<button id="rv-conc-plus" aria-label="Increase estimate">+1</button>' +
+      '<span style="font-size:var(--fs-xl);min-width:88px;text-align:right" id="rv-conc-value">' + (conc === null ? "—" : conc + "′") + "</span>" +
+      "</div>" +
+      '<div class="row between"><span class="dim" id="rv-ratio">' + (ratio === null ? "no estimate given yet" : "concentration ratio: " + Math.round(ratio * 100) + "%") + "</span>" +
+      '<button id="rv-conc-clear" class="ghost">clear (not reported)</button></div>' +
+      '<div class="row" role="group" aria-label="Estimate confidence" style="margin-top:8px"><span class="dim">confidence:</span>' +
+      CORE.CONFIDENCES.map(c => '<button class="chip rv-conf" data-c="' + c + '" aria-pressed="' + (p.confidence === c ? "true" : "false") + '">' + c + "</button>").join("") +
+      "</div>" +
+      '<div id="rv-errors" style="color:var(--err);font-size:var(--fs-sm);margin-top:8px" aria-live="polite"></div>' +
+      '<div class="row" style="margin-top:12px">' +
+      '<button id="rv-save" class="primary big">' + (editingId ? "Save changes" : "Save session") + "</button>" +
+      (editingId ? '<button id="rv-delete" class="danger">Delete…</button>' : "") +
+      "</div>" +
+
+      '<details style="margin-top:16px"><summary>Attention details (settling, wandering, longest stretch)</summary>' +
+      '<div class="grid3" style="margin-top:8px">' +
+      '<div class="field"><label for="rv-settle">Minutes to first settle</label><input type="number" id="rv-settle" min="0" step="0.5" value="' + (p.settleMin ?? "") + '" placeholder="not reported"></div>' +
+      '<div class="field"><label for="rv-longest">Longest steady stretch (min)</label><input type="number" id="rv-longest" min="0" step="0.5" value="' + (p.longestSteadyMin ?? "") + '" placeholder="not reported"></div>' +
+      '<div class="field"><label for="rv-wander">Major wandering episodes</label><input type="number" id="rv-wander" min="0" step="1" value="' + (p.wanderings ?? "") + '" placeholder="not reported"></div>' +
+      '<div class="field"><label for="rv-returns">Attention returns</label><input type="number" id="rv-returns" min="0" step="1" value="' + (p.returns ?? "") + '" placeholder="not reported"></div>' +
+      "</div>" +
+      (p.markers && p.markers.length ? '<p class="faint">markers from the sit: ' + esc(p.markers.map(m => m.kind + "@" + m.atMin + "′").join(", ")) + "</p>" : "") +
+      "</details>" +
+
+      '<details><summary>Session timeline (optional — derives the estimate from segments)</summary>' +
+      '<div id="rv-timeline" style="margin-top:8px">' + timelineRows() + "</div>" +
+      '<div class="row"><button id="rv-tl-add">+ Add segment</button>' +
+      (derived ? '<span class="dim">timeline-derived estimate: <strong>' + derived.concMin + "′</strong> (longest steady " + derived.longestSteadyMin + "′)</span><button id=\"rv-tl-use\">Use derived values</button>" : "") +
+      "</div>" +
+      (mismatch ? '<p class="notice warn" style="margin-top:8px">Your manual estimate (' + conc + '′) differs from the timeline-derived value (' + derived.concMin + "′). Both are kept — the manual value is what gets saved.</p>" : "") +
+      '<p class="faint">Segment weights: continuous 100% · mostly steady 75% · intermittent 35% · wandering/dull/agitated/uncertain 0%. A convention, not a measurement.</p>' +
+      "</details>" +
+
+      '<details><summary>Hindrances (none required)</summary><div style="margin-top:8px">' + hindranceRows() +
+      '<button id="rv-dom-clear" class="ghost" style="margin-top:6px">clear dominant</button></div></details>' +
+
+      '<details><summary>Reported qualities</summary><div class="grid3" style="margin-top:8px">' +
+      CORE.QUALITIES.map(q => '<label class="check"><input type="checkbox" class="rv-quality" value="' + q + '"' + ((p.qualities || []).indexOf(q) >= 0 ? " checked" : "") + "> " + esc(CORE.QUALITY_LABELS[q]) + "</label>").join("") +
+      '</div><p class="faint">These are reports of experience, not evidence of attainment.</p></details>' +
+
+      '<details><summary>Light / image report</summary><div style="margin-top:8px">' +
+      '<div class="field"><label for="rv-nim-cat">Report</label><select id="rv-nim-cat">' +
+      '<option value="">not reported</option>' +
+      CORE.NIMITTA_CATEGORIES.map(c => '<option value="' + c + '"' + (p.nimitta && p.nimitta.category === c ? " selected" : "") + ">" + esc(CORE.NIMITTA_LABELS[c]) + "</option>").join("") +
+      "</select></div>" +
+      '<div class="grid3" id="rv-nim-details"' + (p.nimitta && p.nimitta.category && p.nimitta.category !== "none" ? "" : " hidden") + ">" +
+      '<div class="field"><label for="rv-nim-dur">Approx. duration</label><input type="text" id="rv-nim-dur" value="' + esc(p.nimitta && p.nimitta.duration || "") + '" placeholder="e.g. a few seconds"></div>' +
+      '<div class="field"><label for="rv-nim-color">Color</label><input type="text" id="rv-nim-color" value="' + esc(p.nimitta && p.nimitta.color || "") + '"></div>' +
+      '<div class="field"><label for="rv-nim-bright">Brightness</label><input type="text" id="rv-nim-bright" value="' + esc(p.nimitta && p.nimitta.brightness || "") + '"></div>' +
+      '<div class="field"><label for="rv-nim-stab">Stability</label><input type="text" id="rv-nim-stab" value="' + esc(p.nimitta && p.nimitta.stability || "") + '"></div>' +
+      '<div class="field"><label for="rv-nim-effort">Did effort change it?</label><input type="text" id="rv-nim-effort" value="' + esc(p.nimitta && p.nimitta.effortChanged || "") + '"></div>' +
+      '<div class="field"><label for="rv-nim-moved">Remained when attention moved?</label><input type="text" id="rv-nim-moved" value="' + esc(p.nimitta && p.nimitta.persisted || "") + '"></div>' +
+      '<div class="field"><label for="rv-nim-emotion">Emotional response</label><input type="text" id="rv-nim-emotion" value="' + esc(p.nimitta && p.nimitta.emotion || "") + '"></div>' +
+      '<div class="field"><label for="rv-nim-timing">Occurred</label><select id="rv-nim-timing">' +
+      ["", "before strong collectedness", "during strong collectedness", "after strong collectedness", "unrelated / unclear"].map(o => '<option value="' + o + '"' + ((p.nimitta && p.nimitta.timing) === o ? " selected" : "") + ">" + (o || "—") + "</option>").join("") +
+      "</select></div>" +
+      "</div>" +
+      '<p class="faint">Recorded neutrally as a reported experience. Consider discussing repeated or destabilizing experiences with a qualified teacher.</p></div></details>' +
+
+      '<details><summary>Body, energy, context</summary><div class="grid3" style="margin-top:8px">' +
+      '<div class="field"><label for="rv-object">Object</label><select id="rv-object"><option value="">—</option>' +
+      CORE.OBJECTS.map(o => '<option value="' + o + '"' + (p.object === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
+      '<div class="field"><label for="rv-posture">Posture</label><select id="rv-posture"><option value="">—</option>' +
+      ["cross-legged", "seiza/bench", "chair", "standing", "lying"].map(o => '<option value="' + o + '"' + (p.posture === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
+      '<div class="field"><label for="rv-phase">Practice phase</label><select id="rv-phase">' +
+      ["foundation", "consistency", "stability", "collectedness", "jhana-investigation", "advanced"].map(o => '<option value="' + o + '"' + ((p.phase || "foundation") === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
+      ["energyBefore", "energyAfter", "calmBefore", "calmAfter"].map(f =>
+        '<div class="field"><label for="rv-' + f + '">' + f.replace(/([A-Z])/g, " $1").toLowerCase() + ' (1–5)</label><input type="number" id="rv-' + f + '" min="1" max="5" step="1" value="' + (p[f] ?? "") + '" placeholder="—"></div>'
+      ).join("") +
+      '<div class="field"><label for="rv-afterstate">Overall after-state</label><select id="rv-afterstate"><option value="">not reported</option>' +
+      CORE.AFTER_STATES.map(a => '<option value="' + a + '"' + (p.afterStateReport === a ? " selected" : "") + ">" + a + "</option>").join("") + "</select></div>" +
+      "</div></details>" +
+
+      '<details><summary>Notes & teacher review</summary><div style="margin-top:8px">' +
+      '<div class="field"><label for="rv-notes">Notes</label><textarea id="rv-notes">' + esc(p.notes || "") + "</textarea></div>" +
+      (p.journalText ? '<div class="field"><label>Original journal text (kept verbatim)</label><div class="card sub" style="font-size:var(--fs-sm)">' + esc(p.journalText) + "</div></div>" : "") +
+      '<div class="grid2">' +
+      '<div class="field"><label for="rv-review">Teacher review state</label><select id="rv-review">' +
+      CORE.REVIEW_STATES.map(r => '<option value="' + r + '"' + ((p.teacherReview || "none") === r ? " selected" : "") + ">" + esc(CORE.REVIEW_LABELS[r]) + "</option>").join("") +
+      "</select></div>" +
+      '<div class="field"><label for="rv-teachernotes">Private teacher notes</label><input type="text" id="rv-teachernotes" value="' + esc(p.teacherNotes || "") + '"></div>' +
+      "</div></div></details>" +
+      "</div>";
+
+    wire();
+  }
+
+  function readForm() {
+    const numOrNull = id => {
+      const v = parseFloat($(id).value);
+      return CORE.isNum(v) ? v : null;
+    };
+    const p = pending;
+    p.date = $("#rv-date").value || null;
+    p.startTime = $("#rv-start").value || null;
+    p.actualMin = numOrNull("#rv-actual");
+    p.settleMin = numOrNull("#rv-settle");
+    p.longestSteadyMin = numOrNull("#rv-longest");
+    p.wanderings = numOrNull("#rv-wander");
+    p.returns = numOrNull("#rv-returns");
+    p.object = $("#rv-object").value || null;
+    p.posture = $("#rv-posture").value || null;
+    p.phase = $("#rv-phase").value;
+    for (const f of ["energyBefore", "energyAfter", "calmBefore", "calmAfter"]) p[f] = numOrNull("#rv-" + f);
+    p.afterStateReport = $("#rv-afterstate").value || null;
+    p.qualities = UI.$$(".rv-quality:checked").map(el => el.value);
+    p.notes = $("#rv-notes").value;
+    p.teacherReview = $("#rv-review").value;
+    p.teacherNotes = $("#rv-teachernotes").value || null;
+    const nimCat = $("#rv-nim-cat").value;
+    if (nimCat) {
+      p.nimitta = {
+        category: nimCat,
+        duration: $("#rv-nim-dur").value || null, color: $("#rv-nim-color").value || null,
+        brightness: $("#rv-nim-bright").value || null, stability: $("#rv-nim-stab").value || null,
+        effortChanged: $("#rv-nim-effort").value || null, persisted: $("#rv-nim-moved").value || null,
+        emotion: $("#rv-nim-emotion").value || null, timing: $("#rv-nim-timing").value || null
+      };
+    } else p.nimitta = null;
+  }
+
+  function wire() {
+    if (!pending) return;
+    $("#rv-close") && ($("#rv-close").onclick = async () => {
+      if (!editingId) {
+        const ok = await UI.confirmModal("Close without saving? This sit's review will be discarded (the sit itself was not saved yet).", "Discard review");
+        if (!ok) return;
+      }
+      close();
+    });
+
+    const slider = $("#rv-conc-slider");
+    const setConc = v => {
+      pending.concMin = v;
+      render();
+    };
+    slider.oninput = () => {
+      pending.concMin = parseFloat(slider.value);
+      const r = CORE.computeRatio(pending.concMin, parseFloat($("#rv-actual").value));
+      $("#rv-conc-value").textContent = pending.concMin + "′";
+      $("#rv-ratio").textContent = r === null ? "" : "concentration ratio: " + Math.round(r * 100) + "%";
+      pending._manualTouched = true;
+    };
+    $("#rv-conc-minus").onclick = () => { readForm(); setConc(Math.max(0, (CORE.isNum(pending.concMin) ? pending.concMin : 0) - 1)); pending._manualTouched = true; };
+    $("#rv-conc-plus").onclick = () => { readForm(); setConc(Math.min(parseFloat($("#rv-actual").value) || 0, (CORE.isNum(pending.concMin) ? pending.concMin : 0) + 1)); pending._manualTouched = true; };
+    $("#rv-conc-clear").onclick = () => { readForm(); pending.concMin = null; pending.confidence = null; render(); };
+    UI.$$(".rv-conf").forEach(b => b.onclick = () => { readForm(); pending.confidence = b.dataset.c; render(); });
+    $("#rv-actual").onchange = () => { readForm(); if (CORE.isNum(pending.concMin) && pending.concMin > pending.actualMin) pending.concMin = pending.actualMin; render(); };
+
+    UI.$$(".rv-hindrance").forEach(b => b.onclick = () => {
+      readForm();
+      const h = b.dataset.h, lvl = b.dataset.lvl;
+      if (!pending.hindrances) pending.hindrances = {};
+      if (lvl) pending.hindrances[h] = lvl; else delete pending.hindrances[h];
+      if (!lvl && pending.dominantHindrance === h) pending.dominantHindrance = null;
+      render();
+    });
+    UI.$$(".rv-dominant").forEach(r => r.onchange = () => { readForm(); pending.dominantHindrance = r.value; if (!pending.hindrances[r.value]) { pending.hindrances[r.value] = "moderate"; } render(); });
+    $("#rv-dom-clear").onclick = () => { readForm(); pending.dominantHindrance = null; render(); };
+
+    $("#rv-nim-cat").onchange = () => { readForm(); render(); };
+
+    $("#rv-tl-add").onclick = () => {
+      readForm();
+      if (!pending.timeline) pending.timeline = [];
+      const last = pending.timeline[pending.timeline.length - 1];
+      const start = last ? last.endMin : 0;
+      pending.timeline.push({ kind: "intermittent", startMin: start, endMin: Math.min((pending.actualMin || 30), start + 5) });
+      render();
+    };
+    UI.$$(".tl-del").forEach(b => b.onclick = () => { readForm(); pending.timeline.splice(parseInt(b.dataset.i, 10), 1); if (!pending.timeline.length) pending.timeline = null; render(); });
+    UI.$$(".tl-kind,.tl-start,.tl-end").forEach(el => el.onchange = () => {
+      readForm();
+      const i = parseInt(el.dataset.i, 10);
+      const seg = pending.timeline[i];
+      seg.kind = UI.$$(".tl-kind")[i].value;
+      seg.startMin = parseFloat(UI.$$(".tl-start")[i].value) || 0;
+      seg.endMin = parseFloat(UI.$$(".tl-end")[i].value) || 0;
+      render();
+    });
+    const useBtn = $("#rv-tl-use");
+    if (useBtn) useBtn.onclick = () => {
+      readForm();
+      const d = CORE.deriveFromTimeline(pending.timeline);
+      pending.concMin = d.concMin;
+      pending.longestSteadyMin = d.longestSteadyMin;
+      pending.timelineDerivedMin = d.concMin;
+      pending.manualOverride = false;
+      render();
+    };
+
+    $("#rv-save").onclick = () => {
+      readForm();
+      if (pending.timeline && pending.timeline.length) {
+        const d = CORE.deriveFromTimeline(pending.timeline);
+        pending.timelineDerivedMin = d.concMin;
+        pending.manualOverride = CORE.isNum(pending.concMin) && Math.abs(pending.concMin - d.concMin) > 0.5;
+      }
+      const candidate = CORE.normalizeSession(Object.assign({}, pending), STORE.nowIso(), STORE.todayStr());
+      delete candidate._manualTouched;
+      const v = CORE.validateSession(candidate);
+      if (!v.ok) {
+        $("#rv-errors").innerHTML = v.errors.map(e => "• " + UI.esc(e)).join("<br>");
+        return;
+      }
+      let res;
+      if (editingId) res = STORE.updateSession(editingId, candidate);
+      else res = STORE.addSession(candidate);
+      if (!res.ok) { $("#rv-errors").textContent = res.errors.join("; "); return; }
+      UI.toast(editingId ? "Session updated." : "Session saved.");
+      close();
+      HISTORY.render();
+      PROGRESS.render();
+    };
+
+    const del = $("#rv-delete");
+    if (del) del.onclick = async () => {
+      const ok = await UI.confirmModal("Delete this session permanently? This cannot be undone (export a backup first if unsure).", "Delete session");
+      if (!ok) return;
+      STORE.deleteSession(editingId);
+      UI.toast("Session deleted.");
+      close();
+      HISTORY.render();
+      PROGRESS.render();
+    };
+  }
+
+  return { openFor, openManual, edit, render, close, hasPending: () => !!pending };
+})();
+
+/* ================= HISTORY ================= */
+const HISTORY = (function () {
+  const { $, esc } = UI;
+
+  function matches(s, q, f) {
+    if (q) {
+      const hay = ((s.notes || "") + " " + (s.journalText || "") + " " + (s.teacherNotes || "")).toLowerCase();
+      if (hay.indexOf(q) < 0) return false;
+    }
+    if (f.object && s.object !== f.object) return false;
+    if (f.hindrance && !(s.hindrances && s.hindrances[f.hindrance])) return false;
+    if (f.nimitta === "reported" && !(s.nimitta && s.nimitta.category && s.nimitta.category !== "none")) return false;
+    if (f.nimitta === "none" && !(s.nimitta && s.nimitta.category === "none")) return false;
+    if (f.source && s.entrySource !== f.source) return false;
+    if (f.review && (s.teacherReview || "none") !== f.review) return false;
+    return true;
+  }
+
+  function render() {
+    const list = $("#history-list");
+    const q = ($("#hist-search").value || "").toLowerCase().trim();
+    const f = {
+      object: $("#hist-filter-object").value,
+      hindrance: $("#hist-filter-hindrance").value,
+      nimitta: $("#hist-filter-nimitta").value,
+      source: $("#hist-filter-source").value,
+      review: $("#hist-filter-review").value
+    };
+    const all = STORE.sessions().slice().sort((a, b) => (b.date + (b.startTime || "")) < (a.date + (a.startTime || "")) ? -1 : 1);
+    const shown = all.filter(s => matches(s, q, f));
+    if (!all.length) {
+      list.innerHTML = '<div class="empty">No sessions yet. Finish a sit or add a manual entry — your history will build here.</div>';
+      return;
+    }
+    if (!shown.length) {
+      list.innerHTML = '<div class="empty">No sessions match these filters.</div>';
+      return;
+    }
+    list.innerHTML = shown.slice(0, 200).map(s => {
+      const r = s.ratio !== null ? Math.round(s.ratio * 100) + "%" : "—";
+      return '<button class="sess-item" data-id="' + esc(s.id) + '" aria-label="Open session ' + esc(s.date) + '">' +
+        "<strong>" + esc(s.date) + "</strong>" + (s.startTime ? " · " + esc(s.startTime) : "") +
+        " · " + CORE.fmtMin(s.actualMin) +
+        " · contact " + (s.concMin !== null ? CORE.fmtMin(s.concMin) + " (" + r + ")" : "—") +
+        (s.object ? '<span class="badge">' + esc(s.object) + "</span>" : "") +
+        (s.entrySource ? '<span class="badge">' + esc(s.entrySource) + "</span>" : "") +
+        (s.nimitta && s.nimitta.category !== "none" ? '<span class="badge gold">light report</span>' : "") +
+        ((s.teacherReview || "none") !== "none" ? '<span class="badge">' + esc(CORE.REVIEW_LABELS[s.teacherReview]) + "</span>" : "") +
+        (s.notes ? '<div class="faint" style="margin-top:2px">' + esc(s.notes.slice(0, 90)) + (s.notes.length > 90 ? "…" : "") + "</div>" : "") +
+        "</button>";
+    }).join("") + (shown.length > 200 ? '<div class="faint">Showing first 200 of ' + shown.length + " matches.</div>" : "");
+    UI.$$(".sess-item", list).forEach(el => el.onclick = () => detail(el.dataset.id));
+  }
+
+  function detail(id) {
+    const s = STORE.getSession(id);
+    if (!s) return;
+    const rows = [];
+    const push = (k, v) => rows.push("<tr><td>" + esc(k) + "</td><td>" + (v === null || v === undefined || v === "" ? "<span class='faint'>not reported</span>" : v) + "</td></tr>");
+    push("Date", esc(s.date) + (s.startTime ? " " + esc(s.startTime) : "") + (s.endTime ? "–" + esc(s.endTime) : ""));
+    push("Planned / actual", (s.plannedMin ?? "—") + " / " + (s.actualMin ?? "—") + " min");
+    push("Genuine breath contact (self-reported)", s.concMin !== null ? s.concMin + " min" + (s.confidence ? " · confidence " + s.confidence : "") : null);
+    push("Concentration ratio", s.ratio !== null ? Math.round(s.ratio * 100) + "%" : null);
+    push("Time to first settle", s.settleMin !== null ? s.settleMin + " min" : null);
+    push("Longest steady stretch", s.longestSteadyMin !== null ? s.longestSteadyMin + " min" : null);
+    push("Wandering / returns", (s.wanderings ?? "—") + " / " + (s.returns ?? "—"));
+    push("Object / posture / phase", [s.object, s.posture, s.phase].map(x => x || "—").join(" · "));
+    push("Hindrances", Object.keys(s.hindrances || {}).filter(k => s.hindrances[k]).map(k => esc(CORE.HINDRANCE_LABELS[k]) + " (" + s.hindrances[k] + (s.dominantHindrance === k ? ", dominant" : "") + ")").join("<br>") || null);
+    push("Qualities", (s.qualities || []).map(q => esc(CORE.QUALITY_LABELS[q])).join(", ") || null);
+    push("Light / image report", s.nimitta ? esc(CORE.NIMITTA_LABELS[s.nimitta.category] || s.nimitta.category) : null);
+    if (s.nimitta && s.nimitta.category !== "none") {
+      const d = ["duration", "color", "brightness", "stability", "effortChanged", "persisted", "emotion", "timing"].map(k => s.nimitta[k] ? k + ": " + esc(s.nimitta[k]) : null).filter(Boolean).join("<br>");
+      if (d) push("Report details", d);
+    }
+    push("Energy before → after", (s.energyBefore ?? "—") + " → " + (s.energyAfter ?? "—"));
+    push("Calm before → after", (s.calmBefore ?? "—") + " → " + (s.calmAfter ?? "—"));
+    push("After-state", s.afterStateReport ? esc(s.afterStateReport) : null);
+    if (s.timeline && s.timeline.length) push("Timeline", s.timeline.map(t => esc(CORE.SEGMENT_LABELS[t.kind]) + " " + t.startMin + "–" + t.endMin + "′").join("<br>") + (s.timelineDerivedMin !== null && s.timelineDerivedMin !== undefined ? "<br><span class='faint'>derived estimate " + s.timelineDerivedMin + "′" + (s.manualOverride ? " (manually overridden)" : "") + "</span>" : ""));
+    if (s.markers && s.markers.length) push("In-sit markers", s.markers.map(m => esc(m.kind) + " @ " + m.atMin + "′").join("<br>"));
+    push("Notes", s.notes ? esc(s.notes) : null);
+    if (s.journalText) push("Original journal", "<span style='font-size:var(--fs-xs)'>" + esc(s.journalText) + "</span>");
+    push("Teacher review", esc(CORE.REVIEW_LABELS[s.teacherReview || "none"]) + (s.teacherNotes ? "<br>" + esc(s.teacherNotes) : ""));
+    push("Entry source", s.entrySource ? esc(s.entrySource) : null);
+    push("Created / updated", "<span class='faint'>" + esc(s.createdAt || "—") + "<br>" + esc(s.updatedAt || "—") + "</span>");
+
+    const dlg = UI.modal(
+      "<h2>Session " + esc(s.date) + "</h2>" +
+      '<table class="kv">' + rows.join("") + "</table>" +
+      '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
+      '<button id="sd-close">Close</button>' +
+      '<button id="sd-edit" class="primary">Edit</button>' +
+      '<button id="sd-delete" class="danger">Delete…</button></div>'
+    );
+    UI.$("#sd-close").onclick = () => dlg.close();
+    UI.$("#sd-edit").onclick = () => { dlg.close(); REVIEW.edit(id); };
+    UI.$("#sd-delete").onclick = async () => {
+      dlg.close();
+      const ok = await UI.confirmModal("Delete the session from " + s.date + "? This cannot be undone.", "Delete session");
+      if (!ok) return;
+      STORE.deleteSession(id);
+      UI.toast("Session deleted.");
+      render();
+      PROGRESS.render();
+    };
+  }
+
+  function initFilters() {
+    UI.$("#hist-filter-object").innerHTML = '<option value="">Any object</option>' + CORE.OBJECTS.map(o => '<option value="' + o + '">' + o + "</option>").join("");
+    UI.$("#hist-filter-hindrance").innerHTML = '<option value="">Any hindrance</option>' + CORE.HINDRANCES.map(h => '<option value="' + h + '">' + esc(CORE.HINDRANCE_LABELS[h]) + "</option>").join("");
+    for (const id of ["hist-search", "hist-filter-object", "hist-filter-hindrance", "hist-filter-nimitta", "hist-filter-source", "hist-filter-review"]) {
+      UI.$("#" + id).addEventListener("input", render);
+    }
+  }
+
+  return { render, initFilters, detail };
+})();
+
+/* ================= PROGRESS — metrics, charts, insights ================= */
+const PROGRESS = (function () {
+  const { $, esc } = UI;
+  let range = "30";
+
+  function statCard(label, value, note) {
+    return '<div class="stat"><div class="v">' + value + '</div><div class="l">' + esc(label) + "</div>" + (note ? '<div class="n">' + esc(note) + "</div>" : "") + "</div>";
+  }
+
+  function svgLine(values, opts) {
+    const o = opts || {};
+    const W = 600, H = 130, P = 24;
+    const pts = values.filter(v => CORE.isNum(v.y));
+    if (pts.length < 2) return null;
+    const yMax = o.yMax || Math.max.apply(null, pts.map(p => p.y)) || 1;
+    const x = i => P + (W - 2 * P) * (pts.length === 1 ? 0.5 : i / (pts.length - 1));
+    const y = v => H - P - (H - 2 * P) * (v / (yMax || 1));
+    const poly = pts.map((p, i) => x(i).toFixed(1) + "," + y(p.y).toFixed(1)).join(" ");
+    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.label || "line chart") + '">' +
+      '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="#26303d"/>' +
+      '<text x="' + (P - 4) + '" y="' + (y(yMax) + 4) + '" fill="#5c6875" font-size="10" text-anchor="end">' + (o.yFmt ? o.yFmt(yMax) : yMax) + "</text>" +
+      '<polyline points="' + poly + '" fill="none" stroke="#7fb4d9" stroke-width="2"/>' +
+      pts.map((p, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.y).toFixed(1) + '" r="2.5" fill="#7fb4d9"/>').join("") +
+      "</svg>";
+  }
+
+  function svgBars(items, opts) {
+    const o = opts || {};
+    const W = 600, H = 140, P = 24;
+    if (!items.length) return null;
+    const max = Math.max.apply(null, items.map(i => Math.max(i.v || 0, i.v2 || 0))) || 1;
+    const bw = Math.min(34, (W - 2 * P) / items.length * (o.dual ? 0.36 : 0.7));
+    const x = i => P + (W - 2 * P) * ((i + 0.5) / items.length);
+    const h = v => (H - 2 * P) * (v / max);
+    let bars = "";
+    items.forEach((it, i) => {
+      const cx = x(i);
+      if (o.dual) {
+        bars += '<rect x="' + (cx - bw) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" fill="#3d6a8a"/>';
+        bars += '<rect x="' + cx + '" y="' + (H - P - h(it.v2 || 0)) + '" width="' + bw + '" height="' + h(it.v2 || 0) + '" fill="#c9a86a"/>';
+      } else {
+        bars += '<rect x="' + (cx - bw / 2) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" fill="#3d6a8a"/>';
+      }
+      if (it.label) bars += '<text x="' + cx + '" y="' + (H - P + 12) + '" fill="#5c6875" font-size="9" text-anchor="middle">' + esc(String(it.label).slice(0, 10)) + "</text>";
+    });
+    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.label || "bar chart") + '">' +
+      '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="#26303d"/>' +
+      '<text x="' + (P - 4) + '" y="' + (P + 4) + '" fill="#5c6875" font-size="10" text-anchor="end">' + (o.yFmt ? o.yFmt(max) : max) + "</text>" + bars + "</svg>";
+  }
+
+  function calendar(sessions, today) {
+    const byDate = {};
+    for (const s of sessions) byDate[s.date] = (byDate[s.date] || 0) + (s.actualMin || 0);
+    const weeks = 16;
+    let html = '<svg viewBox="0 0 ' + (weeks * 14 + 20) + ' 112" role="img" aria-label="practice consistency calendar, last ' + weeks + ' weeks">';
+    // find the sunday on/before (today - (weeks*7-1))
+    const start = CORE.addDays(today, -(weeks * 7 - 1));
+    for (let i = 0; i < weeks * 7; i++) {
+      const d = CORE.addDays(start, i);
+      if (d > today) break;
+      const col = Math.floor(i / 7), row = i % 7;
+      const min = byDate[d] || 0;
+      const fill = min === 0 ? "#1b2430" : min < 15 ? "#2c4a63" : min < 30 ? "#3d6a8a" : min < 60 ? "#5c93bd" : "#7fb4d9";
+      html += '<rect x="' + (col * 14 + 4) + '" y="' + (row * 14 + 4) + '" width="11" height="11" rx="2" fill="' + fill + '"><title>' + d + ": " + Math.round(min) + " min</title></rect>";
+    }
+    html += "</svg>";
+    return html;
+  }
+
+  function chartBlock(title, svg, cap, emptyMsg) {
+    return '<div class="chart"><h3>' + esc(title) + "</h3>" +
+      (svg ? svg + (cap ? '<div class="cap">' + esc(cap) + "</div>" : "") : '<div class="empty">' + esc(emptyMsg || "Not enough data yet — this chart needs at least 2 sessions with this value reported.") + "</div>") +
+      "</div>";
+  }
+
+  function render() {
+    const box = $("#progress-container");
+    const today = STORE.todayStr();
+    const all = STORE.sessions();
+    const sel = CORE.filterRange(all, range, today).sort((a, b) => (a.date + (a.startTime || "")) < (b.date + (b.startTime || "")) ? -1 : 1);
+    const m = CORE.summaryMetrics(sel, today);
+    const mAll = CORE.summaryMetrics(all, today);
+    const f = v => v === null ? "—" : v;
+
+    let html = '<div class="grid3">' +
+      statCard("current streak", mAll.currentStreak + "d", "days with ≥1 sit") +
+      statCard("longest streak", mAll.longestStreak + "d", "all time") +
+      statCard("sessions", m.sessions, "in range") +
+      statCard("practice hours", f(m.totalHours), "in range") +
+      statCard("est. concentrated hours", f(m.totalConcHours), m.concReportedCount + " of " + m.sessions + " sessions reported · self-reported") +
+      statCard("avg duration", f(m.avgDuration) + (m.avgDuration !== null ? "′" : ""), "in range") +
+      statCard("avg contact minutes", f(m.avgConc) + (m.avgConc !== null ? "′" : ""), "self-reported") +
+      statCard("avg concentration ratio", m.avgRatio !== null ? Math.round(m.avgRatio * 100) + "%" : "—", "self-reported") +
+      statCard("avg settling time", f(m.avgSettle) + (m.avgSettle !== null ? "′" : ""), "self-reported") +
+      statCard("best steady stretch", f(m.bestSteady) + (m.bestSteady !== null ? "′" : ""), "self-reported") +
+      "</div>";
+
+    // 30-day goal note (Gate 0)
+    html += '<p class="faint" style="margin-top:8px">Gate 0 target: a 30-day unbroken streak before booking the first retreat. Current: ' + mAll.currentStreak + "/30.</p>";
+
+    if (!sel.length) {
+      html += '<div class="empty" style="margin-top:16px">No sessions in this range. Finish a sit and it will appear here.</div>';
+      box.innerHTML = html;
+      return;
+    }
+
+    const lastN = sel.slice(-30);
+    html += chartBlock("Practice consistency (last 16 weeks, all sessions)", calendar(all, today), "cell shade = minutes sat that day");
+    html += chartBlock("Duration vs estimated contact minutes",
+      lastN.filter(s => CORE.isNum(s.actualMin)).length >= 1 ? svgBars(lastN.map(s => ({ v: s.actualMin || 0, v2: CORE.isNum(s.concMin) ? s.concMin : 0, label: s.date.slice(5) })), { dual: true, label: "duration vs contact", yFmt: v => Math.round(v) + "′" }) : null,
+      "blue = duration · gold = self-reported contact minutes · last " + lastN.length + " sessions");
+    html += chartBlock("Concentration ratio over time",
+      svgLine(lastN.filter(s => CORE.isNum(s.ratio)).map(s => ({ y: s.ratio })), { yMax: 1, yFmt: v => Math.round(v * 100) + "%", label: "ratio over time" }),
+      "self-reported · " + lastN.filter(s => CORE.isNum(s.ratio)).length + " sessions with an estimate");
+    html += chartBlock("Settling time over time",
+      svgLine(lastN.filter(s => CORE.isNum(s.settleMin)).map(s => ({ y: s.settleMin })), { yFmt: v => v + "′", label: "settling time" }),
+      "self-reported minutes to first settle");
+    html += chartBlock("Longest steady stretch over time",
+      svgLine(lastN.filter(s => CORE.isNum(s.longestSteadyMin)).map(s => ({ y: s.longestSteadyMin })), { yFmt: v => v + "′", label: "longest steady stretch" }),
+      "self-reported");
+    html += chartBlock("Major wandering episodes per session",
+      lastN.filter(s => CORE.isNum(s.wanderings)).length >= 2 ? svgBars(lastN.filter(s => CORE.isNum(s.wanderings)).map(s => ({ v: s.wanderings, label: s.date.slice(5) })), { label: "wandering episodes" }) : null,
+      "self-reported");
+
+    // hindrances
+    const hCounts = CORE.HINDRANCES.map(h => ({ label: CORE.HINDRANCE_LABELS[h].split(" ")[0], v: sel.filter(s => s.hindrances && s.hindrances[h]).length }));
+    html += chartBlock("Hindrance frequency (sessions reporting each)",
+      hCounts.some(h => h.v > 0) ? svgBars(hCounts, { label: "hindrance frequency" }) : null,
+      sel.length + " sessions in range", "No hindrances recorded in this range.");
+
+    // time of day
+    const buckets = { morning: [], afternoon: [], evening: [] };
+    for (const s of sel) { const b = CORE.timeOfDayBucket(s.startTime); if (b && CORE.isNum(s.ratio)) buckets[b].push(s.ratio); }
+    const enough = Object.keys(buckets).filter(b => buckets[b].length >= 5);
+    html += chartBlock("Concentration ratio by time of day",
+      enough.length >= 2 ? svgBars(enough.map(b => ({ label: b + " (" + buckets[b].length + ")", v: Math.round(buckets[b].reduce((a, c) => a + c, 0) / buckets[b].length * 100) })), { yFmt: v => v + "%", label: "ratio by time of day" }) : null,
+      "needs ≥5 rated sessions per bucket", "Not enough data to compare times of day yet (needs at least 5 rated sessions in each of two buckets).");
+
+    // calm before/after
+    const calmPairs = sel.filter(s => CORE.isNum(s.calmBefore) && CORE.isNum(s.calmAfter));
+    html += chartBlock("Calmness before → after (1–5)",
+      calmPairs.length >= 3 ? svgBars([
+        { label: "before (avg)", v: CORE.round1(calmPairs.reduce((a, s) => a + s.calmBefore, 0) / calmPairs.length) },
+        { label: "after (avg)", v: CORE.round1(calmPairs.reduce((a, s) => a + s.calmAfter, 0) / calmPairs.length) }
+      ], { yFmt: v => v, label: "calm before after" }) : null,
+      calmPairs.length + " sessions with both values", "Needs at least 3 sessions with both before and after calmness recorded.");
+
+    // light/image reports over time
+    const nimByMonth = {};
+    for (const s of sel) if (s.nimitta && s.nimitta.category && s.nimitta.category !== "none") { const mo = s.date.slice(0, 7); nimByMonth[mo] = (nimByMonth[mo] || 0) + 1; }
+    const nimItems = Object.keys(nimByMonth).sort().map(mo => ({ label: mo, v: nimByMonth[mo] }));
+    html += chartBlock("Light / image reports over time",
+      nimItems.length >= 1 ? svgBars(nimItems, { label: "light reports per month" }) : null,
+      "count of sessions with a report (category ≠ none)", "No light or image reports in this range. That is completely normal.");
+
+    // insights
+    const ins = CORE.insights(all, today);
+    html += "<h3>Observations (computed from your data — never by AI)</h3>";
+    if (!ins.length) html += '<div class="empty">Not enough data for grounded observations yet. They appear once patterns have a reasonable sample behind them.</div>';
+    else html += ins.map(i =>
+      '<div class="card sub" style="margin-bottom:8px"><p style="margin:0">' + esc(i.text) + "</p>" +
+      '<div class="faint">range: ' + esc(i.range) + " · n=" + i.n + " · metric: " + esc(i.metric) + " · evidence strength: " + esc(i.strength) + "</div></div>"
+    ).join("");
+    html += '<p class="honesty">All concentration values are self-reported estimates. Charts show associations only; nothing here demonstrates attainment or causation.</p>';
+
+    box.innerHTML = html;
+  }
+
+  function initRange() {
+    UI.$$("#range-row .chip").forEach(b => b.onclick = () => {
+      UI.$$("#range-row .chip").forEach(x => x.setAttribute("aria-pressed", "false"));
+      b.setAttribute("aria-pressed", "true");
+      range = b.dataset.range;
+      render();
+    });
+  }
+
+  return { render, initRange };
+})();
+
+/* ================= PRACTICE MAP ================= */
+const MAP = (function () {
+  const { $, esc } = UI;
+  const LEVELS = [
+    { name: "1 · Foundation", body: "Daily ānāpāna at the nostril rim / upper lip. Count each in-and-out cycle 1–8, restart. Return without commentary. When the breath goes faint, wait. Target: 30 minutes daily, precepts clean." },
+    { name: "2 · Consistency", body: "The 30-day unbroken streak. Same time daily where possible. Consistency beats intensity; every gap resets momentum. A first 10–14 day retreat is booked only after the streak." },
+    { name: "3 · Attention stability", body: "Attention holds the touch point ~30 minutes with only brief wobbles. Counting is dropped once the mind stays settled 15–20 minutes without it. Whole-breath, then subtle-breath stages." },
+    { name: "4 · Collectedness & reported phenomena", body: "Longer sits (60–90 min). Light or image events may be reported here — the app records them neutrally. The traditional instruction: ignore them and stay with the breath. Most people need retreat conditions for this stage. A qualified teacher becomes essential from here on." },
+    { name: "5 · Jhāna investigation", body: "Traditional territory of absorption and the five masteries, investigated under teacher supervision. Self-reports and app statistics cannot verify absorption; interviews with a qualified teacher are the traditional check. The app only stores what you report and what your teacher noted." },
+    { name: "6 · Advanced traditional framework — အဘိညာဉ် ၆ ပါး", body: "" }
+  ];
+
+  function render() {
+    const map = STORE.getMap();
+    const box = $("#map-container");
+    let html = '<p class="dim">A sober map, not a game. Levels do not unlock; nothing here is certified by software. Evidence states are your own bookkeeping — “teacher reviewed” is something only you may set, after an actual conversation.</p>';
+    LEVELS.forEach((lv, i) => {
+      const lvState = map.levels[i] || { evidence: "not-assessed", teacherNotes: "", reviewDate: null };
+      const isCurrent = map.currentLevel === i;
+      html += '<div class="level' + (isCurrent ? " current" : "") + '">' +
+        '<div class="row between"><h3>' + esc(lv.name) + (isCurrent ? ' <span class="badge gold">current practice</span>' : "") + "</h3>" +
+        '<button class="ghost map-setcur" data-i="' + i + '">' + (isCurrent ? "current" : "set as current") + "</button></div>";
+      if (i === 5) {
+        html += advancedBody();
+      } else {
+        html += "<p style='font-size:var(--fs-sm)'>" + esc(lv.body) + "</p>";
+      }
+      html += '<div class="row" style="margin-top:8px">' +
+        '<label for="map-ev-' + i + '">evidence:</label>' +
+        '<select id="map-ev-' + i + '" class="map-evidence" data-i="' + i + '">' +
+        CORE.MAP_EVIDENCE.map(e => '<option value="' + e + '"' + (lvState.evidence === e ? " selected" : "") + ">" + e.replace(/-/g, " ") + "</option>").join("") +
+        "</select>" +
+        '<input type="date" class="map-date" data-i="' + i + '" value="' + esc(lvState.reviewDate || "") + '" aria-label="teacher review date">' +
+        "</div>" +
+        '<div class="field" style="margin-top:6px"><label for="map-tn-' + i + '">private teacher notes</label>' +
+        '<input type="text" id="map-tn-' + i + '" class="map-tnotes" data-i="' + i + '" value="' + esc(lvState.teacherNotes || "") + '" placeholder="what the teacher actually said"></div>' +
+        "</div>";
+    });
+    html += '<div class="honesty">Milestones here follow personal trends and teacher guidance — there are no universal timetables (no “nimitta by day 90”). The app never selects “teacher reviewed” on its own.</div>';
+    box.innerHTML = html;
+
+    UI.$$(".map-setcur").forEach(b => b.onclick = () => { STORE.getMap().currentLevel = parseInt(b.dataset.i, 10); STORE.saveMap(); render(); });
+    UI.$$(".map-evidence").forEach(sel => sel.onchange = () => {
+      const i = parseInt(sel.dataset.i, 10);
+      STORE.getMap().levels[i].evidence = sel.value;
+      STORE.saveMap();
+      UI.toast("Evidence state saved (self-bookkeeping, not certification).");
+    });
+    UI.$$(".map-date").forEach(inp => inp.onchange = () => { STORE.getMap().levels[parseInt(inp.dataset.i, 10)].reviewDate = inp.value || null; STORE.saveMap(); });
+    UI.$$(".map-tnotes").forEach(inp => inp.onchange = () => { STORE.getMap().levels[parseInt(inp.dataset.i, 10)].teacherNotes = inp.value; STORE.saveMap(); });
+  }
+
+  function advancedBody() {
+    return '<div style="font-size:var(--fs-sm)">' +
+      '<p><strong>Educational reference only.</strong> The traditional six higher knowledges (အဘိညာဉ် ၆ ပါး) as described in the Visuddhimagga (ch. XII–XIII) and the Pa-Auk curriculum:</p>' +
+      "<ol style='margin:8px 0 8px 20px'>" +
+      "<li>ဣဒ္ဓိဝိဓ — supernormal power (traditional claim)</li>" +
+      "<li>ဒိဗ္ဗသောတ — divine ear (traditional claim)</li>" +
+      "<li>စေတောပရိယဉာဏ် — knowing others' minds (traditional claim)</li>" +
+      "<li>ပုဗ္ဗေနိဝါသ — recollection of past lives (traditional claim)</li>" +
+      "<li>ဒိဗ္ဗစက္ခု — divine eye (traditional claim)</li>" +
+      "<li>အာသဝက္ခယဉာဏ် — ending of the defilements: the one the tradition itself calls the point, reachable by insight practice without any of the first five.</li>" +
+      "</ol>" +
+      '<p class="notice warn" style="margin:8px 0">Honesty line: powers 1–5 are <strong>traditional claims with no verified demonstration in recorded history</strong>. This app provides no instructions for developing them and no statistic here indicates readiness. The traditional prerequisites themselves (kasina mastery, the 14 drills) describe a full-time renunciant career under close teacher supervision, on a foundation of ethics, non-attachment, and discernment.</p>' +
+      '<p>See <code>abhinna-practice-manual.md</code> and <code>abhinna-6-roadmap.md</code> in this folder for the full traditional reference, and bring your records to a qualified teacher rather than interpreting unusual experiences alone.</p>' +
+      "</div>";
+  }
+
+  return { render };
+})();
+
+/* ================= JOURNAL AI ================= */
+const JOURNAL = (function () {
+  const { $, esc } = UI;
+  let draft = null;
+  let engineInfo = { engine: "local", fallback: null };
+
+  function renderEngineNotice() {
+    const el = $("#ai-engine-notice");
+    if (AI.configured()) {
+      el.innerHTML = "<strong>External provider configured.</strong> Pressing “Create draft” sends your journal text to <code>" + esc(AI.cfg().endpoint) + "</code>. If it fails or returns invalid output, the local parser takes over automatically.";
+    } else {
+      el.innerHTML = "<strong>Local deterministic parser</strong> (default). Nothing leaves this device. An external provider can be configured in Settings.";
+    }
+  }
+
+  async function parse() {
+    const text = $("#journal-text").value.trim();
+    if (!text) { UI.toast("Write what happened first."); return; }
+    $("#btn-parse").disabled = true;
+    $("#btn-parse").textContent = "Working…";
+    try {
+      const res = await AI.requestDraft(text);
+      draft = res.draft;
+      engineInfo = res;
+    } finally {
+      $("#btn-parse").disabled = false;
+      $("#btn-parse").textContent = "Create draft";
+    }
+    renderDraft();
+  }
+
+  function confBadge(c) {
+    return c ? '<span class="conf-' + c + '" style="font-size:var(--fs-xs)">' + c + "</span>" : "";
+  }
+
+  function fieldRow(label, inputHtml, confKey) {
+    const ci = draft.aiConfidence && draft.aiConfidence[confKey];
+    return '<div class="draft-field"><span class="dim">' + esc(label) + "</span><span>" + inputHtml + "</span><span>" + (ci ? confBadge(ci.confidence) : '<span class="faint">not found</span>') + "</span>" +
+      (ci && ci.evidence ? '<span class="ev">“' + esc(ci.evidence) + '”</span>' : "") +
+      "</div>";
+  }
+
+  function numInput(id, val, step) {
+    return '<input type="number" id="' + id + '" value="' + (val === null || val === undefined ? "" : val) + '" min="0" step="' + (step || 1) + '" placeholder="null" style="width:80px">';
+  }
+
+  function renderDraft() {
+    const box = $("#draft-container");
+    if (!draft) { box.innerHTML = ""; return; }
+    const d = draft;
+    const v = CORE.validateDraft(d);
+    let html = '<div class="card"><h2>Draft — review before saving</h2>';
+    html += '<p class="dim">Engine: <strong>' + (engineInfo.engine === "provider" ? "external provider" : "local parser") + "</strong>" +
+      (engineInfo.fallback ? ' <span class="conf-low">(provider failed: ' + esc(engineInfo.fallback) + " — local parser used instead)</span>" : "") +
+      ". Empty fields mean “not reported” and will stay null. Edit anything below.</p>";
+    if (d.questions && d.questions.length) {
+      html += '<div class="notice">' + d.questions.map(q => "• " + esc(q)).join("<br>") + "</div>";
+    }
+    if (d.warnings && d.warnings.length) {
+      html += '<div class="notice warn">' + d.warnings.map(w => "• " + esc(w)).join("<br>") + "</div>";
+    }
+    html += fieldRow("Duration (min)", numInput("df-actual", d.actualMin, 0.5), "actualMin");
+    html += fieldRow("Settling (min)", numInput("df-settle", d.settleMin, 0.5), "settleMin");
+    html += fieldRow("Contact minutes", numInput("df-conc", d.concMin, 0.5), "concMin");
+    html += fieldRow("Estimate confidence",
+      '<select id="df-conf"><option value="">null</option>' + CORE.CONFIDENCES.map(c => '<option value="' + c + '"' + (d.confidence === c ? " selected" : "") + ">" + c + "</option>").join("") + "</select>", "concMin");
+    html += fieldRow("Longest steady (min)", numInput("df-longest", d.longestSteadyMin, 0.5), "longestSteadyMin");
+    html += fieldRow("Wandering episodes", numInput("df-wander", d.wanderings), "wanderings");
+    html += fieldRow("Attention returns", numInput("df-returns", d.returns), "returns");
+    html += fieldRow("Dominant hindrance",
+      '<select id="df-dom"><option value="">null</option>' + CORE.HINDRANCES.map(h => '<option value="' + h + '"' + (d.dominantHindrance === h ? " selected" : "") + ">" + esc(CORE.HINDRANCE_LABELS[h]) + "</option>").join("") + "</select>", "dominantHindrance");
+    for (const h of CORE.HINDRANCES) {
+      if (d.hindrances && d.hindrances[h]) {
+        html += fieldRow(CORE.HINDRANCE_LABELS[h],
+          '<select class="df-hindrance" data-h="' + h + '"><option value="">remove</option>' + CORE.INTENSITIES.map(i => '<option value="' + i + '"' + (d.hindrances[h] === i ? " selected" : "") + ">" + i + "</option>").join("") + "</select>", "hindrance:" + h);
+      }
+    }
+    html += fieldRow("Light / image report",
+      '<select id="df-nim"><option value="">null (not reported)</option>' + CORE.NIMITTA_CATEGORIES.map(c => '<option value="' + c + '"' + (d.nimitta && d.nimitta.category === c ? " selected" : "") + ">" + esc(CORE.NIMITTA_LABELS[c]) + "</option>").join("") + "</select>", "nimitta");
+    html += fieldRow("After-state",
+      '<select id="df-after"><option value="">null</option>' + CORE.AFTER_STATES.map(a => '<option value="' + a + '"' + (d.afterStateReport === a ? " selected" : "") + ">" + a + "</option>").join("") + "</select>", "afterStateReport");
+    html += '<div class="draft-field"><span class="dim">Date</span><span><input type="date" id="df-date" value="' + esc(d.date || STORE.todayStr()) + '"></span><span></span></div>';
+    html += '<div id="df-errors" style="color:var(--err);font-size:var(--fs-sm);margin-top:8px" aria-live="polite">' + (v.ok ? "" : v.errors.map(esc).join("<br>")) + "</div>";
+    html += '<div class="row" style="margin-top:12px">' +
+      '<button id="df-save" class="primary big">Save as session…</button>' +
+      '<button id="df-reject" class="danger">Reject draft</button>' +
+      "</div>" +
+      '<p class="faint">Saving requires this explicit confirmation — the draft never saves silently. The original journal text is stored verbatim with the session.</p></div>';
+    box.innerHTML = html;
+
+    const readBack = () => {
+      const num = id => { const x = parseFloat($(id).value); return CORE.isNum(x) ? x : null; };
+      d.actualMin = num("#df-actual"); d.settleMin = num("#df-settle"); d.concMin = num("#df-conc");
+      d.longestSteadyMin = num("#df-longest"); d.wanderings = num("#df-wander"); d.returns = num("#df-returns");
+      d.confidence = $("#df-conf").value || null;
+      d.dominantHindrance = $("#df-dom").value || null;
+      UI.$$(".df-hindrance").forEach(sel => {
+        const h = sel.dataset.h;
+        if (sel.value) d.hindrances[h] = sel.value; else delete d.hindrances[h];
+      });
+      const nc = $("#df-nim").value;
+      d.nimitta = nc ? { category: nc } : null;
+      d.afterStateReport = $("#df-after").value || null;
+      d.date = $("#df-date").value || null;
+    };
+    box.querySelectorAll("input,select").forEach(el => el.addEventListener("change", () => { readBack(); renderDraft(); }));
+
+    $("#df-save").onclick = async () => {
+      readBack();
+      const val = CORE.validateDraft(d);
+      if (!val.ok) { $("#df-errors").innerHTML = val.errors.map(esc).join("<br>"); return; }
+      if (d.actualMin === null) { $("#df-errors").textContent = "Duration is required to save a session."; return; }
+      const session = CORE.draftToSession(d, STORE.nowIso(), STORE.todayStr());
+      // duplicate check with visible diff before anything is written
+      const fp = CORE.sessionFingerprint(session);
+      const dup = STORE.sessions().find(s => CORE.sessionFingerprint(s) === fp);
+      const summary = '<table class="kv">' +
+        "<tr><td>date</td><td>" + esc(session.date) + "</td></tr>" +
+        "<tr><td>duration</td><td>" + session.actualMin + "′</td></tr>" +
+        "<tr><td>contact estimate</td><td>" + (session.concMin === null ? "not reported" : session.concMin + "′ (" + (session.confidence || "no confidence given") + ")") + "</td></tr>" +
+        "<tr><td>dominant hindrance</td><td>" + (session.dominantHindrance ? esc(CORE.HINDRANCE_LABELS[session.dominantHindrance]) : "—") + "</td></tr>" +
+        "<tr><td>light report</td><td>" + (session.nimitta ? esc(CORE.NIMITTA_LABELS[session.nimitta.category]) : "not reported") + "</td></tr>" +
+        "</table>";
+      const ok = await new Promise(resolve => {
+        const dlg = UI.modal("<h2>Confirm save</h2>" +
+          (dup ? '<div class="notice warn">A session with the same date, start and duration already exists (' + esc(dup.date) + ", " + dup.actualMin + "′). Saving will create a <strong>second</strong> session, not overwrite it.</div>" : "") +
+          summary +
+          '<div class="row" style="margin-top:12px;justify-content:flex-end"><button id="dfc-cancel">Back</button><button id="dfc-ok" class="primary">Save session</button></div>');
+        $("#dfc-ok").onclick = () => { dlg.close(); resolve(true); };
+        $("#dfc-cancel").onclick = () => { dlg.close(); resolve(false); };
+        dlg.oncancel = () => resolve(false);
+      });
+      if (!ok) return;
+      const res = STORE.addSession(session);
+      if (!res.ok) { $("#df-errors").textContent = res.errors.join("; "); return; }
+      UI.toast("Journal session saved.");
+      draft = null;
+      $("#journal-text").value = "";
+      renderDraft();
+      HISTORY.render();
+      PROGRESS.render();
+    };
+    $("#df-reject").onclick = () => {
+      draft = null;
+      renderDraft();
+      UI.toast("Draft rejected — nothing was saved.");
+    };
+  }
+
+  return { parse, renderEngineNotice, renderDraft };
+})();
+
+/* ================= SETTINGS ================= */
+const SETTINGS = (function () {
+  const { $, esc } = UI;
+
+  function download(filename, text, mime) {
+    const blob = new Blob([text], { type: mime || "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  function exportJSON() {
+    const env = STORE.env();
+    const stamp = STORE.todayStr().replace(/-/g, "");
+    download("sit-tracker-backup-" + stamp + ".json", JSON.stringify(env, null, 2));
+    UI.toast("Backup exported — keep a copy outside this device.");
+  }
+  function exportCSV() {
+    const stamp = STORE.todayStr().replace(/-/g, "");
+    download("sit-tracker-sessions-" + stamp + ".csv", CORE.toCSV(STORE.sessions()), "text/csv");
+  }
+
+  function importFile(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const res = CORE.parseImport(String(reader.result), STORE.sessions(), STORE.nowIso());
+      if (!res.ok) {
+        UI.modal("<h2>Import rejected</h2><p>" + esc(res.error) + '</p><div class="row" style="justify-content:flex-end"><button onclick="document.getElementById(\'modal\').close()">Close</button></div>');
+        return;
+      }
+      let html = "<h2>Import preview</h2>" +
+        '<table class="kv">' +
+        "<tr><td>in file</td><td>" + res.total + " sessions</td></tr>" +
+        "<tr><td>new (will be added)</td><td><strong>" + res.fresh.length + "</strong></td></tr>" +
+        "<tr><td>duplicates (skipped)</td><td>" + res.duplicates.length + "</td></tr>" +
+        "<tr><td>invalid (skipped)</td><td>" + res.invalid.length + "</td></tr>" +
+        "</table>";
+      if (res.invalid.length) {
+        html += '<details><summary>Why invalid?</summary><div class="faint">' +
+          res.invalid.slice(0, 5).map(iv => "• " + esc(iv.errors.join(", "))).join("<br>") +
+          (res.invalid.length > 5 ? "<br>…and " + (res.invalid.length - 5) + " more" : "") + "</div></details>";
+      }
+      if (res.fresh.length) {
+        html += '<details open><summary>First new sessions</summary><div class="faint">' +
+          res.fresh.slice(0, 5).map(s => "• " + esc(s.date) + " · " + s.actualMin + "′" + (s.concMin !== null ? " · contact " + s.concMin + "′" : "")).join("<br>") +
+          (res.fresh.length > 5 ? "<br>…and " + (res.fresh.length - 5) + " more" : "") + "</div></details>";
+      }
+      html += '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
+        '<button id="imp-cancel">Cancel</button>' +
+        (res.fresh.length ? '<button id="imp-ok" class="primary">Import ' + res.fresh.length + " sessions</button>" : "") +
+        "</div>";
+      const dlg = UI.modal(html);
+      $("#imp-cancel").onclick = () => dlg.close();
+      if (res.fresh.length) $("#imp-ok").onclick = () => {
+        STORE.mergeImported(res.fresh);
+        dlg.close();
+        UI.toast("Imported " + res.fresh.length + " sessions.");
+        HISTORY.render();
+        PROGRESS.render();
+        renderInfo();
+      };
+    };
+    reader.readAsText(file);
+  }
+
+  function renderInfo() {
+    const i = STORE.storageInfo();
+    $("#storage-info").textContent =
+      "storage: " + (i.available ? "localStorage OK" : "UNAVAILABLE (memory only!)") +
+      " · schema v" + i.schemaVersion + " · " + i.sessions + " sessions · " +
+      (i.bytes / 1024).toFixed(1) + " KB used · last saved " + (i.savedAt || "never");
+  }
+
+  function runSelfTestsUI() {
+    const r = CORE.runSelfTests();
+    const out = "CORE self-tests: " + r.passed + "/" + r.total + " passed" +
+      (r.failed ? "\nFAILURES:\n" + r.failures.map(f => "  ✗ " + f).join("\n") : " ✓");
+    $("#selftest-out").textContent = out;
+    return r;
+  }
+
+  function wire() {
+    $("#btn-export-json").onclick = exportJSON;
+    $("#btn-export-csv").onclick = exportCSV;
+    $("#import-file").addEventListener("change", e => {
+      if (e.target.files && e.target.files[0]) importFile(e.target.files[0]);
+      e.target.value = "";
+    });
+
+    // AI provider
+    $("#ai-enabled").checked = !!STORE.getSetting("aiEnabled", false);
+    $("#ai-endpoint").value = STORE.getSetting("aiEndpoint", "");
+    $("#ai-model").value = STORE.getSetting("aiModel", "");
+    $("#ai-key").value = STORE.getSetting("aiKey", "");
+    $("#btn-ai-save").onclick = () => {
+      STORE.setSetting("aiEnabled", $("#ai-enabled").checked);
+      STORE.setSetting("aiEndpoint", $("#ai-endpoint").value.trim());
+      STORE.setSetting("aiModel", $("#ai-model").value.trim());
+      STORE.setSetting("aiKey", $("#ai-key").value);
+      UI.toast("Provider settings saved (locally).");
+      JOURNAL.renderEngineNotice();
+    };
+    $("#btn-ai-test").onclick = async () => {
+      $("#btn-ai-test").disabled = true;
+      const r = await AI.testConnection();
+      $("#btn-ai-test").disabled = false;
+      UI.toast(r.message);
+    };
+
+    // bells
+    $("#bell-volume").value = STORE.getSetting("bellVolume", 60);
+    $("#bell-volume").addEventListener("change", () => STORE.setSetting("bellVolume", parseInt($("#bell-volume").value, 10)));
+    $("#btn-test-bell").onclick = () => AUDIO.bell(1);
+
+    $("#btn-selftest").onclick = runSelfTestsUI;
+
+    $("#btn-wipe").onclick = () => {
+      const dlg = UI.modal("<h2>Delete all tracker data</h2>" +
+        "<p>This deletes the <code>jhanaTracker.v2</code> envelope (" + STORE.sessions().length + " sessions) from this browser. Legacy keys are untouched. <strong>Export a backup first.</strong></p>" +
+        '<p>Type <code>DELETE</code> to confirm:</p><input type="text" id="wipe-confirm" autocomplete="off">' +
+        '<div class="row" style="margin-top:12px;justify-content:flex-end"><button id="wipe-cancel">Cancel</button><button id="wipe-ok" class="danger" disabled>Delete everything</button></div>');
+      $("#wipe-confirm").addEventListener("input", () => { $("#wipe-ok").disabled = $("#wipe-confirm").value !== "DELETE"; });
+      $("#wipe-cancel").onclick = () => dlg.close();
+      $("#wipe-ok").onclick = () => {
+        STORE.wipe();
+        dlg.close();
+        UI.toast("All tracker data deleted.");
+        HISTORY.render(); PROGRESS.render(); renderInfo();
+      };
+    };
+  }
+
+  return { wire, renderInfo, runSelfTestsUI, exportJSON };
+})();
+
+/* ================= BOOT ================= */
+(function boot() {
+  const loaded = STORE.load();
+  if (!STORE.adapter.available) UI.$("#storage-warning").hidden = false;
+  if (loaded.notes.length) console.info("[sit-tracker] migration:", loaded.notes.join(" | "));
+
+  // tabs
+  ["sit", "review", "progress", "map", "journal", "settings"].forEach(name => {
+    UI.$("#tabbtn-" + name).onclick = () => UI.showTab(name);
+  });
+
+  // sit tab wiring
+  UI.$$("#preset-row .chip").forEach(b => b.onclick = () => {
+    UI.$$("#preset-row .chip").forEach(x => x.setAttribute("aria-pressed", "false"));
+    b.setAttribute("aria-pressed", "true");
+    UI.$("#custom-min").value = "";
+    UI.renderTimer();
+  });
+  UI.$("#custom-min").addEventListener("input", () => {
+    if (UI.$("#custom-min").value) UI.$$("#preset-row .chip").forEach(x => x.setAttribute("aria-pressed", "false"));
+    UI.renderTimer();
+  });
+  UI.$("#sit-object").addEventListener("change", () => {
+    UI.$("#sit-object-custom").hidden = UI.$("#sit-object").value !== "custom";
+  });
+  UI.$("#btn-start").onclick = () => TIMER.start();
+  UI.$("#btn-pause").onclick = () => {
+    const snap = TIMER.snapshot();
+    if (snap && snap.mode === "paused") TIMER.resume(); else TIMER.pause();
+  };
+  UI.$("#btn-finish").onclick = () => TIMER.finishEarly();
+  UI.$("#btn-reset").onclick = () => TIMER.reset();
+  UI.$("#btn-zen").onclick = () => UI.setZen(!document.body.classList.contains("zen"));
+  UI.$$("#markers-bar button").forEach(b => b.onclick = () => TIMER.addMarker(b.dataset.marker));
+
+  // keyboard: space toggles start/pause when not typing in a field
+  document.addEventListener("keydown", e => {
+    if (e.code !== "Space" || e.repeat) return;
+    const tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select" || tag === "button") return;
+    if (!UI.$("#tab-sit").classList.contains("active")) return;
+    e.preventDefault();
+    const snap = TIMER.snapshot();
+    if (!snap) TIMER.start();
+    else if (snap.mode === "paused") TIMER.resume();
+    else TIMER.pause();
+  });
+
+  UI.$("#btn-manual-entry").onclick = () => REVIEW.openManual();
+  UI.$("#btn-parse").onclick = () => JOURNAL.parse();
+  UI.$("#btn-journal-clear").onclick = () => { UI.$("#journal-text").value = ""; };
+
+  HISTORY.initFilters();
+  PROGRESS.initRange();
+  SETTINGS.wire();
+  JOURNAL.renderEngineNotice();
+  UI.renderTimer();
+  HISTORY.render();
+  TIMER.restore();
+
+  // expose for automated verification
+  window.__sitTracker = { CORE, STORE, TIMER, AI, REVIEW };
+
+  if (new URLSearchParams(location.search).get("selftest") === "1") {
+    UI.showTab("settings");
+    const r = SETTINGS.runSelfTestsUI();
+    console.log("[sit-tracker] self-tests:", r.passed + "/" + r.total, r.failed ? "FAILED: " + r.failures.join(", ") : "all passed");
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# local env / secrets — never commit keys (the app keeps its key in localStorage, not files)
+.env
+.env.*
+*.key
+
+# editor/OS noise
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+
+# local backups exported from the app (keep them out of history; they are personal data)
+sit-tracker-backup-*.json
+sit-tracker-sessions-*.csv
