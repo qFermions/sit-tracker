@@ -67,6 +67,27 @@
   recovery procedure; restore rehearsal is CORE-tested (field-level equality) and was
   performed live in a clean context this run.
 
+## Release verification (2026-07-12, evening hand-off)
+
+Verified with tool evidence on this date, at 823dbf2 / v4.2.0 unchanged:
+- node CORE suite 387/387; in-app 387/387 over http with exactly one console message;
+  **file:// double-click path proven** (headless Chrome, in-DOM "CORE self-tests:
+  387/387 passed ✓"); **offline reload proven live** (server killed → shell, self-tests,
+  and the Burmese Learn documents all served from the SW cache).
+- SW/manifest internally consistent: all 8 precached assets exist on disk and match the
+  runtime file set; manifest icons present; start_url/scope/display correct.
+- Export→restore rehearsed again across throwaway origins: field-level equality,
+  re-import 0 fresh / 2 duplicates. Teacher report generated during the pass contained
+  no `[TEST DATA]` entries.
+- Network audit during a full exercise pass (all tabs, share card, invite): only
+  same-origin requests — zero external calls.
+- **Hand-off bundle**: `dist/` + `sit-tracker-v4.2.0.zip` (153,800 bytes) with the 8
+  runtime files + INSTALL.md (invite voice, LAN address 192.168.1.231, no links).
+  Note: the two abhinna .md docs are IN the bundle deliberately — the SW precache list
+  includes them and `cache.addAll` fails wholesale if any asset 404s. The bundle was
+  served and booted from `dist/` before zipping: 387/387, SW installed, 8/8 precached.
+- Still only provable on real glass: rendering quality, install prompts, screen reader.
+
 ## Visual identity + friend-facing layer (2026-07-11 run)
 
 - **Identity system** (documented in ARCHITECTURE.md): one `:root` token layer — brave

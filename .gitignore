@@ -12,3 +12,7 @@ Desktop.ini
 # local backups exported from the app (keep them out of history; they are personal data)
 sit-tracker-backup-*.json
 sit-tracker-sessions-*.csv
+
+# release bundles (artifacts built from the repo, never sources)
+dist/
+sit-tracker-*.zip
