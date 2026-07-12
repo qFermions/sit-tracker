@@ -170,6 +170,19 @@ section[role="tabpanel"].active{animation:tabIn var(--dur-2) var(--ease-out)}
 .status-strip .pill{border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 14px;background:rgba(18,25,38,.7);display:inline-flex;align-items:center;gap:7px;font-weight:600}
 .status-strip .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block}
 .status-strip .pill.today-done{border-color:var(--teal);color:var(--fg)}
+/* today stat tiles */
+.today-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3);margin-bottom:var(--sp-3)}
+.tstat{background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-3) var(--sp-4);box-shadow:var(--elev-1);min-width:0}
+.tstat .v{font-size:var(--fs-display);font-weight:750;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;line-height:1.05;white-space:nowrap}
+.tstat .v .unit{font-size:.48em;font-weight:650;color:var(--fg-dim);margin-left:1px}
+.tstat .l{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-dim);margin-top:2px}
+.tstat .n{font-size:var(--fs-xs);color:var(--fg-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tstat.done{border-color:rgba(99,179,171,.45)}
+.tstat.done .v{color:var(--teal)}
+@media(max-width:480px){.today-stats{gap:var(--sp-2)}.tstat{padding:var(--sp-3)}}
+/* hero timer card + oversized primary action */
+#timer-card{border-radius:var(--r-lg);box-shadow:var(--elev-2)}
+#btn-start{min-width:min(340px,100%);font-size:var(--fs-lg)}
 /* timer stage: orb + arc (the sit itself stays quiet — no new motion here) */
 .timer-stage{position:relative;width:min(320px,74vw);height:min(320px,74vw);margin:0 auto;display:flex;align-items:center;justify-content:center}
 .orb{position:absolute;inset:8%;border-radius:50%;background:radial-gradient(circle at 42% 36%, rgba(142,195,234,.18), rgba(85,103,158,.11) 45%, rgba(10,14,21,0) 72%);filter:blur(2px);transform:scale(.97)}
@@ -4353,13 +4366,18 @@ const TODAY = (function () {
     const last = real.slice().sort((a, b) => sortKey(a) < sortKey(b) ? -1 : 1)[real.length - 1];
     const satToday = todays.length > 0;
     const todayMin = Math.round(todays.reduce((a, s) => a + (s.actualMin || 0), 0));
+    // three designed stat tiles: today · streak · last sit
+    const tile = (v, l, n, done) =>
+      '<div class="tstat' + (done ? " done" : "") + '"><div class="v">' + v + '</div><div class="l">' + esc(l) + "</div>" + (n ? '<div class="n">' + esc(n) + "</div>" : "") + "</div>";
+    let tiles = "";
+    tiles += tile(satToday ? todayMin + "′" : "—", "today", satToday ? "recorded ✓" : "no sit yet", satToday);
+    tiles += tile(m.currentStreak + "<span class='unit'>d</span>", "streak", m.currentStreak > 0 ? "days in a row" : "starts with one sit", false);
+    tiles += tile(last ? Math.round(last.actualMin) + "′" : "—", "last sit", last ? last.date : "none yet", false);
+    // utility pills stay quiet, below the stats
     let pills = "";
-    pills += '<span class="pill' + (satToday ? " today-done" : "") + '">' + (satToday ? "✓ Sat " + todayMin + " min today" : "No sit yet today") + "</span>";
-    if (m.currentStreak > 0) pills += '<span class="pill">' + m.currentStreak + "-day streak</span>";
-    if (last && !satToday) pills += '<span class="pill">last sit: ' + esc(last.date) + " · " + Math.round(last.actualMin) + "′</span>";
     if (navigator.serviceWorker && navigator.serviceWorker.controller) pills += '<span class="pill"><span class="dot"></span>works offline</span>';
     if (!isStandalone() && location.protocol.indexOf("http") === 0) pills += '<span class="pill"><a href="#" id="install-hint">install on phone →</a></span>';
-    el.innerHTML = '<div class="status-strip">' + pills + "</div>";
+    el.innerHTML = '<div class="today-stats">' + tiles + "</div>" + (pills ? '<div class="status-strip">' + pills + "</div>" : "");
     const hint = $("#install-hint");
     if (hint) hint.onclick = (e) => { e.preventDefault(); UI.showTab("settings"); document.querySelector("#install-guide").scrollIntoView({ block: "center" }); };
   }
