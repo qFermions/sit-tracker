@@ -197,15 +197,23 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
 /* quick-log chips */
 .qrow{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:1px solid var(--line)}
 .qrow .ql{min-width:130px;font-size:var(--fs-sm);color:var(--fg-dim)}
-/* onboarding */
-.onboard{position:fixed;inset:0;z-index:60;background:radial-gradient(110% 100% at 50% 0%, #17202e 0%, #0b0f15 70%);display:flex;align-items:center;justify-content:center;padding:var(--sp-4)}
-.onboard-inner{max-width:430px;width:100%;text-align:center;position:relative;padding:var(--sp-5) var(--sp-4)}
-.ob-orb{position:absolute;left:50%;top:-40px;width:180px;height:180px;inset:auto;transform:translateX(-50%);opacity:.8;animation:orbBreathe 9s ease-in-out infinite}
-#ob-body{position:relative;z-index:1;margin-top:120px}
+/* onboarding + first-open hero */
+.onboard{position:fixed;inset:0;z-index:60;background:radial-gradient(110% 100% at 50% 0%, #16202f 0%, #090d13 70%);display:flex;align-items:center;justify-content:center;padding:var(--sp-4);overflow-y:auto}
+.onboard-inner{max-width:440px;width:100%;text-align:center;position:relative;padding:var(--sp-5) var(--sp-4)}
+.ob-orb{position:absolute;left:50%;top:-40px;width:190px;height:190px;inset:auto;transform:translateX(-50%);opacity:.85;animation:orbBreathe 8s ease-in-out 3}
+.onboard h2{font-size:var(--fs-xl);font-weight:750;letter-spacing:var(--track-tight);line-height:1.2}
+#ob-body{position:relative;z-index:1;margin-top:130px}
 .ob-text{color:var(--fg-dim);margin:var(--sp-3) 0 var(--sp-5);line-height:1.7}
 .ob-step-dots{letter-spacing:8px;color:var(--accent);font-size:10px;margin-bottom:var(--sp-3)}
 .ob-actions{display:flex;flex-direction:column;gap:var(--sp-2);position:relative;z-index:1}
 .ob-actions button{width:100%}
+/* hero mode: the product's above-the-fold */
+.onboard-inner.hero .ob-orb{width:min(270px,64vw);height:min(270px,64vw);top:-56px;filter:blur(1px)}
+.onboard-inner.hero #ob-body{margin-top:min(180px,42vw)}
+.ob-hero-name{font-size:var(--fs-hero);font-weight:800;letter-spacing:var(--track-tight);line-height:1.04;color:var(--fg)}
+.ob-hero-mm{display:block;color:var(--gold);font-size:var(--fs-md);font-weight:600;letter-spacing:.16em;margin-top:var(--sp-2)}
+.onboard-inner.hero .ob-text{font-size:var(--fs-lg);line-height:1.6;max-width:26ch;margin-left:auto;margin-right:auto}
+.onboard-inner.hero .ob-actions{max-width:320px;margin:0 auto}
 @media(prefers-reduced-motion:reduce){.orb,.ob-orb{animation:none !important}}
 /* teacher report: hidden on screen, the only thing visible in print */
 #print-report{display:none}
@@ -1675,6 +1683,9 @@ const CORE = (function () {
     "ob.continue": { en: "Continue", my: "" },
     "ob.back": { en: "Back", my: "" },
     "ob.skip": { en: "Skip", my: "" },
+    "hero.promise": { en: "Time your sits. Record what you notice. Keep your own data.", my: "" },
+    "hero.begin": { en: "Begin", my: "" },
+    "hero.skipintro": { en: "Skip the intro", my: "" },
     "ob.start30": { en: "Start my first 30-minute sit", my: "" },
     "ob.shorter": { en: "Use a shorter practice", my: "" },
     "ob.explore": { en: "Explore first (loads demo data)", my: "" }
@@ -1682,7 +1693,7 @@ const CORE = (function () {
   const I18N_SCREENS = {
     chrome: ["app.tagline", "tab.today", "tab.journal", "tab.progress", "tab.learn", "tab.settings"],
     today: ["today.start", "today.choose"],
-    onboarding: ["ob.title1", "ob.text1", "ob.title2", "ob.text2", "ob.title3", "ob.text3", "ob.continue", "ob.back", "ob.skip", "ob.start30", "ob.shorter", "ob.explore"]
+    onboarding: ["ob.title1", "ob.text1", "ob.title2", "ob.text2", "ob.title3", "ob.text3", "ob.continue", "ob.back", "ob.skip", "ob.start30", "ob.shorter", "ob.explore", "hero.promise", "hero.begin", "hero.skipintro"]
   };
   function tr(key, lang, table) {
     const tbl = table || I18N;
@@ -4363,6 +4374,7 @@ const ONBOARD = (function () {
   const lang = () => STORE.getSetting("language", "en");
   const STEPS = () => [1, 2, 3].map(i => ({ title: CORE.tr("ob.title" + i, lang()), text: CORE.tr("ob.text" + i, lang()) }));
   let step = 0;
+  let heroDone = false;   // the first-open hero shows once per arrival, before step 1
 
   function saveState(patch) {
     const cur = STORE.getSetting("onboarding", {});
@@ -4373,6 +4385,7 @@ const ONBOARD = (function () {
     const st = CORE.onboardingState(CORE.realSessions(STORE.sessions()).length, STORE.env().settings, hasActiveRecovery);
     if (!st.show) return;
     step = st.step;
+    heroDone = step > 0;                 // resuming mid-intro skips the hero
     render();
     $("#onboard").hidden = false;
   }
@@ -4387,8 +4400,25 @@ const ONBOARD = (function () {
 
   function render() {
     const steps = STEPS();
-    const s = steps[step];
     const T = k => UI.esc(CORE.tr(k, lang()));
+    const inner = document.querySelector(".onboard-inner");
+    if (!heroDone) {
+      // first-open hero: the product's above-the-fold
+      inner.classList.add("hero");
+      $("#ob-dots").textContent = "";
+      $("#ob-title").innerHTML = '<span class="ob-hero-name">Sit Tracker<span class="ob-hero-mm">ဈာန် · ' + T("app.tagline") + "</span></span>";
+      $("#ob-text").textContent = CORE.tr("hero.promise", lang());
+      $("#ob-actions").innerHTML =
+        '<button class="primary big" id="ob-begin">' + T("hero.begin") + "</button>" +
+        '<button class="ghost" id="ob-skip">' + T("hero.skipintro") + "</button>";
+      const on = (id, fn) => { const b = $(id); if (b) b.onclick = fn; };
+      on("#ob-begin", () => { heroDone = true; render(); });
+      on("#ob-skip", () => finish("skip"));
+      $("#ob-actions button").focus();
+      return;
+    }
+    inner.classList.remove("hero");
+    const s = steps[step];
     $("#ob-dots").textContent = steps.map((_, i) => i === step ? "●" : "○").join(" ");
     $("#ob-title").textContent = s.title;
     $("#ob-text").textContent = s.text;
