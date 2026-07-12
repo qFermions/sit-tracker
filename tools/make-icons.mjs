@@ -44,18 +44,25 @@ function png(width, height, rgba) {
   ]);
 }
 
-const BG = [0x0d, 0x11, 0x17], RING = [0x7f, 0xb4, 0xd9], DOT = [0xc9, 0xa8, 0x6a];
+// identity palette (matches the :root tokens in sit-tracker-v2.html)
+const BG = [0x0a, 0x0e, 0x15], RING = [0x8e, 0xc3, 0xea], DOT = [0xd4, 0xb0, 0x78], GLOW = [0x55, 0x67, 0x9e];
 function drawIcon(size, padded) {
   const buf = Buffer.alloc(size * size * 4);
   const cx = size / 2, cy = size / 2;
   const scale = padded ? 0.72 : 1; // maskable safe zone
   const rMid = size * 0.30 * scale, rW = size * 0.045 * scale;
   const dotR = size * 0.075 * scale, dotY = cy - rMid; // point on top of the ring
+  const glowR = size * 0.46 * scale;
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const i = (y * size + x) * 4;
       let [r, g, b] = BG;
       const d = Math.hypot(x - cx, y - cy);
+      // soft orb glow behind the ring (the app's hero motif)
+      const gA = Math.exp(-(d * d) / (glowR * glowR)) * 0.22;
+      r = r + (GLOW[0] - r) * gA;
+      g = g + (GLOW[1] - g) * gA;
+      b = b + (GLOW[2] - b) * gA;
       const ringDist = Math.abs(d - rMid);
       const aaRing = Math.max(0, Math.min(1, rW - ringDist + 0.5));
       if (aaRing > 0) {
