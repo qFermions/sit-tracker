@@ -141,7 +141,7 @@ table.kv{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
 table.kv td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 table.kv td:first-child{color:var(--fg-dim);width:44%}
 /* modal — glass recipe */
-dialog{background:var(--glass-bg);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);color:var(--fg);border:1px solid var(--line-hi);border-radius:var(--r-lg);padding:var(--sp-5);max-width:min(560px,92vw);max-height:85vh;overflow:auto;box-shadow:var(--elev-3)}
+dialog{background:var(--glass-bg);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);color:var(--fg);border:1px solid var(--line-hi);border-radius:var(--r-lg);padding:var(--sp-5);margin:auto;max-width:min(560px,92vw);max-height:85vh;overflow:auto;box-shadow:var(--elev-3)}
 dialog[open]{animation:dialogIn var(--dur-2) var(--ease-out)}
 @keyframes dialogIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
 dialog::backdrop{background:rgba(4,7,12,.65)}
@@ -554,8 +554,14 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
   </div>
 
   <div class="card">
-    <h2>Demo data</h2>
-    <p class="dim">Two weeks of clearly-marked example sessions so a new person can explore the app. Demo entries are ignored by statistics, streaks, exports, and the teacher report, and are removable in one tap.</p>
+    <h2>Invite a friend</h2>
+    <p class="dim">A short text you can copy and send however you like. It explains what this is and how to open it — no links, no sign-ups, nothing leaves this device.</p>
+    <button id="btn-invite">Show the invite text…</button>
+  </div>
+
+  <div class="card">
+    <h2>Try the demo</h2>
+    <p class="dim">Two weeks of clearly-marked example sessions so a curious person can poke around in ten seconds. Demo entries are ignored by statistics, streaks, exports, share cards, and the teacher report — and vanish in one tap.</p>
     <div class="row">
       <button id="btn-try-demo">Load demo data</button>
       <button id="btn-remove-demo-2" class="ghost">Remove demo data</button>
@@ -1757,6 +1763,45 @@ const CORE = (function () {
     return { count: nim.length + qual.length, lines };
   }
 
+  // ---------- share card + invite (friend-facing; observational wording only) ----------
+  // Data for the shareable image: one real session + the current streak.
+  // Demo/test entries can never reach a card; no sessions → null (UI stays quiet).
+  function shareCardData(sessions, todayStr, sessionId) {
+    const real = realSessions(sessions).filter(s => isDateStr(s.date) && isNum(s.actualMin));
+    if (!real.length) return null;
+    const sorted = real.slice().sort(byDateTime);
+    const s = sessionId ? sorted.find(x => x.id === sessionId) : sorted[sorted.length - 1];
+    if (!s) return null;
+    return {
+      minutes: Math.round(s.actualMin), date: s.date,
+      streak: computeStreaks(real, todayStr).current,
+      appName: "Sit Tracker", tagline: "self-reported practice record"
+    };
+  }
+  // The card's words: "32 minutes · day 6 · 2026-07-11" — a record, not a claim.
+  function shareCardLines(d) {
+    if (!d) return [];
+    return [d.minutes + " minutes", d.streak > 0 ? "day " + d.streak : null, d.date].filter(Boolean);
+  }
+
+  // Copyable invite in the product's voice: plain steps, no services, no links.
+  function inviteText(appVersion) {
+    return [
+      "Sit Tracker — a meditation timer that keeps its mouth shut and its data yours.",
+      "",
+      "It times sits, records what you noticed (it never grades you), and works offline. No account, no cloud, no feed.",
+      "",
+      "To try it:",
+      "1. Get the app folder from me — it's a single file plus icons.",
+      "2. Open sit-tracker-v2.html in any browser. Double-click works.",
+      "3. Want it on your phone like an app? Serve the folder on your wifi (python -m http.server 8080), open it from your phone's browser, then 'Add to Home Screen'.",
+      "",
+      "Whatever you record stays on your device. Export is one tap and the file is yours.",
+      "",
+      "— sent from Sit Tracker v" + appVersion
+    ].join("\n");
+  }
+
   // ---------- backup reminder (calm, dismissible; pure decision logic) ----------
   // settings: lastExportAt 'YYYY-MM-DD'|null, backupSnoozeUntil 'YYYY-MM-DD'|null
   function backupStatus(sessions, settings, todayStr) {
@@ -2359,6 +2404,25 @@ const CORE = (function () {
     t("unusual neutral wording", unus.lines.every(l => !/attain|jhana|certif|prove/i.test(l)));
     t("unusual empty when nothing reported", unusualExperienceSummary([mk("2026-07-05", {})]).lines.length === 0);
 
+    // --- share card + invite (friend-facing, honest)
+    const shReal = [mk("2026-07-09", { actualMin: 32 }), mk("2026-07-10", { actualMin: 30 })];
+    const shDemo = shReal.concat([Object.assign(mk("2026-07-10", { actualMin: 99 }), { _demo: true, notes: "[TEST DATA] example" })]);
+    const shCard = shareCardData(shDemo, "2026-07-10");
+    t("share: demo excluded from card", shCard.minutes === 30);
+    t("share: streak from real sessions only", shCard.streak === 2);
+    t("share: specific session by id", shareCardData(shDemo, "2026-07-10", shReal[0].id).minutes === 32);
+    t("share: no data gives null", shareCardData([], TODAY) === null);
+    t("share: demo-only gives null", shareCardData([Object.assign(mk(TODAY, {}), { _test: true })], TODAY) === null);
+    const shLines = shareCardLines(shCard);
+    t("share: sober lines", shLines[0] === "30 minutes" && shLines[1] === "day 2" && shLines[2] === "2026-07-10");
+    t("share: streak line omitted at zero", shareCardLines(Object.assign({}, shCard, { streak: 0 })).length === 2);
+    t("share: no attainment language", !/jhana|attain|enlight|unlock|level|master/i.test(shLines.join(" ") + " " + shCard.tagline));
+    const inv = inviteText("4.2.0");
+    t("invite: honest claims present", /no account/i.test(inv) && /offline/i.test(inv) && /Export/i.test(inv));
+    t("invite: no web links or services", !/https?:\/\//i.test(inv));
+    t("invite: no attainment language", !/jhana|attain|enlight/i.test(inv));
+    t("invite: carries version", inv.indexOf("v4.2.0") > 0);
+
     // --- bilingual scaffold (owner-supplied strings only)
     t("i18n falls back to English on empty slot", tr("tab.today", "my") === "Today");
     t("i18n english direct", tr("tab.today", "en") === "Today");
@@ -2480,6 +2544,7 @@ const CORE = (function () {
     providerErrorSummary, MOCK_PROVIDER_RESPONSES,
     nextReviewStateOnFlag, unusualExperienceSummary,
     I18N, I18N_SCREENS, tr, fullyTranslatedScreens,
+    shareCardData, shareCardLines, inviteText,
     runSelfTests
   };
 })();
@@ -3571,11 +3636,14 @@ const HISTORY = (function () {
       '<table class="kv">' + rows.join("") + "</table>" +
       '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
       '<button id="sd-close">Close</button>' +
+      (CORE.isTestSession(s) ? "" : '<button id="sd-share">Share…</button>') +
       '<button id="sd-flag">' + ((s.teacherReview || "none") === "none" ? "Flag for teacher…" : "Teacher note…") + "</button>" +
       '<button id="sd-edit" class="primary">Edit</button>' +
       '<button id="sd-delete" class="danger">Delete…</button></div>'
     );
     UI.$("#sd-close").onclick = () => dlg.close();
+    const shBtn = UI.$("#sd-share");
+    if (shBtn) shBtn.onclick = () => { dlg.close(); SHARE.open(id); };
     UI.$("#sd-flag").onclick = () => { dlg.close(); flagDialog(id); };
     UI.$("#sd-edit").onclick = () => { dlg.close(); REVIEW.edit(id); };
     UI.$("#sd-delete").onclick = async () => {
@@ -3826,12 +3894,15 @@ const PROGRESS = (function () {
       "</div>";
 
     // 30-day goal note (Gate 0)
-    html += '<p class="faint" style="margin-top:8px">Gate 0 target: a 30-day unbroken streak before booking the first retreat. Current: ' + mAll.currentStreak + "/30.</p>";
+    html += '<div class="row between" style="margin-top:8px"><p class="faint" style="margin:0">Gate 0 target: a 30-day unbroken streak before booking the first retreat. Current: ' + mAll.currentStreak + "/30.</p>" +
+      '<button id="btn-share-card" class="ghost">Share a card…</button></div>';
     if (synthCount) html += '<p class="faint">' + synthCount + " demo/test entries exist and are excluded from everything on this page.</p>";
 
     if (!sel.length) {
       html += '<div class="empty" style="margin-top:16px"><strong>Nothing here yet.</strong><br>That changes after one sit.</div>';
       box.innerHTML = html;
+      const shb0 = $("#btn-share-card");
+      if (shb0) shb0.onclick = () => SHARE.open();
       return;
     }
 
@@ -3907,6 +3978,8 @@ const PROGRESS = (function () {
 
     box.innerHTML = html;
     UI.$$(".ask-q").forEach(b => b.onclick = () => { askId = askId === b.dataset.q ? null : b.dataset.q; render(); });
+    const shb = $("#btn-share-card");
+    if (shb) shb.onclick = () => SHARE.open();
   }
 
   function initRange() {
@@ -4535,6 +4608,98 @@ const FEEDBACK = (function () {
   return { open };
 })();
 
+/* ================= SHARE — canvas card + invite text (nothing auto-posted) ================= */
+const SHARE = (function () {
+  const { $ } = UI;
+
+  // Draws the card with the identity palette; system fonts only, works offline.
+  function draw(canvas, d, aspect) {
+    const W = 1080, H = aspect === "square" ? 1080 : 1920;
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#0a0e15"; ctx.fillRect(0, 0, W, H);
+    let g = ctx.createRadialGradient(W / 2, -H * 0.1, 0, W / 2, -H * 0.1, H * 0.95);
+    g.addColorStop(0, "#141c2a"); g.addColorStop(1, "#0a0e15");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const oy = aspect === "square" ? H * 0.40 : H * 0.36;
+    const orbR = W * 0.30;
+    g = ctx.createRadialGradient(W / 2 - orbR * 0.15, oy - orbR * 0.2, orbR * 0.1, W / 2, oy, orbR);
+    g.addColorStop(0, "rgba(142,195,234,.30)"); g.addColorStop(0.45, "rgba(85,103,158,.16)"); g.addColorStop(1, "rgba(10,14,21,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(W / 2, oy, orbR, 0, 7); ctx.fill();
+    ctx.strokeStyle = "rgba(142,195,234,.9)"; ctx.lineWidth = 9;
+    ctx.beginPath(); ctx.arc(W / 2, oy, orbR * 0.7, 0, 7); ctx.stroke();
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#e9eef6";
+    ctx.font = "700 " + Math.round(W * 0.135) + "px system-ui,sans-serif";
+    ctx.fillText(d.minutes + "′", W / 2, oy + W * 0.048);
+    const lines = CORE.shareCardLines(d);
+    let ty = oy + orbR + W * 0.09;
+    ctx.font = "600 " + Math.round(W * 0.052) + "px system-ui,sans-serif";
+    ctx.fillText(lines.slice(0, 2).join("  ·  "), W / 2, ty);
+    ctx.fillStyle = "#9fadc0";
+    ctx.font = "500 " + Math.round(W * 0.034) + "px system-ui,sans-serif";
+    ctx.fillText(d.date, W / 2, ty + W * 0.062);
+    ctx.fillStyle = "#d4b078";
+    ctx.font = "600 " + Math.round(W * 0.032) + "px system-ui,sans-serif";
+    ctx.fillText(d.appName, W / 2, H - W * 0.095);
+    ctx.fillStyle = "#76849b";
+    ctx.font = "500 " + Math.round(W * 0.025) + "px system-ui,sans-serif";
+    ctx.fillText(d.tagline, W / 2, H - W * 0.052);
+  }
+
+  function open(sessionId) {
+    const d = CORE.shareCardData(STORE.sessions(), STORE.todayStr(), sessionId || null);
+    if (!d) { UI.toast("Nothing to share yet — it takes one sit."); return; }
+    const dlg = UI.modal(
+      "<h2>Share a card</h2>" +
+      '<p class="dim">An image you save and share yourself. The app posts nothing, ever.</p>' +
+      '<div class="row" role="group" aria-label="Card format">' +
+      '<button class="chip" id="sh-story" aria-pressed="true">Story</button>' +
+      '<button class="chip" id="sh-square" aria-pressed="false">Square</button></div>' +
+      '<canvas id="sh-canvas" style="width:100%;max-width:250px;display:block;margin:12px auto;border-radius:14px;border:1px solid var(--line)" aria-label="Share card preview"></canvas>' +
+      '<div class="row" style="justify-content:flex-end"><button id="sh-close">Close</button><button id="sh-save" class="primary">Save image</button></div>'
+    );
+    let aspect = "story";
+    const paint = () => draw($("#sh-canvas"), d, aspect);
+    const setAspect = a => {
+      aspect = a;
+      $("#sh-story").setAttribute("aria-pressed", String(a === "story"));
+      $("#sh-square").setAttribute("aria-pressed", String(a === "square"));
+      paint();
+    };
+    $("#sh-story").onclick = () => setAspect("story");
+    $("#sh-square").onclick = () => setAspect("square");
+    $("#sh-close").onclick = () => dlg.close();
+    $("#sh-save").onclick = () => {
+      $("#sh-canvas").toBlob(blob => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "sit-" + d.date + (d.streak > 0 ? "-day" + d.streak : "") + "-" + aspect + ".png";
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+      }, "image/png");
+    };
+    paint();
+  }
+
+  function invite() {
+    const text = CORE.inviteText(CORE.APP_VERSION);
+    const dlg = UI.modal(
+      "<h2>Invite a friend</h2>" +
+      '<p class="dim">Copy it, send it however you like. Nothing is transmitted by the app.</p>' +
+      '<textarea id="inv-text" readonly style="min-height:230px;font-size:var(--fs-sm)">' + UI.esc(text) + "</textarea>" +
+      '<div class="row" style="justify-content:flex-end;margin-top:8px"><button id="inv-close">Close</button><button id="inv-copy" class="primary">Copy text</button></div>'
+    );
+    $("#inv-close").onclick = () => dlg.close();
+    $("#inv-copy").onclick = async () => {
+      try { await navigator.clipboard.writeText(text); UI.toast("Copied — paste it anywhere."); }
+      catch (e) { $("#inv-text").select(); document.execCommand && document.execCommand("copy"); UI.toast("Copied."); }
+    };
+  }
+
+  return { open, invite, draw };
+})();
+
 /* ================= APP — platform glue (backup reminder, PWA lifecycle) ================= */
 const APP = (function () {
   const { $ } = UI;
@@ -4739,6 +4904,7 @@ const APP = (function () {
   // family beta wiring
   UI.$("#beta-chip").onclick = () => FEEDBACK.open();
   UI.$("#btn-feedback").onclick = () => FEEDBACK.open();
+  UI.$("#btn-invite").onclick = () => SHARE.invite();
   UI.$("#btn-try-demo").onclick = () => APP.loadDemo();
   UI.$("#btn-remove-demo").onclick = () => APP.removeDemo();
   UI.$("#btn-remove-demo-2").onclick = () => APP.removeDemo();
@@ -4749,7 +4915,7 @@ const APP = (function () {
   ONBOARD.maybeShow(hasRecovery);
 
   // expose for automated verification
-  window.__sitTracker = { CORE, STORE, TIMER, AI, REVIEW, APP, ONBOARD, TODAY };
+  window.__sitTracker = { CORE, STORE, TIMER, AI, REVIEW, APP, ONBOARD, TODAY, SHARE };
 
   if (new URLSearchParams(location.search).get("selftest") === "1") {
     UI.showTab("settings");
