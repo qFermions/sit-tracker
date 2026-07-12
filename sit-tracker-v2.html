@@ -125,8 +125,16 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;accent-color:var(-
 .chart .cap{font-size:var(--fs-xs);color:var(--fg-dim);margin-top:var(--sp-1)}
 .empty{color:var(--fg-dim);font-size:var(--fs-sm);background:rgba(26,35,51,.4);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-5);text-align:center}
 /* history */
-.sess-item{display:block;width:100%;text-align:left;background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--elev-1);transition:transform var(--dur-1) var(--ease-out),border-color var(--dur-2) var(--ease-out)}
+.sess-item{display:flex;gap:var(--sp-4);align-items:flex-start;width:100%;text-align:left;background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--elev-1);transition:transform var(--dur-1) var(--ease-out),border-color var(--dur-2) var(--ease-out)}
 .sess-item:hover{border-color:var(--line-hi);transform:translateY(-1px)}
+.si-min{font-size:var(--fs-xl);font-weight:750;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;min-width:58px;line-height:1.25}
+.si-body{display:flex;flex-direction:column;gap:2px;min-width:0;font-weight:400}
+.si-top{line-height:1.5}
+.si-sub{font-size:var(--fs-sm);color:var(--fg-dim)}
+.si-note{font-size:var(--fs-xs);color:var(--fg-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+/* learn: editorial measure */
+#tab-learn .card p,#tab-learn .card li,#tab-learn .card td{max-width:64ch}
+#tab-learn details summary{font-weight:600}
 .badge{display:inline-block;font-size:var(--fs-xs);border:1px solid var(--line);border-radius:var(--r-pill);padding:1px 9px;color:var(--fg-dim);margin-left:var(--sp-1)}
 .badge.gold{color:var(--gold);border-color:var(--gold)}
 table.kv{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
@@ -3510,17 +3518,19 @@ const HISTORY = (function () {
     }
     list.innerHTML = shown.slice(0, 200).map(s => {
       const r = s.ratio !== null ? Math.round(s.ratio * 100) + "%" : "—";
-      return '<button class="sess-item" data-id="' + esc(s.id) + '" aria-label="Open session ' + esc(s.date) + '">' +
-        "<strong>" + esc(s.date) + "</strong>" + (s.startTime ? " · " + esc(s.startTime) : "") +
-        " · " + CORE.fmtMin(s.actualMin) +
-        " · contact " + (s.concMin !== null ? CORE.fmtMin(s.concMin) + " (" + r + ")" : "—") +
+      const badges =
         (CORE.isTestSession(s) ? '<span class="badge" style="color:var(--warn);border-color:var(--warn)">' + (s._demo ? "demo" : "test") + "</span>" : "") +
         (s.object ? '<span class="badge">' + esc(s.object) + "</span>" : "") +
         (s.entrySource ? '<span class="badge">' + esc(s.entrySource) + "</span>" : "") +
         (s.nimitta && s.nimitta.category !== "none" ? '<span class="badge gold">light report</span>' : "") +
-        ((s.teacherReview || "none") !== "none" ? '<span class="badge">' + esc(CORE.REVIEW_LABELS[s.teacherReview]) + "</span>" : "") +
-        (s.notes ? '<div class="faint" style="margin-top:2px">' + esc(s.notes.slice(0, 90)) + (s.notes.length > 90 ? "…" : "") + "</div>" : "") +
-        "</button>";
+        ((s.teacherReview || "none") !== "none" ? '<span class="badge">' + esc(CORE.REVIEW_LABELS[s.teacherReview]) + "</span>" : "");
+      return '<button class="sess-item" data-id="' + esc(s.id) + '" aria-label="Open session ' + esc(s.date) + '">' +
+        '<span class="si-min">' + (CORE.isNum(s.actualMin) ? Math.round(s.actualMin) + "′" : "—") + "</span>" +
+        '<span class="si-body">' +
+        '<span class="si-top"><strong>' + esc(s.date) + "</strong>" + (s.startTime ? '<span class="dim"> · ' + esc(s.startTime) + "</span>" : "") + badges + "</span>" +
+        '<span class="si-sub">contact ' + (s.concMin !== null ? CORE.fmtMin(s.concMin) + " · " + r : "not reported") + "</span>" +
+        (s.notes ? '<span class="si-note">' + esc(s.notes.slice(0, 90)) + (s.notes.length > 90 ? "…" : "") + "</span>" : "") +
+        "</span></button>";
     }).join("") + (shown.length > 200 ? '<div class="faint">Showing first 200 of ' + shown.length + " matches.</div>" : "");
     UI.$$(".sess-item", list).forEach(el => el.onclick = () => detail(el.dataset.id));
   }
