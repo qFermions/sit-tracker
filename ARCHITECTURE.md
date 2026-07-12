@@ -26,6 +26,33 @@ tab-sleep, and screen-lock recovery correct by construction.
 - `jhanaTracker.v2.recovered-<ts>` — quarantined unparseable bytes (never discarded)
 - `janSits`, `janGates` — legacy v1, read-once migrated, never written or deleted
 
+## Visual identity system (defined once in `:root`, 2026-07-11 pass)
+
+Everything visual derives from one token layer at the top of the `<style>` block; no
+surface invents its own values.
+
+- **Type** — system stack only (zero embedded font bytes). Hierarchy comes from brave
+  sizes plus weight and tracking: `--fs-hero` (clamp 2.7–4.2rem, landing), `--fs-display`
+  (1.9–2.75rem, stat/preset numerals, weight 750, tracking −.025em), `--fs-timer`
+  (3.4–6rem, weight 300), then xl/lg/md/sm/xs. Numerals are always `tabular-nums`.
+  Labels use the `.label-caps` recipe: xs · 600 · +.09em · uppercase · dim.
+- **Color** — midnight base (`--bg` #0a0e15 → `--bg3` #1a2333), off-white text ramp
+  (`--fg/--fg-dim/--fg-faint`, all AA on their surfaces), moonlit accent `#8ec3ea` with
+  `--accent-ink` (#0a1520) for text on accent, restrained gold for "recommended" and
+  traditional-claim marks, teal for ok/presence.
+- **Depth** — three elevation shadows (`--elev-1/2/3`) plus one glass recipe
+  (`--glass-bg` + blur 16–20px) used only for dialogs and the toast.
+- **Gradients** — exactly three recipes: `--grad-wash` (page), `--grad-card` (surface
+  sheen), `--grad-cta` (primary action). Nothing else gets a gradient.
+- **Motion** — `--dur-1/2/3` = 120/220/480ms with one decel curve (`--ease-out`);
+  transform+opacity only; press = scale(.97); hover = 1–2px lift; nothing animates in a
+  loop while idle (the orb breathes only during a running sit); the global
+  `prefers-reduced-motion` rule kills every animation and transition.
+- **Radius** — `--r-lg` 22 (hero/dialog), `--r` 14 (cards), `--r-sm` 10 (controls),
+  `--r-pill` for chips/tabs/status.
+- **The sit screen is exempt** from expressive styling: large light-weight timer, no new
+  motion or decoration while sitting.
+
 ## Product principles (enforced, not aspirational)
 1. **Evidence integrity** — the app records self-reports; it never certifies jhāna, nimitta,
    attainment, or powers. Forbidden wording is guarded by unit tests.
