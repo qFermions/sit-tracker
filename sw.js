@@ -1,6 +1,6 @@
 /* Sit Tracker service worker — versioned cache-first offline support.
    Bump SW_VERSION whenever sit-tracker-v2.html changes so clients pick up the update. */
-const SW_VERSION = "v4.1.0";
+const SW_VERSION = "v4.2.0";
 const CACHE = "sit-tracker-" + SW_VERSION;
 const ASSETS = [
   "./sit-tracker-v2.html",

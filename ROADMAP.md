@@ -4,7 +4,16 @@ Every entry cites its evidence (RESEARCH_NOTES.md §n, PROJECT_STATE.md, or a da
 Protected differentiators (never trade away): no account, no paywall, offline, exportable
 data, evidence-honest labels (RESEARCH_NOTES §5).
 
-## Now (done in the 2026-07-10 depth run)
+## Now (done in the 2026-07-11 visual-identity run)
+- Identity system: token layer (brave system-stack type, midnight palette AA-audited,
+  glass, three gradients, motion vocabulary), documented in ARCHITECTURE.md.
+- First-open hero; Today signature screen (stat tiles, hero timer, oversized CTA);
+  Progress/History/Learn/dialog restyles; icon + manifest refresh. Sit screen exempt.
+- Share card (canvas, story+square, sober wording, demo-proof, CORE-tested), invite
+  text (product voice, no links, tested), demo entry polish.
+- Fixes: dialog centering (margin reset vs UA auto), tab-bar overflow at 360/390.
+
+### Earlier (2026-07-10 depth run)
 - Timeline suggested from in-sit markers (CORE.timelineFromMarkers, provenance-tracked,
   manual always wins) — was "Next: auto-suggest timeline segments".
 - Deterministic insight engine: four canned questions in Progress answered locally with

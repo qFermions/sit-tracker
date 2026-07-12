@@ -1,7 +1,7 @@
 # PROJECT_STATE — Sit Tracker
 
 *A future session should be able to resume from this file alone.*
-*Last verified: 2026-07-10, depth run (every claim below was exercised on that date).*
+*Last verified: 2026-07-11, visual-identity run (every claim below was exercised on that date unless dated otherwise).*
 
 ## Current practice position
 
@@ -14,7 +14,7 @@
 
 ## App version & schema
 
-- App **v4.1.0** (`CORE.APP_VERSION`), SW cache **v4.1.0** (`sw.js` SW_VERSION — ⚠ bump on
+- App **v4.2.0** (`CORE.APP_VERSION`), SW cache **v4.2.0** (`sw.js` SW_VERSION — ⚠ bump on
   every HTML edit or installed clients keep the stale shell; the update notice was verified
   live again this run: notice → reload → old cache deleted, data intact).
 - **Data schema v5** in envelope `jhanaTracker.v2` — see DATA_CONTRACT.md (authoritative).
@@ -67,9 +67,41 @@
   recovery procedure; restore rehearsal is CORE-tested (field-level equality) and was
   performed live in a clean context this run.
 
+## Visual identity + friend-facing layer (2026-07-11 run)
+
+- **Identity system** (documented in ARCHITECTURE.md): one `:root` token layer — brave
+  display type from the system stack (zero font bytes), midnight palette with an
+  AA-audited text ramp (all pairs ≥4.65:1, spot-audit recorded in the run), three
+  elevation levels + one glass recipe, exactly three gradients, 120/220/480ms motion
+  with press-scale/hover-lift, pill radius language. No idle animation loops anywhere;
+  `prefers-reduced-motion` kills everything (global rule).
+- **Surfaces:** first-open hero (name treatment, one-line promise, finite-breathing orb,
+  single Begin action) → existing 3-screen intro; Today = signature screen (three stat
+  tiles with display numerals + teal done-state, hero timer card, oversized gradient
+  CTA); Progress (identity chart palette, personality empty state); History entry cards
+  (minute anchor + meta + truncated note); Learn 64ch editorial measure; glass dialogs +
+  toast; segmented pill tab bar; icon/manifest refreshed (orb-glow ring, #0a0e15).
+  **The sit screen was exempt** — palette inheritance only, no new motion or decoration.
+- **Friend-facing:** canvas share card (story/square, orb motif, "N minutes · day M" +
+  date + 'self-reported practice record'; saved manually, never posted; CORE-tested data
+  assembly excludes demo/test and yields null on an empty log) from session detail or
+  Progress; copyable invite text in the product voice (CORE-tested: no links, no
+  attainment language); demo card recopy ("Try the demo").
+- **Bugs found by this pass:** `<dialog>` was left-anchored (universal margin reset beat
+  the UA's `margin:auto`) — fixed; segmented tab bar overflowed 360/390 viewports — fixed
+  (viewport sweep clean at 360 / 390×844 / 844×390 / 768 / 1280 across all five tabs).
+- **Performance:** file 285,138 → 302,929 bytes (+17.8 KB); icons +36.0 KB; total pass
+  growth ≈ +53.8 KB against a ≤300 KB budget; zero embedded fonts; domInteractive ≈102 ms
+  served locally; no idle animation loops (frame-drop sampling was not possible in this
+  environment — the automation window was hidden; animations are CSS transform/opacity
+  only).
+
 ## Verification record (2026-07-10 depth run)
 
-- `node tests/run-core-tests.mjs sit-tracker-v2.html` → **375/375** (271 previous + 104
+Suite counts after the 2026-07-11 visual run: **387/387** node and in-app (375 + 12 new:
+share-card data assembly ×8, invite text ×4). Clean load: one console message.
+
+- `node tests/run-core-tests.mjs sit-tracker-v2.html` → 375/375 at that date (271 + 104
   new: timeline-from-markers ×20, v4→v5 migration ×3, insights/questions ×20, parser
   round 2 ×31, provider fixtures/summaries ×9, teacher rules ×9, i18n ×9, restore
   round-trip ×1, plus supporting assertions).
