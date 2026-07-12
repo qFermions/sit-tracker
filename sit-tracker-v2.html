@@ -613,7 +613,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
 /* Pure logic. No DOM, no localStorage, no fetch side-effects. Extractable and runnable under Node. */
 const CORE = (function () {
   const SCHEMA_VERSION = 5;
-  const APP_VERSION = "4.2.0";
+  const APP_VERSION = "4.3.0";
   const OBJECTS = ["nostril", "upperlip", "abdomen", "wholebody", "custom"];
   const HINDRANCES = ["sensualDesire", "illWill", "sloth", "restlessness", "doubt"];
   const HINDRANCE_LABELS = {
@@ -1803,6 +1803,19 @@ const CORE = (function () {
     ].join("\n");
   }
 
+  // ---------- how-to-use guide (operating notes only; never teaches practice) ----------
+  // Static UI copy. It lives here and only here — never in the envelope,
+  // exports, share cards, or the teacher report (tested).
+  const GUIDE = [
+    ["Start a sit", "Pick a practice card and press Start sit. Pause, finish early, or reset from the same screen — nothing is saved until the sit ends."],
+    ["After the sit", "A short form opens. Everything on it is optional and self-reported: estimated minutes of contact, a few one-tap impressions, a note. The app records what you noticed — it never grades it."],
+    ["Your history", "Journal keeps every entry — tap one to view, edit, or share it. Progress shows totals and charts computed only from what you recorded."],
+    ["Share a card", "From a session or from Progress, “Share a card” makes an image you save and send yourself. The app posts nothing."],
+    ["Teacher report", "Journal → Teacher report prints a plain summary for a human teacher. Pick the range, print to PDF, send it yourself."],
+    ["Your data", "Everything stays on this phone; nothing is uploaded anywhere. Settings → Export saves a backup file that is yours to keep, and Import brings it back."],
+    ["On your phone", "Settings → “Install on your phone” adds it to the home screen. After one open online, it works offline."]
+  ];
+
   // ---------- backup reminder (calm, dismissible; pure decision logic) ----------
   // settings: lastExportAt 'YYYY-MM-DD'|null, backupSnoozeUntil 'YYYY-MM-DD'|null
   function backupStatus(sessions, settings, todayStr) {
@@ -2418,11 +2431,22 @@ const CORE = (function () {
     t("share: sober lines", shLines[0] === "30 minutes" && shLines[1] === "day 2" && shLines[2] === "2026-07-10");
     t("share: streak line omitted at zero", shareCardLines(Object.assign({}, shCard, { streak: 0 })).length === 2);
     t("share: no attainment language", !/jhana|attain|enlight|unlock|level|master/i.test(shLines.join(" ") + " " + shCard.tagline));
-    const inv = inviteText("4.2.0");
+    const inv = inviteText(APP_VERSION);
     t("invite: honest claims present", /no account/i.test(inv) && /offline/i.test(inv) && /Export/i.test(inv));
     t("invite: no web links or services", !/https?:\/\//i.test(inv));
     t("invite: no attainment language", !/jhana|attain|enlight/i.test(inv));
-    t("invite: carries version", inv.indexOf("v4.2.0") > 0);
+    t("invite: carries version", inv.indexOf("v" + APP_VERSION) > 0);
+
+    // --- how-to-use guide: exists, operational-only, excluded from outbound surfaces
+    const gAll = GUIDE.map(s => s[0] + " " + s[1]).join(" ");
+    t("guide covers the operating topics", ["Start sit", "self-reported", "Export", "home screen", "Teacher report", "Share a card"].every(k => gAll.indexOf(k) >= 0));
+    t("guide states data locality", gAll.indexOf("stays on this phone") >= 0 && gAll.indexOf("nothing is uploaded") >= 0);
+    t("guide never teaches or promises", !/jh[āa]na|attain|enlighten|nimitta|breath|posture|reduc|improv|achiev|anxiety|stress|streak|every ?day|don'?t break/i.test(gAll));
+    t("guide dismissal survives persistence round-trip", migrate({ schemaVersion: SCHEMA_VERSION, sessions: [], settings: { guideSeen: true }, map: null, feedback: [] }, null, NOW, TODAY).env.settings.guideSeen === true);
+    const gEnv = migrate({ schemaVersion: SCHEMA_VERSION, sessions: [mk(TODAY, { notes: "real note" })], settings: { guideSeen: true }, map: null, feedback: [] }, null, NOW, TODAY).env;
+    t("guide copy never enters the envelope", JSON.stringify(gEnv).indexOf("stays on this phone") < 0);
+    t("guide copy absent from CSV export", toCSV(gEnv.sessions).indexOf("stays on this phone") < 0);
+    t("guide copy absent from share lines", shareCardLines(shareCardData(gEnv.sessions, TODAY)).join(" ").indexOf("stays on this phone") < 0);
 
     // --- bilingual scaffold (owner-supplied strings only)
     t("i18n falls back to English on empty slot", tr("tab.today", "my") === "Today");
@@ -2545,7 +2569,7 @@ const CORE = (function () {
     providerErrorSummary, MOCK_PROVIDER_RESPONSES,
     nextReviewStateOnFlag, unusualExperienceSummary,
     I18N, I18N_SCREENS, tr, fullyTranslatedScreens,
-    shareCardData, shareCardLines, inviteText,
+    shareCardData, shareCardLines, inviteText, GUIDE,
     runSelfTests
   };
 })();
@@ -4458,10 +4482,20 @@ const TODAY = (function () {
     tiles += tile(m.currentStreak + "<span class='unit'>d</span>", "streak", m.currentStreak > 0 ? "days in a row" : "starts with one sit", false);
     tiles += tile(last ? Math.round(last.actualMin) + "′" : "—", "last sit", last ? last.date : "none yet", false);
     // utility pills stay quiet, below the stats
-    let pills = "";
+    const guideSeen = !!STORE.getSetting("guideSeen", false);
+    let pills = '<span class="pill"' + (guideSeen ? "" : ' style="border-color:var(--accent)"') + '><a href="#" id="guide-hint">how to use →</a></span>';
     if (navigator.serviceWorker && navigator.serviceWorker.controller) pills += '<span class="pill"><span class="dot"></span>works offline</span>';
     if (!isStandalone() && location.protocol.indexOf("http") === 0) pills += '<span class="pill"><a href="#" id="install-hint">install on phone →</a></span>';
-    el.innerHTML = '<div class="today-stats">' + tiles + "</div>" + (pills ? '<div class="status-strip">' + pills + "</div>" : "");
+    el.innerHTML = '<div class="today-stats">' + tiles + "</div>" + '<div class="status-strip">' + pills + "</div>";
+    const gh = $("#guide-hint");
+    if (gh) gh.onclick = (e) => {
+      e.preventDefault();
+      STORE.setSetting("guideSeen", true);
+      const dlg = UI.modal("<h2>How to use</h2>" +
+        CORE.GUIDE.map(s => "<h3>" + s[0] + "</h3><p class='dim'>" + s[1] + "</p>").join("") +
+        '<div class="row" style="justify-content:flex-end"><button id="gd-close" class="primary">Done</button></div>');
+      $("#gd-close").onclick = () => { dlg.close(); renderStatus(); };
+    };
     const hint = $("#install-hint");
     if (hint) hint.onclick = (e) => { e.preventDefault(); UI.showTab("settings"); document.querySelector("#install-guide").scrollIntoView({ block: "center" }); };
   }

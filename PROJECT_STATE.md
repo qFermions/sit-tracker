@@ -67,6 +67,29 @@
   recovery procedure; restore rehearsal is CORE-tested (field-level equality) and was
   performed live in a clean context this run.
 
+## How-to-use guide (2026-07-12 afternoon, explicit feature order for hand-off night)
+
+- **v4.3.0.** One addition under an explicit override of the no-new-features rule: a
+  "How to use" guide that teaches operating the app only — never meditation, never
+  claims. Copy lives in `CORE.GUIDE` (7 sections: start/end a sit, the self-reported
+  log, history, share card, teacher report, export/import + "everything stays on this
+  phone; nothing is uploaded anywhere", home-screen install).
+- **Placement:** a "how to use →" pill first in Today's utility row — one tap from home,
+  opens a standard dialog, never blocks anything, sit screen untouched. First-run
+  prominence = an accent border on the pill until first opened; `settings.guideSeen`
+  remembers dismissal (survives the migrate round-trip, tested). Reuses existing pill +
+  dialog styles; zero new CSS.
+- **Gates:** file 302,929 → 306,367 bytes (833 under the 307,200 ceiling); tests
+  387→394 (guide existence/topics, data-locality sentence, no teaching/attainment/
+  clinical/streak language by regex, dismissal persistence, and structural exclusion —
+  guide copy provably absent from the envelope, CSV, and share lines); teacher-report
+  exclusion holds structurally (report renders only session fields). Both suites
+  394/394; console clean; dialog verified at 390-wide (349px, 7 sections, no overflow).
+- **Delivery:** dist/ + sit-tracker-v4.3.0.zip rebuilt; the room URL
+  (192.168.1.231:8080) confirmed serving the new bytes and SW v4.3.0. Phones that
+  installed v4.2.0 pick up the update notice on their next online open. The verified
+  v4.2.0 zip remains as fallback.
+
 ## Release verification (2026-07-12, evening hand-off)
 
 Verified with tool evidence on this date, at 823dbf2 / v4.2.0 unchanged:
