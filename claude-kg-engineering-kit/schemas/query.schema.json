@@ -1,0 +1,35 @@
+{
+  "additionalProperties": false,
+  "description": "Semantic output: which entities/relations matter for a question.",
+  "properties": {
+    "entities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "predicates": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Predicates",
+      "type": "array"
+    },
+    "max_hops": {
+      "default": 2,
+      "title": "Max Hops",
+      "type": "integer"
+    },
+    "reasoning": {
+      "default": "",
+      "title": "Reasoning",
+      "type": "string"
+    }
+  },
+  "required": [
+    "entities"
+  ],
+  "title": "QueryPlan",
+  "type": "object"
+}

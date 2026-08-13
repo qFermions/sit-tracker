@@ -1,0 +1,82 @@
+{
+  "doc_id": "d3_earnings_call",
+  "mentions": [
+    {
+      "surface_form": "Northwind Robotics",
+      "entity_type": "company",
+      "description": "Company holding this Q2 2026 earnings call",
+      "span": {
+        "doc_id": "d3_earnings_call",
+        "quote": "Northwind Robotics Q2 2026 earnings call"
+      }
+    },
+    {
+      "surface_form": "Dana Reyes",
+      "entity_type": "person",
+      "description": "CFO of Northwind Robotics",
+      "span": { "doc_id": "d3_earnings_call", "quote": "CFO Dana Reyes" }
+    },
+    {
+      "surface_form": "Fleet Pro",
+      "entity_type": "product",
+      "description": "Product whose recent price change was discussed on the call",
+      "span": {
+        "doc_id": "d3_earnings_call",
+        "quote": "the recent Fleet Pro price change"
+      }
+    }
+  ],
+  "facts": [
+    {
+      "subject": "Dana Reyes",
+      "predicate": "executive_of",
+      "object_entity": "Northwind Robotics",
+      "qualifiers": [{ "key": "title", "value": "CFO" }],
+      "span": { "doc_id": "d3_earnings_call", "quote": "CFO Dana Reyes" }
+    },
+    {
+      "subject": "Northwind Robotics",
+      "predicate": "reported_metric",
+      "object_value": {
+        "kind": "percent",
+        "text": "41 percent",
+        "value": 41,
+        "unit": "%"
+      },
+      "qualifiers": [
+        { "key": "metric", "value": "gross margin" },
+        { "key": "prior_year_value", "value": "48 percent" }
+      ],
+      "time_context": "Q2 2026",
+      "span": {
+        "doc_id": "d3_earnings_call",
+        "quote": "Gross margin declined to 41 percent this quarter, down from 48 percent a year ago"
+      }
+    },
+    {
+      "subject": "Northwind Robotics",
+      "predicate": "faces_cost_pressure",
+      "object_value": {
+        "kind": "text",
+        "text": "cloud infrastructure costs"
+      },
+      "span": {
+        "doc_id": "d3_earnings_call",
+        "quote": "Cloud infrastructure costs for our connected fleet services continue to pressure margins"
+      }
+    },
+    {
+      "subject": "Fleet Pro",
+      "predicate": "price_change_driven_by",
+      "object_value": {
+        "kind": "text",
+        "text": "cloud infrastructure costs"
+      },
+      "qualifiers": [{ "key": "stated_by", "value": "Dana Reyes, CFO" }],
+      "span": {
+        "doc_id": "d3_earnings_call",
+        "quote": "a direct response to those infrastructure costs"
+      }
+    }
+  ]
+}

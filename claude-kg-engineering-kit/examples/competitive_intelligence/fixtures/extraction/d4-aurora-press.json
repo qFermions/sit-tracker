@@ -1,0 +1,107 @@
+{
+  "doc_id": "d4_aurora_press",
+  "mentions": [
+    {
+      "surface_form": "Aurora Dynamics",
+      "entity_type": "company",
+      "description": "Vendor of the Atlas fleet platform, rival to Northwind Robotics",
+      "span": {
+        "doc_id": "d4_aurora_press",
+        "quote": "Aurora Dynamics announced that its Atlas fleet platform"
+      }
+    },
+    {
+      "surface_form": "Atlas",
+      "entity_type": "product",
+      "description": "Aurora Dynamics' fleet platform, competing with Fleet Pro, retaining offline mode",
+      "span": { "doc_id": "d4_aurora_press", "quote": "its Atlas fleet platform" }
+    },
+    {
+      "surface_form": "Mei Tanaka",
+      "entity_type": "person",
+      "description": "CEO of Aurora Dynamics",
+      "span": {
+        "doc_id": "d4_aurora_press",
+        "quote": "Aurora Dynamics CEO Mei Tanaka"
+      }
+    },
+    {
+      "surface_form": "Northwind Robotics",
+      "entity_type": "company",
+      "description": "Rival robotics vendor whose Fleet Pro competes with Atlas",
+      "span": {
+        "doc_id": "d4_aurora_press",
+        "quote": "against Northwind Robotics' Fleet Pro"
+      }
+    },
+    {
+      "surface_form": "Fleet Pro",
+      "entity_type": "product",
+      "description": "Northwind Robotics' product that Atlas is positioned against",
+      "span": {
+        "doc_id": "d4_aurora_press",
+        "quote": "against Northwind Robotics' Fleet Pro"
+      }
+    },
+    {
+      "surface_form": "offline mode",
+      "entity_type": "other",
+      "description": "Capability retained in all Atlas tiers",
+      "span": {
+        "doc_id": "d4_aurora_press",
+        "quote": "will retain offline mode in all tiers"
+      }
+    }
+  ],
+  "facts": [
+    {
+      "subject": "Aurora Dynamics",
+      "predicate": "offers_product",
+      "object_entity": "Atlas",
+      "span": { "doc_id": "d4_aurora_press", "quote": "its Atlas fleet platform" }
+    },
+    {
+      "subject": "Atlas",
+      "predicate": "has_capability",
+      "object_entity": "offline mode",
+      "qualifiers": [{ "key": "scope", "value": "all tiers" }],
+      "span": {
+        "doc_id": "d4_aurora_press",
+        "quote": "will retain offline mode in all tiers"
+      }
+    },
+    {
+      "subject": "Atlas",
+      "predicate": "priced_at",
+      "object_value": {
+        "kind": "money",
+        "text": "$59 per month per site",
+        "value": 59,
+        "unit": "USD/month/site"
+      },
+      "span": {
+        "doc_id": "d4_aurora_press",
+        "quote": "Atlas is priced at $59 per month per site"
+      }
+    },
+    {
+      "subject": "Mei Tanaka",
+      "predicate": "executive_of",
+      "object_entity": "Aurora Dynamics",
+      "qualifiers": [{ "key": "title", "value": "CEO" }],
+      "span": {
+        "doc_id": "d4_aurora_press",
+        "quote": "Aurora Dynamics CEO Mei Tanaka"
+      }
+    },
+    {
+      "subject": "Atlas",
+      "predicate": "competes_with",
+      "object_entity": "Fleet Pro",
+      "span": {
+        "doc_id": "d4_aurora_press",
+        "quote": "positions Atlas directly against Northwind Robotics' Fleet Pro"
+      }
+    }
+  ]
+}

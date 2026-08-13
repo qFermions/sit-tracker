@@ -1,0 +1,112 @@
+{
+  "$defs": {
+    "AmbiguousGroup": {
+      "additionalProperties": false,
+      "description": "Surface forms that could not be safely merged or separated.",
+      "properties": {
+        "surface_forms": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Surface Forms",
+          "type": "array"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "surface_forms",
+        "reason"
+      ],
+      "title": "AmbiguousGroup",
+      "type": "object"
+    },
+    "EntityCluster": {
+      "additionalProperties": false,
+      "description": "One canonical entity and the surface forms that refer to it.",
+      "properties": {
+        "canonical_name": {
+          "title": "Canonical Name",
+          "type": "string"
+        },
+        "entity_type": {
+          "enum": [
+            "company",
+            "product",
+            "person",
+            "location",
+            "metric",
+            "event",
+            "other"
+          ],
+          "title": "Entity Type",
+          "type": "string"
+        },
+        "members": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Members",
+          "type": "array"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        }
+      },
+      "required": [
+        "canonical_name",
+        "entity_type",
+        "members",
+        "rationale"
+      ],
+      "title": "EntityCluster",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "clusters": {
+      "items": {
+        "$ref": "#/$defs/EntityCluster"
+      },
+      "title": "Clusters",
+      "type": "array"
+    },
+    "ambiguous": {
+      "items": {
+        "$ref": "#/$defs/AmbiguousGroup"
+      },
+      "title": "Ambiguous",
+      "type": "array"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    }
+  },
+  "title": "ResolutionResult",
+  "type": "object"
+}

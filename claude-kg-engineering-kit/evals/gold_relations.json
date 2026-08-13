@@ -1,0 +1,34 @@
+{
+  "d1_pricing_update": [
+    { "subject": "Northwind Robotics, Inc.", "predicate": "offers_product", "object_entity": "Fleet Pro" },
+    { "subject": "Fleet Pro", "predicate": "changed_price", "object_value_text": "$79 per month" }
+  ],
+  "d2_release_notes": [
+    { "subject": "Fleet Pro", "predicate": "removed_capability", "object_entity": "offline mode" },
+    { "subject": "Fleet Pro", "predicate": "requires_cloud_connection", "object_value_text": "continuous cloud connection" },
+    { "subject": "Fleet Pro", "predicate": "added_capability", "object_value_text": "route-optimization dashboard" }
+  ],
+  "d3_earnings_call": [
+    { "subject": "Dana Reyes", "predicate": "executive_of", "object_entity": "Northwind Robotics" },
+    { "subject": "Northwind Robotics", "predicate": "reported_metric", "object_value_text": "41 percent" },
+    { "subject": "Northwind Robotics", "predicate": "faces_cost_pressure", "object_value_text": "cloud infrastructure costs" },
+    { "subject": "Fleet Pro", "predicate": "price_change_driven_by", "object_value_text": "cloud infrastructure costs" },
+    { "subject": "Northwind Robotics", "predicate": "expects_continued_cost_pressure", "object_value_text": "through the rest of the year" }
+  ],
+  "d4_aurora_press": [
+    { "subject": "Aurora Dynamics", "predicate": "offers_product", "object_entity": "Atlas" },
+    { "subject": "Atlas", "predicate": "has_capability", "object_entity": "offline mode" },
+    { "subject": "Atlas", "predicate": "priced_at", "object_value_text": "$59 per month per site" },
+    { "subject": "Mei Tanaka", "predicate": "executive_of", "object_entity": "Aurora Dynamics" },
+    { "subject": "Atlas", "predicate": "competes_with", "object_entity": "Fleet Pro" }
+  ],
+  "d5_industry_note": [
+    { "subject": "NRI", "predicate": "pursues_strategy", "object_value_text": "all-cloud strategy" },
+    { "subject": "Northwind Logistics", "predicate": "reported_metric", "object_value_text": "record freight volumes" }
+  ],
+  "d6_analyst_note": [
+    { "subject": "Aurora Dynamics", "predicate": "reported_metric", "object_value_text": "55 percent" },
+    { "subject": "Aurora Dynamics", "predicate": "avoids_cost", "object_value_text": "cloud infrastructure costs" },
+    { "subject": "Fleet Pro", "predicate": "capability_valued_by_customers", "object_entity": "offline mode" }
+  ]
+}

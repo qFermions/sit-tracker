@@ -1,0 +1,26 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "answer": {
+      "title": "Answer",
+      "type": "string"
+    },
+    "cited_edge_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Cited Edge Ids",
+      "type": "array"
+    },
+    "insufficient_evidence": {
+      "default": false,
+      "title": "Insufficient Evidence",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "answer"
+  ],
+  "title": "Answer",
+  "type": "object"
+}

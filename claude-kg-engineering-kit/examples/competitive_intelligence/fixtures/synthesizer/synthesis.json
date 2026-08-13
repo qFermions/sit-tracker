@@ -1,0 +1,23 @@
+{
+  "assessment": "Northwind's Fleet Pro price increase is financially explainable but competitively vulnerable. The increase is margin-driven: gross margin fell to 41 percent under cloud infrastructure costs, and the company itself tied the new price to those costs — a consequence of its all-cloud strategy. But the timing compounds risk: customers are being asked to pay 61 percent more for a product that simultaneously lost offline mode, a capability 4 in 10 Fleet Pro customers call important or critical. Aurora's Atlas now undercuts Fleet Pro by $20 per month while retaining exactly that capability, and Aurora's estimated 55 percent margin from an edge-first architecture suggests it can hold that price. Given the cited evidence, the increase looks defensible only as a margin repair, not as a value story — the churn risk among offline-dependent customers is the exposed flank.",
+  "key_findings": [
+    {
+      "claim": "Fleet Pro's price rose $30/month (to $79) at the same time offline mode was removed, so the price went up while delivered capability went down.",
+      "edge_ids": ["e002", "e003"]
+    },
+    {
+      "claim": "The increase is margin-driven: gross margin fell to 41 percent under cloud infrastructure costs, and Northwind tied the price change to those costs.",
+      "edge_ids": ["e007", "e008", "e009"]
+    },
+    {
+      "claim": "Aurora's Atlas undercuts the new price at $59 per month while retaining offline mode — the capability 4 in 10 Fleet Pro customers rate important or critical.",
+      "edge_ids": ["e011", "e012", "e019"]
+    },
+    {
+      "claim": "Aurora's estimated 55 percent gross margin from an edge-first architecture suggests it can sustain its price position.",
+      "edge_ids": ["e017", "e018"]
+    }
+  ],
+  "confidence": "high",
+  "caveats": "Aurora's margin figure is a Meridian Research estimate, not a company-reported number. Ownership of Project Helios is unresolved in the graph and could change the competitive picture."
+}

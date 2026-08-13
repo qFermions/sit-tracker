@@ -1,0 +1,9 @@
+{
+  "clusters": [
+    ["Northwind Robotics", "Northwind Robotics, Inc.", "NRI"]
+  ],
+  "must_not_merge": [
+    ["Northwind Robotics", "Northwind Logistics"],
+    ["Fleet Pro", "Atlas"]
+  ]
+}

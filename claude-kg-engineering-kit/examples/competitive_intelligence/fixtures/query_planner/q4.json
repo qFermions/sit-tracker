@@ -1,0 +1,13 @@
+{
+  "entities": ["Fleet Pro", "Atlas"],
+  "predicates": [
+    "changed_price",
+    "priced_at",
+    "price_change_driven_by",
+    "faces_cost_pressure",
+    "competes_with",
+    "offers_product"
+  ],
+  "max_hops": 2,
+  "reasoning": "The question chains a price change, its stated driver, and a competitor comparison: start from both products, follow pricing and competition edges, and use offers_product to reach each vendor's financial-pressure facts one hop further out."
+}

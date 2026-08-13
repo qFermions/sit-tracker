@@ -1,0 +1,95 @@
+{
+  "doc_id": "d6_analyst_note",
+  "mentions": [
+    {
+      "surface_form": "Meridian Research",
+      "entity_type": "company",
+      "description": "Research firm publishing the fleet software pricing scorecard",
+      "span": { "doc_id": "d6_analyst_note", "quote": "Meridian Research estimates" }
+    },
+    {
+      "surface_form": "Aurora Dynamics",
+      "entity_type": "company",
+      "description": "Fleet software vendor with an estimated 55 percent gross margin",
+      "span": {
+        "doc_id": "d6_analyst_note",
+        "quote": "Meridian Research estimates Aurora Dynamics' gross margin at 55 percent"
+      }
+    },
+    {
+      "surface_form": "Northwind Robotics",
+      "entity_type": "company",
+      "description": "Vendor facing churn risk over offline mode, per the scorecard",
+      "span": {
+        "doc_id": "d6_analyst_note",
+        "quote": "flags churn risk for Northwind Robotics"
+      }
+    },
+    {
+      "surface_form": "Fleet Pro",
+      "entity_type": "product",
+      "description": "Product whose customers rate offline mode as important or critical",
+      "span": { "doc_id": "d6_analyst_note", "quote": "4 in 10 Fleet Pro customers" }
+    },
+    {
+      "surface_form": "offline mode",
+      "entity_type": "other",
+      "description": "Capability rated important or critical by 4 in 10 surveyed Fleet Pro customers",
+      "span": {
+        "doc_id": "d6_analyst_note",
+        "quote": "said offline mode was \"important\" or \"critical\""
+      }
+    }
+  ],
+  "facts": [
+    {
+      "subject": "Aurora Dynamics",
+      "predicate": "reported_metric",
+      "object_value": {
+        "kind": "percent",
+        "text": "55 percent",
+        "value": 55,
+        "unit": "%"
+      },
+      "qualifiers": [
+        { "key": "metric", "value": "gross margin" },
+        { "key": "source", "value": "Meridian Research estimate" }
+      ],
+      "uncertainty": "implied",
+      "span": {
+        "doc_id": "d6_analyst_note",
+        "quote": "Meridian Research estimates Aurora Dynamics' gross margin at 55 percent"
+      }
+    },
+    {
+      "subject": "Aurora Dynamics",
+      "predicate": "avoids_cost",
+      "object_value": {
+        "kind": "text",
+        "text": "cloud infrastructure costs"
+      },
+      "qualifiers": [
+        { "key": "mechanism", "value": "edge-first architecture" },
+        { "key": "source", "value": "Meridian Research estimate" }
+      ],
+      "uncertainty": "implied",
+      "span": {
+        "doc_id": "d6_analyst_note",
+        "quote": "helped by an edge-first architecture that avoids most cloud infrastructure costs"
+      }
+    },
+    {
+      "subject": "Fleet Pro",
+      "predicate": "capability_valued_by_customers",
+      "object_entity": "offline mode",
+      "qualifiers": [
+        { "key": "share", "value": "4 in 10 customers" },
+        { "key": "source", "value": "Meridian Research operator survey" }
+      ],
+      "span": {
+        "doc_id": "d6_analyst_note",
+        "quote": "4 in 10 Fleet Pro customers said offline mode was \"important\" or \"critical\""
+      }
+    }
+  ]
+}

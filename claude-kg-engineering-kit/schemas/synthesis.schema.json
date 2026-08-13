@@ -1,0 +1,67 @@
+{
+  "$defs": {
+    "AnalystFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "claim": {
+          "title": "Claim",
+          "type": "string"
+        },
+        "edge_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Edge Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim",
+        "edge_ids"
+      ],
+      "title": "AnalystFinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "assessment": {
+      "title": "Assessment",
+      "type": "string"
+    },
+    "key_findings": {
+      "items": {
+        "$ref": "#/$defs/AnalystFinding"
+      },
+      "title": "Key Findings",
+      "type": "array"
+    },
+    "confidence": {
+      "default": "medium",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "caveats": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Caveats"
+    }
+  },
+  "required": [
+    "assessment"
+  ],
+  "title": "SynthesisReport",
+  "type": "object"
+}

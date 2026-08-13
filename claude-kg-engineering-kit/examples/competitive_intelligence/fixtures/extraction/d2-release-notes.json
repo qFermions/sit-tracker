@@ -1,0 +1,70 @@
+{
+  "doc_id": "d2_release_notes",
+  "mentions": [
+    {
+      "surface_form": "Northwind Robotics",
+      "entity_type": "company",
+      "description": "Maker of Fleet Pro, moving the product to cloud-only operation",
+      "span": {
+        "doc_id": "d2_release_notes",
+        "quote": "Northwind Robotics is removing offline mode from Fleet Pro"
+      }
+    },
+    {
+      "surface_form": "Fleet Pro",
+      "entity_type": "product",
+      "description": "Fleet-management product receiving the version 8.0 release",
+      "span": {
+        "doc_id": "d2_release_notes",
+        "quote": "removing offline mode from Fleet Pro"
+      }
+    },
+    {
+      "surface_form": "offline mode",
+      "entity_type": "other",
+      "description": "Capability that let warehouse robots keep operating during network outages",
+      "span": {
+        "doc_id": "d2_release_notes",
+        "quote": "Offline mode previously allowed warehouse robots to keep operating during network outages"
+      }
+    }
+  ],
+  "facts": [
+    {
+      "subject": "Fleet Pro",
+      "predicate": "removed_capability",
+      "object_entity": "offline mode",
+      "time_context": "version 8.0",
+      "span": {
+        "doc_id": "d2_release_notes",
+        "quote": "Northwind Robotics is removing offline mode from Fleet Pro"
+      }
+    },
+    {
+      "subject": "Fleet Pro",
+      "predicate": "requires_cloud_connection",
+      "object_value": {
+        "kind": "text",
+        "text": "continuous cloud connection"
+      },
+      "time_context": "version 8.0",
+      "span": {
+        "doc_id": "d2_release_notes",
+        "quote": "Fleet Pro deployments will now require a continuous cloud connection"
+      }
+    },
+    {
+      "subject": "Fleet Pro",
+      "predicate": "added_capability",
+      "object_value": {
+        "kind": "text",
+        "text": "route-optimization dashboard"
+      },
+      "time_context": "version 8.0",
+      "span": {
+        "doc_id": "d2_release_notes",
+        "quote": "Version 8.0 also adds a new route-optimization dashboard"
+      }
+    }
+  ]
+}

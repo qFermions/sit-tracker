@@ -1,0 +1,19 @@
+[
+  {
+    "question_id": "q1",
+    "strategic": true,
+    "question": "Northwind Robotics raised the price of Fleet Pro. Given everything the graph records about both companies, is that increase strategically defensible against Aurora Dynamics' Atlas, and why?"
+  },
+  {
+    "question_id": "q2",
+    "question": "What does Aurora Dynamics charge for the Atlas platform?"
+  },
+  {
+    "question_id": "q3",
+    "question": "How many employees does Northwind Robotics have?"
+  },
+  {
+    "question_id": "q4",
+    "question": "Why did Northwind Robotics raise the price of Fleet Pro, and how does the new price compare with Aurora Dynamics' Atlas?"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "role": "pricing",
+  "question": "What pricing facts are recorded in the graph: current prices, price changes (with before/after values and timing), and which company and product each applies to?",
+  "findings": [
+    {
+      "claim": "Northwind Robotics' Fleet Pro subscription price rose from $49 per month to $79 per month, effective July 1, 2026.",
+      "edge_ids": ["e001", "e002"]
+    },
+    {
+      "claim": "Aurora Dynamics' Atlas platform is priced at $59 per month per site.",
+      "edge_ids": ["e010", "e012"]
+    },
+    {
+      "claim": "Northwind's CFO attributed the Fleet Pro increase to cloud infrastructure costs.",
+      "edge_ids": ["e009"]
+    }
+  ],
+  "insufficient_evidence": false
+}

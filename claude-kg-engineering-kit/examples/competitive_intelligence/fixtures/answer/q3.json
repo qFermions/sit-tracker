@@ -1,0 +1,5 @@
+{
+  "answer": "Insufficient evidence: the graph records pricing, capability, margin, and strategy facts about Northwind Robotics, but contains no fact about its employee headcount.",
+  "cited_edge_ids": [],
+  "insufficient_evidence": true
+}

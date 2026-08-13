@@ -1,0 +1,52 @@
+{
+  "doc_id": "d1_pricing_update",
+  "mentions": [
+    {
+      "surface_form": "Northwind Robotics, Inc.",
+      "entity_type": "company",
+      "description": "Robotics vendor that sells the Fleet Pro fleet-management subscription",
+      "span": {
+        "doc_id": "d1_pricing_update",
+        "quote": "Northwind Robotics, Inc. today updated the published price"
+      }
+    },
+    {
+      "surface_form": "Fleet Pro",
+      "entity_type": "product",
+      "description": "Fleet-management subscription sold by Northwind Robotics",
+      "span": {
+        "doc_id": "d1_pricing_update",
+        "quote": "its Fleet Pro fleet-management subscription"
+      }
+    }
+  ],
+  "facts": [
+    {
+      "subject": "Northwind Robotics, Inc.",
+      "predicate": "offers_product",
+      "object_entity": "Fleet Pro",
+      "span": {
+        "doc_id": "d1_pricing_update",
+        "quote": "its Fleet Pro fleet-management subscription"
+      }
+    },
+    {
+      "subject": "Fleet Pro",
+      "predicate": "changed_price",
+      "object_value": {
+        "kind": "money",
+        "text": "$79 per month",
+        "value": 79,
+        "unit": "USD/month"
+      },
+      "qualifiers": [
+        { "key": "previous_price", "value": "$49 per month" }
+      ],
+      "time_context": "effective July 1, 2026",
+      "span": {
+        "doc_id": "d1_pricing_update",
+        "quote": "from $49 per month to $79 per month, effective July 1, 2026"
+      }
+    }
+  ]
+}
