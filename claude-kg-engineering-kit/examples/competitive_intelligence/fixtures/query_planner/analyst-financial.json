@@ -1,0 +1,12 @@
+{
+  "entities": ["Northwind Robotics", "Aurora Dynamics"],
+  "predicates": [
+    "reported_metric",
+    "faces_cost_pressure",
+    "avoids_cost",
+    "price_change_driven_by",
+    "pursues_strategy"
+  ],
+  "max_hops": 2,
+  "reasoning": "Margins, cost pressures, and strategy facts attach to the two company nodes."
+}

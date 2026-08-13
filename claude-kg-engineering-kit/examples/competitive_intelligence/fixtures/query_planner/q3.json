@@ -1,0 +1,6 @@
+{
+  "entities": ["Northwind Robotics"],
+  "predicates": [],
+  "max_hops": 1,
+  "reasoning": "Headcount would be a fact on the Northwind Robotics company node; pull its neighborhood and let the answering step judge whether any retrieved fact covers employees."
+}

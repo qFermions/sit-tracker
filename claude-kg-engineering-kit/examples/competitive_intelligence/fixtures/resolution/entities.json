@@ -1,0 +1,18 @@
+{
+  "clusters": [
+    {
+      "canonical_name": "Northwind Robotics",
+      "entity_type": "company",
+      "members": ["Northwind Robotics", "Northwind Robotics, Inc.", "NRI"],
+      "rationale": "NRI is explicitly described as customer shorthand for Northwind Robotics, and the Inc. form is the same robotics vendor selling Fleet Pro.",
+      "confidence": 0.97
+    }
+  ],
+  "ambiguous": [
+    {
+      "surface_forms": ["Project Helios"],
+      "reason": "The source says the initiative could belong to either Northwind Robotics or Aurora Dynamics, with conflicting supplier reports; ownership is left unresolved."
+    }
+  ],
+  "notes": "Northwind Logistics is deliberately NOT merged with Northwind Robotics: the shared 'Northwind' token is string similarity only, and the descriptions identify an Ohio trucking broker explicitly unrelated to the robotics vendor."
+}

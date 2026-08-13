@@ -1,0 +1,13 @@
+{
+  "entities": ["Fleet Pro", "Atlas", "offline mode"],
+  "predicates": [
+    "removed_capability",
+    "has_capability",
+    "added_capability",
+    "competes_with",
+    "capability_valued_by_customers",
+    "requires_cloud_connection"
+  ],
+  "max_hops": 2,
+  "reasoning": "Capability facts connect the two products and the offline mode capability node, including how customers value it and the products' competitive relationship."
+}

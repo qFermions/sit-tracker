@@ -1,0 +1,38 @@
+{
+  "d1_pricing_update": [
+    { "surface": "Northwind Robotics, Inc.", "type": "company" },
+    { "surface": "Fleet Pro", "type": "product" }
+  ],
+  "d2_release_notes": [
+    { "surface": "Northwind Robotics", "type": "company" },
+    { "surface": "Fleet Pro", "type": "product" },
+    { "surface": "offline mode", "type": "other" }
+  ],
+  "d3_earnings_call": [
+    { "surface": "Northwind Robotics", "type": "company" },
+    { "surface": "Dana Reyes", "type": "person" },
+    { "surface": "Fleet Pro", "type": "product" }
+  ],
+  "d4_aurora_press": [
+    { "surface": "Aurora Dynamics", "type": "company" },
+    { "surface": "Atlas", "type": "product" },
+    { "surface": "Mei Tanaka", "type": "person" },
+    { "surface": "Northwind Robotics", "type": "company" },
+    { "surface": "Fleet Pro", "type": "product" },
+    { "surface": "offline mode", "type": "other" }
+  ],
+  "d5_industry_note": [
+    { "surface": "NRI", "type": "company" },
+    { "surface": "Northwind Robotics", "type": "company" },
+    { "surface": "Northwind Logistics", "type": "company" },
+    { "surface": "Project Helios", "type": "other" },
+    { "surface": "Aurora Dynamics", "type": "company" }
+  ],
+  "d6_analyst_note": [
+    { "surface": "Meridian Research", "type": "company" },
+    { "surface": "Aurora Dynamics", "type": "company" },
+    { "surface": "Northwind Robotics", "type": "company" },
+    { "surface": "Fleet Pro", "type": "product" },
+    { "surface": "offline mode", "type": "other" }
+  ]
+}

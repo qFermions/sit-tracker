@@ -1,0 +1,257 @@
+{
+  "$defs": {
+    "CandidateFact": {
+      "additionalProperties": false,
+      "description": "A candidate (subject, predicate, object) fact with provenance.\n\nExactly one of ``object_entity`` / ``object_value`` should be set; the\npipeline validates this deterministically after extraction.",
+      "properties": {
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        },
+        "predicate": {
+          "title": "Predicate",
+          "type": "string"
+        },
+        "object_entity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Object Entity"
+        },
+        "object_value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ScalarValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "qualifiers": {
+          "items": {
+            "$ref": "#/$defs/Qualifier"
+          },
+          "title": "Qualifiers",
+          "type": "array"
+        },
+        "time_context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Time Context"
+        },
+        "uncertainty": {
+          "default": "stated",
+          "enum": [
+            "stated",
+            "implied",
+            "uncertain"
+          ],
+          "title": "Uncertainty",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "span": {
+          "$ref": "#/$defs/SourceSpan"
+        }
+      },
+      "required": [
+        "subject",
+        "predicate",
+        "span"
+      ],
+      "title": "CandidateFact",
+      "type": "object"
+    },
+    "EntityMention": {
+      "additionalProperties": false,
+      "properties": {
+        "surface_form": {
+          "title": "Surface Form",
+          "type": "string"
+        },
+        "entity_type": {
+          "enum": [
+            "company",
+            "product",
+            "person",
+            "location",
+            "metric",
+            "event",
+            "other"
+          ],
+          "title": "Entity Type",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/SourceSpan"
+        }
+      },
+      "required": [
+        "surface_form",
+        "entity_type",
+        "description",
+        "span"
+      ],
+      "title": "EntityMention",
+      "type": "object"
+    },
+    "Qualifier": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Qualifier",
+      "type": "object"
+    },
+    "ScalarValue": {
+      "additionalProperties": false,
+      "description": "A typed scalar object for facts like prices and margins.\n\n``text`` is always the verbatim surface form; ``value``/``unit`` are\nfilled only when the source states them, never invented.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "money",
+            "percent",
+            "number",
+            "date",
+            "text"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "ScalarValue",
+      "type": "object"
+    },
+    "SourceSpan": {
+      "additionalProperties": false,
+      "description": "A citation locator: which document, and the verbatim supporting quote.\n\n``quote`` must appear (whitespace-normalized) in the source document; the\nprovenance module verifies this deterministically.",
+      "properties": {
+        "doc_id": {
+          "title": "Doc Id",
+          "type": "string"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "doc_id",
+        "quote"
+      ],
+      "title": "SourceSpan",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "doc_id": {
+      "title": "Doc Id",
+      "type": "string"
+    },
+    "mentions": {
+      "items": {
+        "$ref": "#/$defs/EntityMention"
+      },
+      "title": "Mentions",
+      "type": "array"
+    },
+    "facts": {
+      "items": {
+        "$ref": "#/$defs/CandidateFact"
+      },
+      "title": "Facts",
+      "type": "array"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    }
+  },
+  "required": [
+    "doc_id"
+  ],
+  "title": "ExtractionResult",
+  "type": "object"
+}

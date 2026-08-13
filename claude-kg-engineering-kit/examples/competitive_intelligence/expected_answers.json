@@ -1,0 +1,18 @@
+{
+  "_comment": "Buyer-readable expected outputs for the demo. The machine-checked version of this file is evals/gold_queries.json; q1 is graded by its synthesis citations (multi-document trace), not keywords.",
+  "q1": {
+    "expected_shape": "An evidence-cited synthesis concluding the Fleet Pro increase is margin-driven but competitively vulnerable: price rose while offline mode was removed, Atlas undercuts it at $59 and keeps the capability that 4 in 10 Fleet Pro customers call important or critical, and Aurora's estimated 55% margin suggests it can hold its price. Every claim must cite edge ids that trace to at least four of the six documents.",
+    "expected_min_distinct_source_docs": 4
+  },
+  "q2": {
+    "expected_answer": "Atlas is priced at $59 per month per site.",
+    "expected_citations_from_docs": ["d4_aurora_press"]
+  },
+  "q3": {
+    "expected_answer": "Insufficient evidence — the corpus never states headcount, so the kit must refuse rather than answer from model memory."
+  },
+  "q4": {
+    "expected_answer": "Fleet Pro rose from $49 to $79/month effective July 1, 2026, driven (per the CFO) by cloud infrastructure costs pressuring margins; the new price is $20/month above Aurora's competing Atlas at $59/month per site.",
+    "expected_citations_from_docs": ["d1_pricing_update", "d3_earnings_call", "d4_aurora_press"]
+  }
+}

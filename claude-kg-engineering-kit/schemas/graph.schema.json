@@ -1,0 +1,398 @@
+{
+  "$defs": {
+    "AmbiguousGroup": {
+      "additionalProperties": false,
+      "description": "Surface forms that could not be safely merged or separated.",
+      "properties": {
+        "surface_forms": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Surface Forms",
+          "type": "array"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "surface_forms",
+        "reason"
+      ],
+      "title": "AmbiguousGroup",
+      "type": "object"
+    },
+    "Attribute": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Attribute",
+      "type": "object"
+    },
+    "Edge": {
+      "additionalProperties": false,
+      "properties": {
+        "edge_id": {
+          "title": "Edge Id",
+          "type": "string"
+        },
+        "subject_id": {
+          "title": "Subject Id",
+          "type": "string"
+        },
+        "predicate": {
+          "title": "Predicate",
+          "type": "string"
+        },
+        "object_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Object Id"
+        },
+        "object_value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ScalarValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "qualifiers": {
+          "items": {
+            "$ref": "#/$defs/Qualifier"
+          },
+          "title": "Qualifiers",
+          "type": "array"
+        },
+        "time_context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Time Context"
+        },
+        "uncertainty": {
+          "default": "stated",
+          "enum": [
+            "stated",
+            "implied",
+            "uncertain"
+          ],
+          "title": "Uncertainty",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "status": {
+          "default": "asserted",
+          "enum": [
+            "asserted",
+            "superseded",
+            "retracted"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/SourceSpan"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "edge_id",
+        "subject_id",
+        "predicate"
+      ],
+      "title": "Edge",
+      "type": "object"
+    },
+    "Node": {
+      "additionalProperties": false,
+      "properties": {
+        "node_id": {
+          "title": "Node Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "entity_type": {
+          "enum": [
+            "company",
+            "product",
+            "person",
+            "location",
+            "metric",
+            "event",
+            "other"
+          ],
+          "title": "Entity Type",
+          "type": "string"
+        },
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "attributes": {
+          "items": {
+            "$ref": "#/$defs/Attribute"
+          },
+          "title": "Attributes",
+          "type": "array"
+        },
+        "provenance": {
+          "items": {
+            "$ref": "#/$defs/SourceSpan"
+          },
+          "title": "Provenance",
+          "type": "array"
+        }
+      },
+      "required": [
+        "node_id",
+        "name",
+        "entity_type"
+      ],
+      "title": "Node",
+      "type": "object"
+    },
+    "Qualifier": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Qualifier",
+      "type": "object"
+    },
+    "ScalarValue": {
+      "additionalProperties": false,
+      "description": "A typed scalar object for facts like prices and margins.\n\n``text`` is always the verbatim surface form; ``value``/``unit`` are\nfilled only when the source states them, never invented.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "money",
+            "percent",
+            "number",
+            "date",
+            "text"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "ScalarValue",
+      "type": "object"
+    },
+    "SourceRegistryEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "doc_id": {
+          "title": "Doc Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "char_count": {
+          "title": "Char Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "doc_id",
+        "title",
+        "sha256",
+        "char_count"
+      ],
+      "title": "SourceRegistryEntry",
+      "type": "object"
+    },
+    "SourceSpan": {
+      "additionalProperties": false,
+      "description": "A citation locator: which document, and the verbatim supporting quote.\n\n``quote`` must appear (whitespace-normalized) in the source document; the\nprovenance module verifies this deterministically.",
+      "properties": {
+        "doc_id": {
+          "title": "Doc Id",
+          "type": "string"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "doc_id",
+        "quote"
+      ],
+      "title": "SourceSpan",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Created At"
+    },
+    "updated_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updated At"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/Node"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/Edge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/SourceRegistryEntry"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "ambiguous": {
+      "items": {
+        "$ref": "#/$defs/AmbiguousGroup"
+      },
+      "title": "Ambiguous",
+      "type": "array"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    }
+  },
+  "title": "KnowledgeGraph",
+  "type": "object"
+}

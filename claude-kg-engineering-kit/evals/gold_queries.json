@@ -1,0 +1,19 @@
+[
+  {
+    "question_id": "q2",
+    "question": "What does Aurora Dynamics charge for the Atlas platform?",
+    "required_keywords": ["$59"],
+    "min_distinct_docs": 1
+  },
+  {
+    "question_id": "q3",
+    "question": "How many employees does Northwind Robotics have?",
+    "expect_insufficient": true
+  },
+  {
+    "question_id": "q4",
+    "question": "Why did Northwind Robotics raise the price of Fleet Pro, and how does the new price compare with Aurora Dynamics' Atlas?",
+    "required_keywords": ["$79", "$59", "cloud"],
+    "min_distinct_docs": 3
+  }
+]

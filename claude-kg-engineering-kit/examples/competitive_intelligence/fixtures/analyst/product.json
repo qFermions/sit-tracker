@@ -1,0 +1,19 @@
+{
+  "role": "product",
+  "question": "What product capability facts are recorded in the graph: capabilities added, removed, or retained, which products compete, and any evidence about how customers value those capabilities?",
+  "findings": [
+    {
+      "claim": "Fleet Pro version 8.0 removes offline mode and now requires a continuous cloud connection; it also adds a route-optimization dashboard.",
+      "edge_ids": ["e003", "e004", "e005"]
+    },
+    {
+      "claim": "Aurora's Atlas retains offline mode in all tiers and is positioned directly against Fleet Pro.",
+      "edge_ids": ["e011", "e014"]
+    },
+    {
+      "claim": "4 in 10 surveyed Fleet Pro customers rate offline mode as important or critical to their operations (Meridian Research operator survey).",
+      "edge_ids": ["e019"]
+    }
+  ],
+  "insufficient_evidence": false
+}

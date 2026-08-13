@@ -1,0 +1,98 @@
+{
+  "$defs": {
+    "MetricResult": {
+      "additionalProperties": false,
+      "properties": {
+        "precision": {
+          "title": "Precision",
+          "type": "number"
+        },
+        "recall": {
+          "title": "Recall",
+          "type": "number"
+        },
+        "f1": {
+          "title": "F1",
+          "type": "number"
+        },
+        "true_positives": {
+          "title": "True Positives",
+          "type": "integer"
+        },
+        "false_positives": {
+          "title": "False Positives",
+          "type": "integer"
+        },
+        "false_negatives": {
+          "title": "False Negatives",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "precision",
+        "recall",
+        "f1",
+        "true_positives",
+        "false_positives",
+        "false_negatives"
+      ],
+      "title": "MetricResult",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "timestamp": {
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "suite": {
+      "title": "Suite",
+      "type": "string"
+    },
+    "engine": {
+      "title": "Engine",
+      "type": "string"
+    },
+    "prompt_versions": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Prompt Versions",
+      "type": "object"
+    },
+    "metrics": {
+      "additionalProperties": {
+        "$ref": "#/$defs/MetricResult"
+      },
+      "title": "Metrics",
+      "type": "object"
+    },
+    "scalar_metrics": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "Scalar Metrics",
+      "type": "object"
+    },
+    "details": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Details",
+      "type": "array"
+    }
+  },
+  "required": [
+    "run_id",
+    "timestamp",
+    "suite",
+    "engine"
+  ],
+  "title": "EvalRunRecord",
+  "type": "object"
+}

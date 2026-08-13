@@ -1,0 +1,19 @@
+{
+  "role": "financial",
+  "question": "What financial facts are recorded in the graph: margins, cost pressures, and any stated links between costs and pricing decisions?",
+  "findings": [
+    {
+      "claim": "Northwind Robotics' gross margin declined to 41 percent in Q2 2026, from 48 percent a year earlier.",
+      "edge_ids": ["e007"]
+    },
+    {
+      "claim": "Cloud infrastructure costs are pressuring Northwind's margins, consistent with its stated all-cloud strategy.",
+      "edge_ids": ["e008", "e015"]
+    },
+    {
+      "claim": "Meridian Research estimates Aurora Dynamics' gross margin at 55 percent, helped by an edge-first architecture that avoids most cloud infrastructure costs (third-party estimate, not company-reported).",
+      "edge_ids": ["e017", "e018"]
+    }
+  ],
+  "insufficient_evidence": false
+}

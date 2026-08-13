@@ -1,0 +1,6 @@
+{
+  "entities": ["Fleet Pro", "Atlas"],
+  "predicates": ["changed_price", "priced_at", "price_change_driven_by", "offers_product"],
+  "max_hops": 2,
+  "reasoning": "Pricing facts hang off the two product nodes; offers_product links each product to its vendor so prices are attributable."
+}

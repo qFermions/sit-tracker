@@ -1,0 +1,77 @@
+{
+  "doc_id": "d5_industry_note",
+  "mentions": [
+    {
+      "surface_form": "NRI",
+      "entity_type": "company",
+      "description": "Customer shorthand for Northwind Robotics, the robotics vendor",
+      "span": {
+        "doc_id": "d5_industry_note",
+        "quote": "NRI — as Northwind Robotics is known to long-time customers"
+      }
+    },
+    {
+      "surface_form": "Northwind Robotics",
+      "entity_type": "company",
+      "description": "Robotics vendor pursuing an all-cloud strategy for fleet management",
+      "span": {
+        "doc_id": "d5_industry_note",
+        "quote": "as Northwind Robotics is known to long-time customers"
+      }
+    },
+    {
+      "surface_form": "Northwind Logistics",
+      "entity_type": "company",
+      "description": "Ohio-based trucking broker, explicitly unrelated to the robotics vendor",
+      "span": {
+        "doc_id": "d5_industry_note",
+        "quote": "Northwind Logistics, the Ohio-based trucking broker unrelated to the robotics vendor"
+      }
+    },
+    {
+      "surface_form": "Project Helios",
+      "entity_type": "other",
+      "description": "Unannounced initiative; ownership unclear between Northwind Robotics and Aurora Dynamics",
+      "span": {
+        "doc_id": "d5_industry_note",
+        "quote": "an unannounced initiative that could belong to either Northwind Robotics or Aurora Dynamics"
+      }
+    },
+    {
+      "surface_form": "Aurora Dynamics",
+      "entity_type": "company",
+      "description": "Possible owner of Project Helios per conflicting supplier reports",
+      "span": {
+        "doc_id": "d5_industry_note",
+        "quote": "could belong to either Northwind Robotics or Aurora Dynamics"
+      }
+    }
+  ],
+  "facts": [
+    {
+      "subject": "NRI",
+      "predicate": "pursues_strategy",
+      "object_value": {
+        "kind": "text",
+        "text": "all-cloud strategy"
+      },
+      "span": {
+        "doc_id": "d5_industry_note",
+        "quote": "has bet its margins on an all-cloud strategy for fleet management"
+      }
+    },
+    {
+      "subject": "Northwind Logistics",
+      "predicate": "reported_metric",
+      "object_value": {
+        "kind": "text",
+        "text": "record freight volumes"
+      },
+      "time_context": "this quarter",
+      "span": {
+        "doc_id": "d5_industry_note",
+        "quote": "reported record freight volumes this quarter"
+      }
+    }
+  ]
+}

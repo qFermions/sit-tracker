@@ -1,0 +1,6 @@
+{
+  "entities": ["Atlas"],
+  "predicates": ["priced_at"],
+  "max_hops": 1,
+  "reasoning": "A simple price lookup: the priced_at edges on the Atlas product node answer it directly."
+}
