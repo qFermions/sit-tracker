@@ -52,7 +52,25 @@ and zero new gamification. Design decisions + evidence:
   offline reload from SW→responsive sweep 360/390/844×390/768, zero console
   errors after adding the missing favicon link); file:// double-click
   self-tests 447/447 in-DOM. Real phone hardware still untested (unchanged
-  limitation). Fresh-context review: see section below.
+  limitation).
+- **Fresh-context adversarial review (2026-08-18, ~140k tokens, 35 tool calls):**
+  2 BLOCKING + 6 NON-BLOCKING findings against a broad VERIFIED-PASS list
+  (migration attacked live with a seeded v2 envelope; auto-save probed for
+  duplicates/loss; certification greps; CORE purity re-proven; export hygiene;
+  a11y sweep). Both blockers fixed with regression protection:
+  (1) the orb settle animation was dead CSS — the static rule fired during
+  prep too; fixed with `body.running:not(.settling)`, verified live
+  (prep → orbBreathe, running → none/0.55), gate added to the test runner;
+  (2) the Learn lights card attributed a visions instruction to Thai Forest
+  that the ledger marks UNVERIFIED — attribution removed. Top non-blocking
+  fixes: dull/pleasant/striving cards re-grounded to ledger-verified points
+  (ledger expanded where the scout had verified more than the ledger recorded),
+  "steadiest sits" question renamed "highest-contact sits" to match its metric,
+  dead "source text" badge now applied to the Source library with an
+  unaltered-companion-files note, MN 118 card source line now names the
+  simile suttas. Accepted-as-recorded: byte headroom ~2 KB (ADR-0003 explains),
+  CSV column order (header-driven, documented). After fixes: node suite
+  447/447 + all runner gates; browser pass re-run 34/34; orb phase check PASS.
 
 ## Current practice position
 

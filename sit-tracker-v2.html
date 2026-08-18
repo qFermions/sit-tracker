@@ -200,7 +200,7 @@ section[role="tabpanel"].active{animation:tabIn var(--dur-2) var(--ease-out)}
    itself: the practice object is the breath at the nostrils, not the screen
    (design note §during-a-sit; ADR of record in docs/design). */
 body.settling .orb{animation:orbBreathe 8s ease-in-out infinite}
-body.running .orb{opacity:.55;animation:none}
+body.running:not(.settling) .orb{opacity:.55;animation:none}
 body.timer-paused .orb{opacity:.5;animation:none}
 @keyframes orbBreathe{0%,100%{transform:scale(.94);opacity:.75}50%{transform:scale(1.05);opacity:1}}
 .arc{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
@@ -477,8 +477,8 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0">Source library</h3>
-    <p class="dim">The two reference documents live beside this app. Summaries above come from them; nothing here is required for daily practice.</p>
+    <h3 style="margin-top:0">Source library <span class="badge">source text</span></h3>
+    <p class="dim">These documents live beside the app and are shown unaltered (the "source text" label applies to the app's own companion files, displayed byte-for-byte). Nothing here is required for daily practice.</p>
     <div class="row">
       <button id="btn-doc-sources">Read the source ledger</button>
       <button id="btn-doc-manual">Read the practice manual</button>
@@ -1125,7 +1125,7 @@ const CORE = (function () {
     { id: "settling", q: "Is my settling time changing?" },
     { id: "object", q: "Which focus point am I actually using?" },
     { id: "subtle", q: "How often has the breath become subtle lately?" },
-    { id: "steadynotes", q: "What did I write after my steadiest sits?" }
+    { id: "steadynotes", q: "What did I write after my highest-contact sits?" }
   ];
   function answerQuestion(id, sessions) {
     if (id === "scattered") return insightScatteredPrecursors(sessions);
@@ -2032,7 +2032,7 @@ const CORE = (function () {
   const PRACTICE_SOURCE_MAP = [
     {
       id: "mn118", title: "What MN 118 itself says", badge: "traditional claim",
-      source: "Ānāpānasati Sutta (MN 118), tr. Ṭhānissaro Bhikkhu · Bhikkhu Sujato",
+      source: "Ānāpānasati Sutta (MN 118), tr. Ṭhānissaro Bhikkhu · Bhikkhu Sujato; similes AN 5.28 / DN 2 (tr. Ṭhānissaro)",
       body: "Sixteen steps of breath-mindfulness — knowing long and short breaths, then training with rapture, pleasure, and mind — and no spot on the body is named. The nostril-area anchor is a later specification (the Vibhaṅga's gloss of parimukhaṁ, carried by the commentaries); translators render parimukhaṁ as 'to the fore' or 'in front', and the reading is contested. One canonical step trains sensitivity to the entire body, and the canon's jhāna similes describe rapture and pleasure filling the whole body."
     },
     {
@@ -2064,7 +2064,7 @@ const CORE = (function () {
     },
     {
       id: "dull", q: "Sleepy or dull", badge: "practice guidance",
-      source: "Brasington · Thai Forest", body: "Brasington: sit upright and alert — too much comfort invites drowsiness. The Thai Forest method: breathe in a way that energizes, longer and deeper for a while, since the breath there may be adjusted. A dull sit recorded honestly is still a sit."
+      source: "Brasington", body: "Brasington's verified advice here is posture: sit upright and alert, not too comfortable. Beyond that, the sources verified for this app say little that is specific about dullness — so nothing more is attributed. A dull sit recorded honestly is still a sit, and recurring dullness is worth raising with a teacher."
     },
     {
       id: "forcing", q: "Forcing or micromanaging the breath", badge: "practice guidance",
@@ -2080,15 +2080,15 @@ const CORE = (function () {
     },
     {
       id: "pleasant", q: "A pleasant feeling appeared", badge: "practice guidance",
-      source: "MN 118 · the three systems", body: "MN 118 itself trains sensitivity to rapture and pleasure, so this is expected territory, and the schools use it differently: Pa-Auk — notice it, stay with the breath; pleasure is examined later as a jhāna factor. Brasington — this is the pivot of his method: attention moves to the pleasantness itself. Ajaan Lee — let it spread with the breath through the body. Afterwards, record what you noticed; the app files it as your report and nothing more."
+      source: "MN 118 · the three systems", body: "MN 118 itself trains sensitivity to rapture and pleasure, so this is expected territory, and the schools use it differently: Pa-Auk — the breath stays the object; pleasure is not switched to, and the jhāna factors are discerned only after absorption. Brasington — this is the pivot of his method: attention moves to the pleasantness itself. Ajaan Lee — let it spread with the breath through the body. Afterwards, record what you noticed; the app files it as your report and nothing more."
     },
     {
       id: "lights", q: "A light or image appeared", badge: "practice guidance",
-      source: "Pa-Auk · Brasington · Thai Forest", body: "The traditions genuinely differ here. Pa-Auk: ignore early, unstable lights and stay with the breath; only a stable sign is eventually taken up, under a teacher. Brasington: ignore lights entirely — in his method they are never the object. Thai Forest: treat visions as side-phenomena and return to the breath. None of them treats a light as an attainment. Record it neutrally in the Journal; discuss repeated or destabilizing experiences with a qualified teacher."
+      source: "Pa-Auk · Brasington", body: "The traditions genuinely differ here. Pa-Auk: ignore early, unstable lights and stay with the breath; only a stable sign is eventually taken up, under a teacher. Brasington: ignore lights entirely — in his method they are never the object. Neither treats a light as an attainment. Record it neutrally in the Journal; discuss repeated or destabilizing experiences with a qualified teacher."
     },
     {
       id: "striving", q: "Striving and expecting", badge: "practice guidance",
-      source: "Brasington · Pa-Auk · Ajaan Lee", body: "Brasington: wanting it harder blocks the very pleasantness his method settles into. Pa-Auk: patience is the repeated watchword — especially around the subtle breath. Ajaan Lee: convert striving into curiosity about how the breath feels. The record you keep in this app is for honesty, not achievement — there is nothing here to win."
+      source: "Brasington · Pa-Auk · Ajaan Lee", body: "Brasington: the pleasantness his method settles into grows by itself — trying harder blocks it. Pa-Auk: patience is the repeated watchword, especially around the subtle breath. Ajaan Lee: the method itself gives effort a job — evaluating whether the breath is comfortable. The record you keep in this app is for honesty, not achievement — there is nothing here to win."
     }
   ];
 

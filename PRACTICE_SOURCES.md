@@ -57,7 +57,9 @@ No machine translation of Burmese was used anywhere.
   turns subtle, wait patiently at the spot — it is enough to know one is still
   breathing; nimitta terminology (parikamma / uggaha / paṭibhāga); early
   unstable nimittas are ignored, a stable counterpart sign eventually becomes
-  the absorption object leading to jhāna under a teacher.
+  the absorption object leading to jhāna under a teacher; pleasant feeling is
+  not switched to as an object — the jhāna factors (incl. pīti/sukha) are
+  discerned after absorption is developed; patience is the repeated watchword.
 - **Caution:** Pa-Auk "jhāna" = deep fixed absorption on the counterpart
   nimitta (Visuddhimagga standard) — a different referent from Brasington's
   use of the same word. The reputed "I am not dead" reflection was UNVERIFIED
@@ -78,10 +80,12 @@ No machine translation of Burmese was used anywhere.
   signs of access concentration include background-wispy thoughts and a very
   subtle breath (it may seem to stop); then attention deliberately shifts from
   the breath to a pleasant (preferably physical) sensation, staying with its
-  pleasantness until it grows into first jhāna; stray lights/colors are to be
-  ignored — even his "diffuse white light" nimitta is a road-sign, never the
-  object; he openly states his jhānas are lighter than Visuddhimagga
-  absorption and argues the sutta jhānas are the practical referent.
+  pleasantness until it grows into first jhāna — the growth happens by itself,
+  and trying harder blocks it; stray lights/colors are to be ignored — even
+  his "diffuse white light" nimitta is a road-sign, never the object; upright,
+  alert, not-too-comfortable posture against sloth-and-torpor; he openly
+  states his jhānas are lighter than Visuddhimagga absorption and argues the
+  sutta jhānas are the practical referent.
 - **Caution:** his sleepiness advice beyond alert-upright posture was
   UNVERIFIED and is not attributed in the app.
 
@@ -93,9 +97,10 @@ No machine translation of Burmese was used anywhere.
   https://www.dhammatalks.org/books/InnerStrength/Section0014.html ·
   archive copy at accesstoinsight.org/lib/thai/lee/inmind.html.
 - **Accessed:** 2026-08-18 (via search index).
-- **Informs:** source map card 4; troubleshooting (wandering via breath
-  evaluation; stilled breath allowed, never manufactured); jhāna module
-  (whole-body character).
+- **Informs:** source map card 4; troubleshooting (wandering and striving via
+  breath evaluation — the method channels effort into evaluating the breath's
+  comfort; pleasant feeling spread with the breath; stilled breath allowed,
+  never manufactured); jhāna module (whole-body character).
 - **Key verified points:** Method 2 — long opening breaths; observe comfort
   and *adjust the breath until comfortable* (opposite of Pa-Auk's rule, though
   never forced); the nose tip is only one of several optional resting spots

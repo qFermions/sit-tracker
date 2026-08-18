@@ -14,6 +14,11 @@ const CEILING = 344064;
 const bytes = Buffer.byteLength(src, "utf8");
 console.log(`payload: ${bytes} bytes (ceiling ${CEILING}, headroom ${CEILING - bytes})`);
 if (bytes > CEILING) { console.error(`✗ payload exceeds the ADR-0003 ceiling`); process.exit(1); }
+// Orb decision gate (design note §during-a-sit, found dead by review): the static
+// rule must not defeat the settle animation while both classes are set in prep.
+if (!src.includes("body.running:not(.settling) .orb")) {
+  console.error("✗ orb rule regressed: static-during-sit must exclude the settling phase"); process.exit(1);
+}
 // SW version gate: installed clients only pick up an HTML change when SW_VERSION moves
 // with it, so the app version and the SW cache version must always match.
 import { dirname, join } from "node:path";
