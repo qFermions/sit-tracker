@@ -1,12 +1,13 @@
 /* Sit Tracker service worker — versioned cache-first offline support.
    Bump SW_VERSION whenever sit-tracker-v2.html changes so clients pick up the update. */
-const SW_VERSION = "v4.3.0";
+const SW_VERSION = "v4.4.0";
 const CACHE = "sit-tracker-" + SW_VERSION;
 const ASSETS = [
   "./sit-tracker-v2.html",
   "./manifest.json",
   "./abhinna-practice-manual.md",
   "./abhinna-6-roadmap.md",
+  "./PRACTICE_SOURCES.md",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",

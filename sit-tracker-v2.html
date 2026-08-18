@@ -7,6 +7,7 @@
 <title>Sit Tracker — ဈာန်</title>
 <meta name="theme-color" content="#0a0e15">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -195,7 +196,11 @@ section[role="tabpanel"].active{animation:tabIn var(--dur-2) var(--ease-out)}
 /* timer stage: orb + arc (the sit itself stays quiet — no new motion here) */
 .timer-stage{position:relative;width:min(320px,74vw);height:min(320px,74vw);margin:0 auto;display:flex;align-items:center;justify-content:center}
 .orb{position:absolute;inset:8%;border-radius:50%;background:radial-gradient(circle at 42% 36%, rgba(142,195,234,.18), rgba(85,103,158,.11) 45%, rgba(10,14,21,0) 72%);filter:blur(2px);transform:scale(.97)}
-body.running .orb{animation:orbBreathe 8s ease-in-out infinite}
+/* The orb settles WITH you during the countdown, then holds still for the sit
+   itself: the practice object is the breath at the nostrils, not the screen
+   (design note §during-a-sit; ADR of record in docs/design). */
+body.settling .orb{animation:orbBreathe 8s ease-in-out infinite}
+body.running .orb{opacity:.55;animation:none}
 body.timer-paused .orb{opacity:.5;animation:none}
 @keyframes orbBreathe{0%,100%{transform:scale(.94);opacity:.75}50%{transform:scale(1.05);opacity:1}}
 .arc{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
@@ -354,10 +359,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     </details>
   </div>
 
-  <div class="card hide-zen instructions">
-    <strong style="color:var(--fg)">How to practice</strong> <span class="badge">practice guidance</span><br>
-    Sit comfortably. Notice the breath where it touches near the nostrils. Count each in-and-out cycle from one to eight, then restart. When attention wanders, return without commentary. If the breath becomes faint, wait rather than forcing it.
-  </div>
+  <div class="card hide-zen instructions" id="practice-instructions"></div>
 </section>
 
 <!-- ============ JOURNAL (after-sit log + write + history) ============ -->
@@ -415,16 +417,17 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     <p class="dim">The deeper material lives here, separate from everyday practice. Labels tell you what kind of statement you are reading:</p>
     <p>
       <span class="badge">practice guidance</span> how to practice ·
-      <span class="badge gold">traditional claim</span> what the classical texts assert ·
+      <span class="badge gold">traditional claim</span> what texts and teachers assert ·
       <span class="badge">scientific finding</span> what studies have measured ·
+      <span class="badge">source text</span> unaltered documents ·
       <span class="badge">personal record</span> what you yourself reported
     </p>
     <p class="dim" style="margin-bottom:0">The app records observations. The texts make the claims. The cushion settles the question.</p>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0">The practice, step by step <span class="badge">practice guidance</span></h3>
-    <p class="dim">Everything below is the same instruction the Today screen already gives you — spelled out.</p>
+    <h3 style="margin-top:0">Start here — your current practice <span class="badge">practice guidance</span></h3>
+    <p class="dim">Everything below is the same instruction the Today screen already gives you — spelled out. What this trains: keeping attention with one chosen sensation, noticing when it leaves, and returning — the groundwork every tradition below builds on. Nothing is forced: not the breath, not stillness, not results.</p>
     <details>
       <summary>The daily sit script</summary>
       <ol class="dim" style="line-height:1.7">
@@ -441,12 +444,12 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <summary>Tuning energy on every sit</summary>
       <p class="dim">The canon's master dial (SN 51.20): energy <strong>not too slack, not too tense; not constricted inward</strong> (drifting toward dullness), <strong>not scattered outward</strong> (drifting toward distraction). Check it once when you sit down and once mid-sit.</p>
     </details>
-    <details>
-      <summary>If a light or image appears</summary>
-      <p class="dim"><span class="badge">practice guidance</span> The instruction from every source is the same: <strong>ignore it and stay with the breath.</strong> Chasing it, staring at it, or getting excited are the classic ways it dissolves. Record what you noticed afterwards in the Journal — the app stores it as a neutral observation.</p>
-      <p class="dim"><span class="badge gold">traditional claim</span> The texts describe such lights maturing gradually and eventually merging with the breath; they treat this as a long, teacher-guided stage, usually under retreat conditions.</p>
-    </details>
+    <p class="faint" style="margin-bottom:0">If a light appears, if the breath fades, if a pleasant feeling arises — see Troubleshooting below: the traditions answer differently, and the differences are kept.</p>
   </div>
+
+  <div id="learn-sources"></div>
+  <div id="learn-jhana"></div>
+  <div id="learn-troubleshoot"></div>
 
   <div id="map-container"></div>
 
@@ -477,10 +480,11 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     <h3 style="margin-top:0">Source library</h3>
     <p class="dim">The two reference documents live beside this app. Summaries above come from them; nothing here is required for daily practice.</p>
     <div class="row">
+      <button id="btn-doc-sources">Read the source ledger</button>
       <button id="btn-doc-manual">Read the practice manual</button>
       <button id="btn-doc-roadmap">Read the roadmap</button>
     </div>
-    <p class="faint" style="margin-top:8px">Primary texts referenced: Visuddhimagga (Ñāṇamoli trans.) · Pa-Auk Sayadaw, “Knowing and Seeing” · SN 51.20 · MN 118 · DN 2 — links inside the documents.</p>
+    <p class="faint" style="margin-top:8px">The source ledger (PRACTICE_SOURCES.md) records every teacher and text behind the cards above — URLs, access dates, and how each was verified. Also referenced: Visuddhimagga (Ñāṇamoli trans.) · SN 51.20 · MN 118 · AN 5.28 · DN 2.</p>
   </div>
 </section>
 
@@ -612,9 +616,14 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
 /*CORE-START*/
 /* Pure logic. No DOM, no localStorage, no fetch side-effects. Extractable and runnable under Node. */
 const CORE = (function () {
-  const SCHEMA_VERSION = 5;
-  const APP_VERSION = "4.3.0";
+  const SCHEMA_VERSION = 6;
+  const APP_VERSION = "4.4.0";
   const OBJECTS = ["nostril", "upperlip", "abdomen", "wholebody", "custom"];
+  // v6 post-sit self-reports — all nullable; null = not reported, never "no".
+  const CONTACT_WHERE = ["nostril", "upperlip", "both", "elsewhere", "unclear"];
+  const CONTACT_WHERE_LABELS = { nostril: "nostril rim", upperlip: "upper lip", both: "both / the area", elsewhere: "elsewhere", unclear: "hard to say" };
+  const TRI_REPORTS = ["yes", "no", "notsure"];
+  const TRI_LABELS = { yes: "yes", no: "no", notsure: "not sure" };
   const HINDRANCES = ["sensualDesire", "illWill", "sloth", "restlessness", "doubt"];
   const HINDRANCE_LABELS = {
     sensualDesire: "Sensual desire", illWill: "Ill will / aversion", sloth: "Sloth & torpor",
@@ -689,6 +698,8 @@ const CORE = (function () {
       energyBefore: null, energyAfter: null, calmBefore: null, calmAfter: null,
       afterStateReport: null,
       stability: null, breathClarity: null,
+      practiceMode: null,                                  // v6: which saved practice the sit used (null = unknown/none)
+      contactWhere: null, breathSubtle: null, pleasantFeeling: null,   // v6 reflections, self-reported
       hindrances: {}, dominantHindrance: null,
       qualities: [],
       nimitta: null,
@@ -747,6 +758,14 @@ const CORE = (function () {
       const v = s[scale];
       if (v !== null && v !== undefined && (!isNum(v) || v < 1 || v > 5)) errors.push("invalid " + scale + " (1-5)");
     }
+    // v6 reflections: strict enums so no free-text can smuggle in state claims
+    if (s.contactWhere !== null && s.contactWhere !== undefined && CONTACT_WHERE.indexOf(s.contactWhere) < 0) errors.push("invalid contactWhere");
+    for (const f of ["breathSubtle", "pleasantFeeling"]) {
+      const v = s[f];
+      if (v !== null && v !== undefined && TRI_REPORTS.indexOf(v) < 0) errors.push("invalid " + f);
+    }
+    // practiceMode: any non-empty string or null (forward-compatible with future modes)
+    if (s.practiceMode !== null && s.practiceMode !== undefined && (typeof s.practiceMode !== "string" || !s.practiceMode.trim())) errors.push("invalid practiceMode");
     if (s.afterStateReport !== null && s.afterStateReport !== undefined && AFTER_STATES.indexOf(s.afterStateReport) < 0) errors.push("invalid afterStateReport");
     return { ok: errors.length === 0, errors };
   }
@@ -1061,17 +1080,61 @@ const CORE = (function () {
 
   // Canned questions surfaced in Progress; every answer is computed here,
   // instantly and locally. The AI layer may rephrase an answer, never compute one.
+  // v6 practice-training questions — same honesty contract (range, n, strength;
+  // observational wording; denominators are always answered-question counts).
+  function insightObjectUse(sessions) {
+    const withObj = sessions.filter(s => isDateStr(s.date) && s.object).slice().sort(byDateTime);
+    const recent = withObj.slice(-30);
+    if (recent.length < 5) return notEnough("focus-point use", recent.length, "this needs at least 5 sessions with a recorded focus point; there are " + recent.length + ".");
+    const counts = {};
+    for (const s of recent) counts[s.object] = (counts[s.object] || 0) + 1;
+    const parts = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).map(k => (OBJECTS.indexOf(k) >= 0 ? k : "custom") + " in " + counts[k]);
+    return {
+      text: "Of your last " + recent.length + " sessions with a recorded focus point: " + parts.join(", ") + ". Descriptive only — sessions without a recorded focus point are not counted.",
+      range: rangeOf(recent), n: recent.length, metric: "focus-point distribution", strength: strengthLabel(recent.length)
+    };
+  }
+  function insightSubtleBreath(sessions) {
+    const answered = sessions.filter(s => isDateStr(s.date) && TRI_REPORTS.indexOf(s.breathSubtle) >= 0).slice().sort(byDateTime);
+    if (answered.length < 5) return notEnough("subtle-breath reports", answered.length, "this needs at least 5 sessions where the subtle-breath question was answered; there are " + answered.length + ".");
+    const recent = answered.slice(-10);
+    const yes = recent.filter(s => s.breathSubtle === "yes").length;
+    const notsure = recent.filter(s => s.breathSubtle === "notsure").length;
+    return {
+      text: "In " + yes + " of your last " + recent.length + " answered sits you marked the breath as becoming subtle" +
+        (notsure ? " (a further " + notsure + " marked not sure)" : "") + ". A self-reported observation, not a measure of concentration.",
+      range: rangeOf(recent), n: recent.length, metric: "subtle-breath reports", strength: strengthLabel(recent.length)
+    };
+  }
+  function insightSteadyNotes(sessions) {
+    const rated = sessions.filter(s => isDateStr(s.date) && isNum(s.ratio) && (s.notes || "").trim()).slice().sort(byDateTime);
+    if (rated.length < 6) return notEnough("notes after steadier sits", rated.length, "this needs at least 6 sessions with both a contact estimate and a note; there are " + rated.length + ".");
+    const excerpt = t => { const n = t.trim(); return n.length > 70 ? n.slice(0, 67).trimEnd() + "…" : n; };
+    const top = rated.slice().sort((a, b) => b.ratio - a.ratio).slice(0, Math.max(2, Math.floor(rated.length / 3))).sort(byDateTime);
+    const lines = top.slice(-4).map(s => s.date + " (" + Math.round(s.ratio * 100) + "%): “" + excerpt(s.notes) + "”");
+    return {
+      text: "Your own notes after the sits with the highest self-reported contact ratio — " + lines.join(" · ") + " — your words, replayed without interpretation.",
+      range: rangeOf(rated), n: rated.length, metric: "notes after high-ratio sits", strength: strengthLabel(rated.length)
+    };
+  }
+
   const INSIGHT_QUESTIONS = [
     { id: "scattered", q: "What usually precedes my most scattered sessions?" },
     { id: "hindrance", q: "Which hindrance shows up most often?" },
     { id: "timeofday", q: "When in the day do I sit most steadily?" },
-    { id: "settling", q: "Is my settling time changing?" }
+    { id: "settling", q: "Is my settling time changing?" },
+    { id: "object", q: "Which focus point am I actually using?" },
+    { id: "subtle", q: "How often has the breath become subtle lately?" },
+    { id: "steadynotes", q: "What did I write after my steadiest sits?" }
   ];
   function answerQuestion(id, sessions) {
     if (id === "scattered") return insightScatteredPrecursors(sessions);
     if (id === "hindrance") return insightTopHindrance(sessions);
     if (id === "timeofday") return insightTimeOfDay(sessions);
     if (id === "settling") return insightSettlingTrend(sessions);
+    if (id === "object") return insightObjectUse(sessions);
+    if (id === "subtle") return insightSubtleBreath(sessions);
+    if (id === "steadynotes") return insightSteadyNotes(sessions);
     return null;
   }
 
@@ -1146,7 +1209,8 @@ const CORE = (function () {
   const CSV_COLUMNS = ["id", "date", "startTime", "endTime", "plannedMin", "actualMin", "concMin", "ratio",
     "confidence", "settleMin", "longestSteadyMin", "wanderings", "returns", "object", "objectCustom", "posture", "phase",
     "energyBefore", "energyAfter", "calmBefore", "calmAfter", "afterStateReport", "dominantHindrance", "hindrances",
-    "qualities", "nimittaCategory", "entrySource", "teacherReview", "createdAt", "updatedAt", "notes"];
+    "qualities", "nimittaCategory", "practiceMode", "contactWhere", "breathSubtle", "pleasantFeeling",
+    "entrySource", "teacherReview", "createdAt", "updatedAt", "notes"];
 
   function csvEscape(v) {
     if (v === null || v === undefined) return "";
@@ -1200,7 +1264,8 @@ const CORE = (function () {
   // Envelope: {schemaVersion, sessions, settings, map, savedAt}
   // v1 = legacy loose keys (janSits / janGates), v2 = envelope without entrySource/teacherReview/afterStateReport,
   // v3 = + those fields, v4 = + stability/breathClarity + envelope feedback[],
-  // v5 = current (+ timelineSource provenance; pre-v5 timelines were hand-entered).
+  // v5 = + timelineSource provenance (pre-v5 timelines were hand-entered),
+  // v6 = current (+ practiceMode, contactWhere, breathSubtle, pleasantFeeling — all null on older records).
   function migrate(rawEnvelope, legacy, nowIso, todayStr) {
     const notes = [];
     let env = rawEnvelope;
@@ -1244,6 +1309,11 @@ const CORE = (function () {
         if (up.breathClarity === undefined) up.breathClarity = null;
         // v4 → v5: timeline provenance — every pre-v5 timeline was hand-entered
         if (up.timelineSource === undefined) up.timelineSource = (Array.isArray(up.timeline) && up.timeline.length ? "manual" : null);
+        // v5 → v6: practice-mode stamp + reflection self-reports — unreported stays null
+        if (up.practiceMode === undefined) up.practiceMode = null;
+        if (up.contactWhere === undefined) up.contactWhere = null;
+        if (up.breathSubtle === undefined) up.breathSubtle = null;
+        if (up.pleasantFeeling === undefined) up.pleasantFeeling = null;
         up.v = SCHEMA_VERSION;
         return up;
       });
@@ -1808,7 +1878,7 @@ const CORE = (function () {
   // exports, share cards, or the teacher report (tested).
   const GUIDE = [
     ["Start a sit", "Pick a practice card and press Start sit. Pause, finish early, or reset from the same screen — nothing is saved until the sit ends."],
-    ["After the sit", "A short form opens. Everything on it is optional and self-reported: estimated minutes of contact, a few one-tap impressions, a note. The app records what you noticed — it never grades it."],
+    ["After the sit", "The finished sit saves itself. A short form opens to add what you noticed — estimated contact minutes, a few one-tap impressions, a note. All of it optional and self-reported; closing the form loses nothing. The app records what you noticed — it never grades it."],
     ["Your history", "Journal keeps every entry — tap one to view, edit, or share it. Progress shows totals and charts computed only from what you recorded."],
     ["Share a card", "From a session or from Progress, “Share a card” makes an image you save and send yourself. The app posts nothing."],
     ["Teacher report", "Journal → Teacher report prints a plain summary for a human teacher. Pick the range, print to PDF, send it yourself."],
@@ -1908,6 +1978,119 @@ const CORE = (function () {
     }
     return out;
   }
+
+  // ---------- practice modes (the one method being trained; durable data, not code) ----------
+  // Wording paraphrases the sources in PRACTICE_SOURCES.md. The location
+  // instruction follows the commentarial tradition and the modern teachers the
+  // owner trains with (Pa-Auk, Brasington) — MN 118 itself names no spot, and
+  // the Learn tab says so. One real mode by design: continuity over novelty.
+  const PRACTICE_MODES = [{
+    id: "nostril_breath",
+    name: "Nostril breath",
+    object: "nostril",                       // default focus point when starting from this mode
+    objects: ["nostril", "upperlip"],        // focus points that count as practicing this mode
+    status: "current",
+    objectLine: "Feel the natural in-and-out breath where its touch is clearest — nostril rim or upper lip.",
+    instruction: "Stay with the actual breath sensation rather than thoughts about the breath. Let the breath be as it is — never controlled, never held.",
+    prepCue: "Sit erect, settle, and count in-and-out cycles one to eight, restarting, until the mind stays.",
+    returnCue: "When attention wanders, notice it and return — without commentary.",
+    subtleCue: "If the breath becomes faint, do not breathe harder to find it. Wait at the spot; knowing you are still breathing is enough.",
+    sourceIds: ["mn118", "paauk", "brasington"]
+  }];
+  function practiceModeById(id) { return PRACTICE_MODES.find(m => m.id === id) || null; }
+  // The active mode: settings choice if valid, else the one marked current.
+  function currentPracticeMode(settings) {
+    const chosen = practiceModeById(settings && settings.currentPracticeMode);
+    return chosen || PRACTICE_MODES.find(m => m.status === "current") || PRACTICE_MODES[0];
+  }
+  // Which saved practice does a sit with this focus point belong to?
+  // Outside the active mode → null (unknown, never guessed).
+  function practiceModeForSit(object, settings) {
+    const mode = currentPracticeMode(settings);
+    return mode && (mode.objects || [mode.object]).indexOf(object) >= 0 ? mode.id : null;
+  }
+  // Quiet continuity for Today: the owner's own last recorded sit, replayed
+  // without judgement — a date, a duration, and their own words. Nothing else.
+  function continuityLine(sessions, todayStr) {
+    const real = realSessions(sessions).filter(s => isDateStr(s.date) && isNum(s.actualMin));
+    if (!real.length) return null;
+    const last = real.slice().sort(byDateTime)[real.length - 1];
+    const note = (last.notes || "").trim();
+    let daysAgo = null;
+    if (last.date <= todayStr) { let d = 0, c = last.date; while (c < todayStr && d < 3650) { c = addDays(c, 1); d++; } daysAgo = d; }
+    return {
+      date: last.date, minutes: Math.round(last.actualMin), daysAgo,
+      noteExcerpt: note ? (note.length > 90 ? note.slice(0, 87).trimEnd() + "…" : note) : null
+    };
+  }
+
+  // ---------- Learn: source map, jhāna module, troubleshooting ----------
+  // Structured so tests can hold every learner-visible claim to a source and a
+  // label. Bodies are attributed summaries (not verbatim quotes — see the
+  // verification note in PRACTICE_SOURCES.md). Four traditions, kept distinct
+  // on purpose: related practices, not one doctrine.
+  const PRACTICE_SOURCE_MAP = [
+    {
+      id: "mn118", title: "What MN 118 itself says", badge: "traditional claim",
+      source: "Ānāpānasati Sutta (MN 118), tr. Ṭhānissaro Bhikkhu · Bhikkhu Sujato",
+      body: "Sixteen steps of breath-mindfulness — knowing long and short breaths, then training with rapture, pleasure, and mind — and no spot on the body is named. The nostril-area anchor is a later specification (the Vibhaṅga's gloss of parimukhaṁ, carried by the commentaries); translators render parimukhaṁ as 'to the fore' or 'in front', and the reading is contested. One canonical step trains sensitivity to the entire body, and the canon's jhāna similes describe rapture and pleasure filling the whole body."
+    },
+    {
+      id: "paauk", title: "The Pa-Auk approach", badge: "traditional claim",
+      source: "Pa-Auk Tawya Sayadaw — Mindfulness of Breathing; Knowing and Seeing",
+      body: "A modern Burmese system built on the Visuddhimagga. Attention rests at the touching point around the nostrils and upper lip, wherever contact is clearest. The breath is never controlled and never followed in or out (the gatekeeper watches the gate, not the traveller); counting settles the mind at the start. When the breath turns subtle: wait at the spot — knowing you are still breathing is enough. A light (nimitta) that eventually stabilizes is later taken as the object toward deep absorption — a stage this tradition itself places under a teacher."
+    },
+    {
+      id: "brasington", title: "Leigh Brasington's approach", badge: "traditional claim",
+      source: "Leigh Brasington — leighb.com instructions; Right Concentration (2015)",
+      body: "Breath at the nostrils builds access concentration: notice wandering, return, until thoughts thin to wisps — and the breath may turn very subtle, which he reads as a sign of access, not a problem. Attention then deliberately shifts to a pleasant bodily sensation, staying with its pleasantness until it grows into what he calls first jhāna. Lights are ignored in this method — never the object — and he openly describes these states as lighter than the commentarial tradition's absorption."
+    },
+    {
+      id: "thaiforest", title: "The Thai Forest approach (Ajaan Lee / Ṭhānissaro)", badge: "traditional claim",
+      source: "Ajaan Lee — Keeping the Breath in Mind, Method 2, tr. Ṭhānissaro Bhikkhu; With Each & Every Breath",
+      body: "The nose tip is only one of several possible resting spots (mid-head, palate, throat, breastbone, navel). The breath may be gently adjusted until comfortable — never forced — which is a real difference from the natural-breath-only schools. Awareness then widens until breath energy is felt through the whole body; jhāna here keeps the body present throughout, echoing the canon's pervasion similes rather than narrowing to a point or a light."
+    }
+  ];
+  const JHANA_MODULE = {
+    title: "Jhāna, honestly", badge: "traditional claim",
+    source: "MN 118 · AN 5.28 similes · the three teaching systems above",
+    body: "In the early texts jhāna is deep meditative collectedness, described through factors such as directed attention, rapture, pleasure, and unification — and through similes of the whole body suffused with ease. The teachers here disagree in good faith about its depth and doorway: Pa-Auk trains toward full absorption on a stabilized nimitta; Brasington teaches lighter sutta-style states entered through pleasantness; the Thai Forest way keeps the whole body in awareness throughout. Same word, different referents — worth knowing before comparing notes across books.",
+    boundary: "The app records your practice. It does not decide what meditative state you attained — nothing you enter here is ever treated as evidence of jhāna."
+  };
+  const TROUBLESHOOTING = [
+    {
+      id: "wandering", q: "The mind keeps wandering", badge: "practice guidance",
+      source: "all four sources", body: "Noticing the wandering and returning IS the practice at this stage — every source treats it as training, not failure. Pa-Auk: return calmly; count until the mind settles. Brasington: return without self-recrimination; thoughts thinning to wisps is the progress marker. Ajaan Lee: give the mind more to do — get interested in how the breath actually feels."
+    },
+    {
+      id: "dull", q: "Sleepy or dull", badge: "practice guidance",
+      source: "Brasington · Thai Forest", body: "Brasington: sit upright and alert — too much comfort invites drowsiness. The Thai Forest method: breathe in a way that energizes, longer and deeper for a while, since the breath there may be adjusted. A dull sit recorded honestly is still a sit."
+    },
+    {
+      id: "forcing", q: "Forcing or micromanaging the breath", badge: "practice guidance",
+      source: "Pa-Auk · Brasington · Ajaan Lee", body: "Here the schools split, so know whose rule you are practicing. Pa-Auk and Brasington: never control the breath — observe it as it is. Ajaan Lee: gentle adjustment toward comfort is allowed, never force. The current practice in this app follows the natural-breath rule; if you notice yourself steering the breath, relax and let it breathe itself."
+    },
+    {
+      id: "faint", q: "The breath became faint or seems to stop", badge: "practice guidance",
+      source: "Pa-Auk · Brasington · Thai Forest", body: "A real divergence, preserved: Pa-Auk — stay waiting at the touching point, don't hunt for the breath; knowing you are still breathing is enough. Brasington — a very subtle breath is a sign of access concentration; his method then moves attention to a pleasant sensation anyway. Thai Forest — let the breath grow completely still if it wants to; stillness is allowed, never manufactured. No source teaches holding or restricting the breath — never do that, and if you notice suppression, relax and let it breathe."
+    },
+    {
+      id: "tense", q: "Attention itself got tight or effortful", badge: "practice guidance",
+      source: "SN 51.20 (the canonical energy dial)", body: "The canon's master instruction: energy not too slack, not too tense; not constricted inward (sliding toward dullness), not scattered outward (sliding toward distraction). Check the dial once when you sit down and once mid-sit, then let it be."
+    },
+    {
+      id: "pleasant", q: "A pleasant feeling appeared", badge: "practice guidance",
+      source: "MN 118 · the three systems", body: "MN 118 itself trains sensitivity to rapture and pleasure, so this is expected territory, and the schools use it differently: Pa-Auk — notice it, stay with the breath; pleasure is examined later as a jhāna factor. Brasington — this is the pivot of his method: attention moves to the pleasantness itself. Ajaan Lee — let it spread with the breath through the body. Afterwards, record what you noticed; the app files it as your report and nothing more."
+    },
+    {
+      id: "lights", q: "A light or image appeared", badge: "practice guidance",
+      source: "Pa-Auk · Brasington · Thai Forest", body: "The traditions genuinely differ here. Pa-Auk: ignore early, unstable lights and stay with the breath; only a stable sign is eventually taken up, under a teacher. Brasington: ignore lights entirely — in his method they are never the object. Thai Forest: treat visions as side-phenomena and return to the breath. None of them treats a light as an attainment. Record it neutrally in the Journal; discuss repeated or destabilizing experiences with a qualified teacher."
+    },
+    {
+      id: "striving", q: "Striving and expecting", badge: "practice guidance",
+      source: "Brasington · Pa-Auk · Ajaan Lee", body: "Brasington: wanting it harder blocks the very pleasantness his method settles into. Pa-Auk: patience is the repeated watchword — especially around the subtle breath. Ajaan Lee: convert striving into curiosity about how the breath feels. The record you keep in this app is for honesty, not achievement — there is nothing here to win."
+    }
+  ];
 
   // ---------- practice presets (decision friction ↓, no gamification) ----------
   const PRESETS = [
@@ -2128,7 +2311,25 @@ const CORE = (function () {
     // --- canned questions (answered locally; every answer carries range/n/metric/strength)
     t("daysBetween", daysBetween("2026-07-01", "2026-07-10") === 9);
     t("answerQuestion unknown id", answerQuestion("astrology", []) === null);
-    t("questions list has 4 entries", INSIGHT_QUESTIONS.length === 4 && INSIGHT_QUESTIONS.every(q => q.id && q.q.indexOf("?") > 0));
+    t("questions list has 7 entries", INSIGHT_QUESTIONS.length === 7 && INSIGHT_QUESTIONS.every(q => q.id && q.q.indexOf("?") > 0));
+    // v6 questions: focus point, subtle breath, steady-sit notes
+    const objSess = [mk("2026-07-01", { object: "nostril" }), mk("2026-07-02", { object: "nostril" }), mk("2026-07-03", { object: "nostril" }), mk("2026-07-04", { object: "nostril" }), mk("2026-07-05", { object: "abdomen" }), mk("2026-07-06", { object: "abdomen" })];
+    const aObj = answerQuestion("object", objSess);
+    t("object question counts distribution", aObj.text.indexOf("nostril in 4") > 0 && aObj.text.indexOf("abdomen in 2") > 0 && aObj.n === 6);
+    t("object question honest below sample floor", answerQuestion("object", objSess.slice(0, 3)).strength === "insufficient");
+    const subSess = [
+      mk("2026-07-01", { breathSubtle: "yes" }), mk("2026-07-02", { breathSubtle: "no" }), mk("2026-07-03", { breathSubtle: "yes" }),
+      mk("2026-07-04", { breathSubtle: "notsure" }), mk("2026-07-05", { breathSubtle: "yes" }), mk("2026-07-06", {})  // unanswered — excluded
+    ];
+    const aSub = answerQuestion("subtle", subSess);
+    t("subtle question uses answered denominator", aSub.text.indexOf("In 3 of your last 5 answered sits") === 0 && aSub.n === 5);
+    t("subtle question is observational", /self-reported/.test(aSub.text) && !/concentration (improved|increased|deepened)|prov(es|ing)/i.test(aSub.text));
+    t("subtle question honest below sample floor", answerQuestion("subtle", subSess.slice(0, 4)).strength === "insufficient");
+    const noteSess = [10, 20, 30, 40, 80, 90].map((r, i) => mk("2026-07-0" + (i + 1), { concMin: r * 30 / 100, notes: "note ratio " + r }));
+    const aNotes = answerQuestion("steadynotes", noteSess);
+    t("steady-notes replays own words with dates", aNotes.text.indexOf("note ratio 90") > 0 && aNotes.text.indexOf("2026-07-06") > 0);
+    t("steady-notes never interprets", /without interpretation/.test(aNotes.text) && !/because|proves|caused/i.test(aNotes.text));
+    t("steady-notes honest below sample floor", answerQuestion("steadynotes", noteSess.slice(0, 4)).strength === "insufficient");
     for (const q of INSIGHT_QUESTIONS) {
       const a = answerQuestion(q.id, []);
       t("question '" + q.id + "' honest on empty", a && a.strength === "insufficient" && a.text.indexOf("Not enough data") === 0);
@@ -2489,6 +2690,69 @@ const CORE = (function () {
     t("daysSatLast30 counts distinct days", summaryMetrics([mk(TODAY), mk(TODAY), mk(addDays(TODAY, -1)), mk(addDays(TODAY, -40))], TODAY).daysSatLast30 === 2);
     t("daysSatLast30 empty", summaryMetrics([], TODAY).daysSatLast30 === 0);
 
+    // --- schema v6: reflection fields + practice-mode stamp
+    t("v6: new fields default null", good.contactWhere === null && good.breathSubtle === null && good.pleasantFeeling === null && good.practiceMode === null);
+    t("v6: valid reflections accepted", validateSession(normalizeSession({ date: TODAY, actualMin: 30, contactWhere: "upperlip", breathSubtle: "yes", pleasantFeeling: "notsure", practiceMode: "nostril_breath" }, NOW, TODAY)).ok);
+    t("v6: bad contactWhere rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, contactWhere: "third eye" }, NOW, TODAY)).ok);
+    t("v6: bad breathSubtle rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, breathSubtle: "definitely" }, NOW, TODAY)).ok);
+    t("v6: state-claim as reflection value rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, pleasantFeeling: "jhana" }, NOW, TODAY)).ok);
+    t("v6: empty practiceMode rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, practiceMode: "  " }, NOW, TODAY)).ok);
+    t("v6: unknown future practiceMode tolerated", validateSession(normalizeSession({ date: TODAY, actualMin: 30, practiceMode: "future_mode" }, NOW, TODAY)).ok);
+    const v5env = { schemaVersion: 5, sessions: [{ id: "v5s", date: "2026-08-01", actualMin: 30, concMin: 11, stability: 4, timelineSource: null }], settings: {} };
+    const mig6 = migrate(v5env, null, NOW, TODAY);
+    t("v5→v6 reflections become null", mig6.env.sessions[0].contactWhere === null && mig6.env.sessions[0].breathSubtle === null && mig6.env.sessions[0].pleasantFeeling === null);
+    t("v5→v6 practiceMode becomes null (unknown, not guessed)", mig6.env.sessions[0].practiceMode === null);
+    t("v5→v6 bumps version and keeps data", mig6.env.schemaVersion === SCHEMA_VERSION && mig6.env.sessions[0].concMin === 11 && mig6.env.sessions[0].stability === 4);
+    t("v6 csv has the new columns", ["practiceMode", "contactWhere", "breathSubtle", "pleasantFeeling"].every(c => CSV_COLUMNS.indexOf(c) >= 0));
+    const v6rt = parseImport(JSON.stringify({ schemaVersion: SCHEMA_VERSION, sessions: [normalizeSession({ id: "v6rt", date: "2026-08-10", actualMin: 30, practiceMode: "nostril_breath", contactWhere: "nostril", breathSubtle: "yes", pleasantFeeling: "notsure" }, NOW, TODAY)] }), [], NOW);
+    t("v6 fields survive export→import round-trip", v6rt.ok && v6rt.fresh.length === 1 && v6rt.fresh[0].practiceMode === "nostril_breath" && v6rt.fresh[0].contactWhere === "nostril" && v6rt.fresh[0].breathSubtle === "yes" && v6rt.fresh[0].pleasantFeeling === "notsure");
+    t("v6 fields absent on import stay null", parseImport(JSON.stringify({ schemaVersion: 5, sessions: [{ id: "v5imp", date: "2026-08-09", actualMin: 20 }] }), [], NOW).fresh[0].breathSubtle === null);
+
+    // --- practice modes
+    t("modes: exactly one current mode", PRACTICE_MODES.filter(m => m.status === "current").length === 1);
+    t("modes: nostril_breath is current with nostril object", currentPracticeMode({}).id === "nostril_breath" && currentPracticeMode({}).object === "nostril");
+    t("modes: unknown setting falls back to current", currentPracticeMode({ currentPracticeMode: "zen_l7" }).id === "nostril_breath");
+    t("modes: lookup miss is null", practiceModeById("nope") === null);
+    t("modes: every mode has usable cues", PRACTICE_MODES.every(m => m.objectLine.length > 20 && m.instruction.length > 20 && m.returnCue.length > 10 && m.subtleCue.length > 10 && m.sourceIds.length > 0));
+    const modeCorpus = JSON.stringify(PRACTICE_MODES);
+    t("modes: wording never certifies or promises states", !/jh[āa]na|attain|nimitta|access concentration|enlighten|guarantee/i.test(modeCorpus));
+    t("modes: wording never instructs breath-holding", !/hold (the |your )?breath|stop breathing|restrict/i.test(modeCorpus));
+    t("modes: nostril sit belongs to the mode", practiceModeForSit("nostril", {}) === "nostril_breath");
+    t("modes: upper-lip sit belongs to the mode", practiceModeForSit("upperlip", {}) === "nostril_breath");
+    t("modes: abdomen sit is not stamped", practiceModeForSit("abdomen", {}) === null);
+    t("modes: custom sit is not stamped", practiceModeForSit("custom", {}) === null);
+
+    // --- continuity line (Today): replay, never interpretation
+    t("continuity: empty log gives null", continuityLine([], TODAY) === null);
+    const contSess = [
+      mk("2026-07-07", { actualMin: 30, notes: "steady near the end" }),
+      mk("2026-07-08", { actualMin: 25, notes: "x".repeat(120) }),
+      Object.assign(mk(TODAY, { actualMin: 60 }), { _test: true, notes: "[TEST DATA] fake" })
+    ];
+    const cont = continuityLine(contSess, TODAY);
+    t("continuity: uses last real sit, not test data", cont.date === "2026-07-08" && cont.minutes === 25);
+    t("continuity: computes days ago", cont.daysAgo === 1);
+    t("continuity: long notes truncated with ellipsis", cont.noteExcerpt.length <= 90 && cont.noteExcerpt.endsWith("…"));
+    t("continuity: empty note stays null", continuityLine([mk(TODAY, { actualMin: 10, notes: "" })], TODAY).noteExcerpt === null);
+
+    // --- Learn content: sourced, labeled, distinct traditions, no certification
+    const srcMap = PRACTICE_SOURCE_MAP;
+    t("learn: the four traditions, distinct ids", srcMap.map(m => m.id).join(",") === "mn118,paauk,brasington,thaiforest");
+    t("learn: every card carries a source", srcMap.every(m => m.source.length > 12) && TROUBLESHOOTING.every(c => c.source.length > 3) && JHANA_MODULE.source.length > 5);
+    t("learn: every card carries a content label", srcMap.every(m => m.badge) && TROUBLESHOOTING.every(c => c.badge) && !!JHANA_MODULE.badge);
+    t("learn: bodies substantive and distinct", srcMap.every(m => m.body.length > 120) && new Set(srcMap.map(m => m.body)).size === 4);
+    t("learn: mn118 card states what the text does NOT specify", /no spot on the body is named/i.test(srcMap[0].body) && /later specification/i.test(srcMap[0].body));
+    t("learn: tradition signatures kept distinct", /never controlled/.test(srcMap[1].body) && /pleasant/.test(srcMap[2].body) && /adjust/i.test(srcMap[3].body) && /whole body/i.test(srcMap[3].body));
+    const learnCorpus = JSON.stringify(srcMap) + JSON.stringify(JHANA_MODULE) + JSON.stringify(TROUBLESHOOTING);
+    t("learn: never certifies or predicts states", !/(you (have )?reached|you (have )?entered|you are ready for|your concentration level|this was (the )?first jh|your spiritual progress|sessions until)/i.test(learnCorpus));
+    t("learn: jhāna boundary sentence present", /records your practice/.test(JHANA_MODULE.boundary) && /does not decide what meditative state/.test(JHANA_MODULE.boundary));
+    const faintCard = TROUBLESHOOTING.find(c => c.id === "faint");
+    t("learn: subtle-breath divergence preserved per teacher", /Pa-Auk/.test(faintCard.body) && /Brasington/.test(faintCard.body) && /Thai Forest/.test(faintCard.body));
+    t("learn: lights card carries no fake consensus", !/every source|all sources agree|instruction from every/i.test(TROUBLESHOOTING.find(c => c.id === "lights").body));
+    t("learn: never instructs holding or restricting breath", !/hold (the |your )?breath|restrict (the |your )?breath|deliberately stop breathing/i.test(learnCorpus));
+    t("learn: no burmese in new content (owner-supplied only, none supplied)", !/[က-႟]/.test(learnCorpus));
+    t("learn: safety line present on faint breath", /No source teaches holding or restricting the breath/i.test(faintCard.body));
+
     // --- presets
     t("presets: four fixed options", PRESETS.length === 4);
     t("presets: exactly one recommended", PRESETS.filter(p => p.recommended).length === 1);
@@ -2564,6 +2828,9 @@ const CORE = (function () {
     toCSV, sessionFingerprint, parseImport, migrate,
     backupStatus, makeTestSessions, isTestSession, realSessions, makeDemoSessions,
     PRESETS, presetById, onboardingState, formatFeedback, APP_VERSION,
+    CONTACT_WHERE, CONTACT_WHERE_LABELS, TRI_REPORTS, TRI_LABELS,
+    PRACTICE_MODES, practiceModeById, currentPracticeMode, practiceModeForSit, continuityLine,
+    PRACTICE_SOURCE_MAP, JHANA_MODULE, TROUBLESHOOTING,
     parseJournal, validateDraft, draftToSession, parseStartTime, isNegated,
     buildProviderRequest, extractProviderText, parseProviderResponse, PROVIDER_INSTRUCTION,
     providerErrorSummary, MOCK_PROVIDER_RESPONSES,
@@ -2812,6 +3079,14 @@ const TIMER = (function () {
       })
     };
     lastElapsed = 0;
+    // Remember this configuration so the next open starts pre-armed (design note:
+    // configuration is something you do rarely, not per sit).
+    STORE.setSetting("sitConfig", {
+      min: cfg.plannedMin, prepSec: cfg.prepSec,
+      intervalMin: cfg.bellsEverySec ? cfg.bellsEverySec / 60 : 0,
+      finalBell: cfg.finalBell, wantWakeLock: cfg.wantWakeLock,
+      object: cfg.object, objectCustom: cfg.objectCustom
+    });
     persist(true);
     acquireWakeLock();
     loop();
@@ -2890,14 +3165,26 @@ const TIMER = (function () {
       markers: markers.length ? markers : null,
       wanderings: markers.filter(m => m.kind === "wandering").length || null,
       returns: markers.filter(m => m.kind === "returned").length || null,
+      practiceMode: CORE.practiceModeForSit(ctx.object, { currentPracticeMode: STORE.getSetting("currentPracticeMode", null) }),
       entrySource: "timer"
     };
     st = null; STORE.clearTimer();
     UI.setZen(false);
     UI.renderTimer();
-    REVIEW.openFor(pending);
-    UI.announce("Sit complete after " + CORE.fmtClock(actualSec) + ". Review is open.");
-    UI.toast("Sit complete — take 30 seconds to record what happened.");
+    // The completed sit is a fact: save it immediately, then open the review as
+    // an enrichment of the saved entry. Closing the review loses nothing.
+    const saved = STORE.addSession(pending);
+    if (saved.ok) {
+      TODAY.renderStatus(); HISTORY.render(); PROGRESS.render();
+      REVIEW.openAfterSit(saved.session.id);
+      UI.announce("Sit complete after " + CORE.fmtClock(actualSec) + ". The sit is saved; the review is open.");
+      UI.toast("Sit saved — add what you noticed, or just close.");
+    } else {
+      // should not happen for a timer sit; fall back to the unsaved review path
+      REVIEW.openFor(pending);
+      UI.announce("Sit complete after " + CORE.fmtClock(actualSec) + ". Review is open.");
+      UI.toast("Sit complete — take 30 seconds to record what happened.");
+    }
   }
 
   function addMarker(kind) {
@@ -3155,6 +3442,7 @@ const UI = (function () {
     $("#markers-bar").hidden = !running;
     $("#sit-config").style.display = running ? "none" : "";
     document.body.classList.toggle("running", running && st.core.phase === "running");
+    if (!running) document.body.classList.remove("settling");
     document.body.classList.toggle("timer-paused", running && st.core.phase === "paused");
     if (!running) {
       const min = selectedMinutes();
@@ -3186,6 +3474,7 @@ const UI = (function () {
       $("#arc-fill").style.strokeDashoffset = ARC_C * (1 - progress);
     }
     document.body.classList.toggle("running", snap.mode === "running" || snap.mode === "prep");
+    document.body.classList.toggle("settling", snap.mode === "prep");
     document.body.classList.toggle("timer-paused", snap.mode === "paused");
     $("#btn-pause").textContent = snap.mode === "paused" ? "Resume" : "Pause";
   }
@@ -3211,6 +3500,7 @@ const REVIEW = (function () {
   const { $, esc } = UI;
   let pending = null;      // partial session being reviewed (unsaved) or edited
   let editingId = null;
+  let justCompleted = false;   // review opened right after a timer sit (already saved)
 
   // If the sit captured markers and no timeline was entered, pre-fill a
   // suggested timeline (provenance "markers"); any hand edit flips it to "manual".
@@ -3224,6 +3514,7 @@ const REVIEW = (function () {
   function openFor(partial) {
     pending = Object.assign({}, partial);
     editingId = null;
+    justCompleted = false;
     suggestTimeline();
     render();
     UI.showTab("journal");
@@ -3237,13 +3528,19 @@ const REVIEW = (function () {
     if (!s) return;
     pending = JSON.parse(JSON.stringify(s));
     editingId = id;
+    justCompleted = false;
     suggestTimeline();
     render();
     UI.showTab("journal");
     window.scrollTo({ top: 0 });
   }
+  // Right after a timer sit: the entry is already saved; the form only enriches it.
+  function openAfterSit(id) {
+    edit(id);
+    if (editingId === id) { justCompleted = true; render(); }
+  }
   function close() {
-    pending = null; editingId = null;
+    pending = null; editingId = null; justCompleted = false;
     render();
   }
 
@@ -3264,6 +3561,11 @@ const REVIEW = (function () {
   function quickRow(label, field, opts, cur) {
     return '<div class="qrow"><span class="ql">' + label + '</span><span class="row" role="group" aria-label="' + label + '">' +
       opts.map(([v, txt]) => '<button class="chip rv-quick" data-f="' + field + '" data-v="' + v + '" aria-pressed="' + (String(cur) === v ? "true" : "false") + '">' + txt + "</button>").join("") +
+      "</span></div>";
+  }
+  function quickRowStr(label, field, opts, cur) {
+    return '<div class="qrow"><span class="ql">' + label + '</span><span class="row" role="group" aria-label="' + label + '">' +
+      opts.map(([v, txt]) => '<button class="chip rv-quickstr" data-f="' + field + '" data-v="' + v + '" aria-pressed="' + (cur === v ? "true" : "false") + '">' + txt + "</button>").join("") +
       "</span></div>";
   }
   function quickHindranceRow(label, hKey, p) {
@@ -3300,9 +3602,11 @@ const REVIEW = (function () {
 
     box.innerHTML =
       '<div class="card" id="review-card">' +
-      '<div class="row between"><h2 style="margin:0">' + (editingId ? "Edit entry" : "After the sit") + '</h2>' +
-      '<button id="rv-close" class="ghost">Close without saving</button></div>' +
-      '<p class="dim">' + (editingId ? "Editing a saved entry." : "Takes about 30 seconds. The one number that matters: your honest estimate of minutes in genuine contact with the breath — self-reported, no wrong answer.") + "</p>" +
+      '<div class="row between"><h2 style="margin:0">' + (editingId && !justCompleted ? "Edit entry" : "After the sit") + '</h2>' +
+      '<button id="rv-close" class="ghost">' + (justCompleted ? "Close — sit is saved" : "Close without saving") + '</button></div>' +
+      '<p class="dim">' + (justCompleted
+        ? "The sit itself is already saved. Takes about 30 seconds: your honest estimate of minutes in genuine contact with the breath — self-reported, no wrong answer. Close anytime; nothing is lost."
+        : (editingId ? "Editing a saved entry." : "Takes about 30 seconds. The one number that matters: your honest estimate of minutes in genuine contact with the breath — self-reported, no wrong answer.")) + "</p>" +
       '<div class="grid3">' +
       '<div class="field"><label for="rv-date">Date</label><input type="date" id="rv-date" value="' + esc(p.date || "") + '"></div>' +
       '<div class="field"><label for="rv-start">Start time</label><input type="time" id="rv-start" value="' + esc(p.startTime || "") + '"></div>' +
@@ -3325,6 +3629,9 @@ const REVIEW = (function () {
       '<h3>Quick impressions <span class="badge">optional · one tap each</span></h3>' +
       quickRow("Attention", "stability", [["1", "mostly scattered"], ["3", "came and went"], ["5", "mostly steady"]], p.stability) +
       quickRow("Breath clarity", "breathClarity", [["1", "faint"], ["3", "variable"], ["5", "clear"]], p.breathClarity) +
+      quickRowStr("Breath clearest at", "contactWhere", CORE.CONTACT_WHERE.map(w => [w, CORE.CONTACT_WHERE_LABELS[w]]), p.contactWhere) +
+      quickRowStr("Breath became subtle", "breathSubtle", CORE.TRI_REPORTS.map(v => [v, CORE.TRI_LABELS[v]]), p.breathSubtle) +
+      quickRowStr("Pleasant bodily feeling", "pleasantFeeling", CORE.TRI_REPORTS.map(v => [v, CORE.TRI_LABELS[v]]), p.pleasantFeeling) +
       quickHindranceRow("Restlessness", "restlessness", p) +
       quickHindranceRow("Drowsiness", "sloth", p) +
       '<div class="field" style="margin-top:10px"><label for="rv-quicknote">What did you notice? (optional)</label>' +
@@ -3477,6 +3784,12 @@ const REVIEW = (function () {
       pending[f] = pending[f] === v ? null : v;   // tap again to clear
       render();
     });
+    UI.$$(".rv-quickstr").forEach(b => b.onclick = () => {
+      readForm();
+      const f = b.dataset.f, v = b.dataset.v;
+      pending[f] = pending[f] === v ? null : v;   // tap again to clear (back to not-reported)
+      render();
+    });
     UI.$$(".rv-quickh").forEach(b => b.onclick = () => {
       readForm();
       const h = b.dataset.h, v = b.dataset.v;
@@ -3547,7 +3860,7 @@ const REVIEW = (function () {
       if (editingId) res = STORE.updateSession(editingId, candidate);
       else res = STORE.addSession(candidate);
       if (!res.ok) { $("#rv-errors").textContent = res.errors.join("; "); return; }
-      UI.toast(editingId ? "Session updated." : "Session saved.");
+      UI.toast(justCompleted ? "Observations added." : (editingId ? "Session updated." : "Session saved."));
       close();
       HISTORY.render();
       PROGRESS.render();
@@ -3565,7 +3878,7 @@ const REVIEW = (function () {
     };
   }
 
-  return { openFor, openManual, edit, render, close, hasPending: () => !!pending };
+  return { openFor, openManual, edit, openAfterSit, render, close, hasPending: () => !!pending };
 })();
 
 /* ================= HISTORY ================= */
@@ -3638,6 +3951,10 @@ const HISTORY = (function () {
     push("Longest steady stretch", s.longestSteadyMin !== null ? s.longestSteadyMin + " min" : null);
     push("Wandering / returns", (s.wanderings ?? "—") + " / " + (s.returns ?? "—"));
     push("Object / posture / phase", [s.object, s.posture, s.phase].map(x => x || "—").join(" · "));
+    push("Practice", s.practiceMode ? esc((CORE.practiceModeById(s.practiceMode) || { name: s.practiceMode }).name) : null);
+    push("Breath clearest at", s.contactWhere ? esc(CORE.CONTACT_WHERE_LABELS[s.contactWhere] || s.contactWhere) : null);
+    push("Breath became subtle", s.breathSubtle ? esc(CORE.TRI_LABELS[s.breathSubtle] || s.breathSubtle) : null);
+    push("Pleasant bodily feeling", s.pleasantFeeling ? esc(CORE.TRI_LABELS[s.pleasantFeeling] || s.pleasantFeeling) : null);
     push("Hindrances", Object.keys(s.hindrances || {}).filter(k => s.hindrances[k]).map(k => esc(CORE.HINDRANCE_LABELS[k]) + " (" + s.hindrances[k] + (s.dominantHindrance === k ? ", dominant" : "") + ")").join("<br>") || null);
     push("Qualities", (s.qualities || []).map(q => esc(CORE.QUALITY_LABELS[q])).join(", ") || null);
     push("Light / image report", s.nimitta ? esc(CORE.NIMITTA_LABELS[s.nimitta.category] || s.nimitta.category) : null);
@@ -4486,7 +4803,24 @@ const TODAY = (function () {
     let pills = '<span class="pill"' + (guideSeen ? "" : ' style="border-color:var(--accent)"') + '><a href="#" id="guide-hint">how to use →</a></span>';
     if (navigator.serviceWorker && navigator.serviceWorker.controller) pills += '<span class="pill"><span class="dot"></span>works offline</span>';
     if (!isStandalone() && location.protocol.indexOf("http") === 0) pills += '<span class="pill"><a href="#" id="install-hint">install on phone →</a></span>';
-    el.innerHTML = '<div class="today-stats">' + tiles + "</div>" + '<div class="status-strip">' + pills + "</div>";
+    // current-practice strip: what is being trained + the owner's own last words.
+    // Identity and continuity only — no levels, no scores, no predictions.
+    const mode = CORE.currentPracticeMode({ currentPracticeMode: STORE.getSetting("currentPracticeMode", null) });
+    const cont = CORE.continuityLine(STORE.sessions(), today);
+    const savedCfg = STORE.getSetting("sitConfig", null);
+    const cfgLine = savedCfg && CORE.isNum(savedCfg.min)
+      ? savedCfg.min + "′ · bells as saved — press Start to begin"
+      : "press Start to begin";
+    let practiceCard =
+      '<div class="card" style="margin-bottom:var(--sp-3)">' +
+      '<span class="label-caps">Current practice</span>' +
+      '<div class="row between" style="align-items:baseline"><strong style="font-size:var(--fs-lg)">' + esc(mode.name) + '</strong>' +
+      '<span class="dim" style="font-size:var(--fs-sm)">' + esc(cfgLine) + "</span></div>" +
+      '<p class="dim" style="margin:4px 0 0">' + esc(mode.objectLine) + " " + esc(mode.returnCue) + "</p>" +
+      (cont ? '<p class="faint" style="margin:6px 0 0">Last sit: ' + esc(cont.date) + " · " + cont.minutes + "′" +
+        (cont.noteExcerpt ? ' — <em>“' + esc(cont.noteExcerpt) + '”</em>' : "") + "</p>" : "") +
+      "</div>";
+    el.innerHTML = practiceCard + '<div class="today-stats">' + tiles + "</div>" + '<div class="status-strip">' + pills + "</div>";
     const gh = $("#guide-hint");
     if (gh) gh.onclick = (e) => {
       e.preventDefault();
@@ -4887,12 +5221,74 @@ const APP = (function () {
   };
   UI.$("#btn-doc-manual").onclick = () => openDoc("abhinna-practice-manual.md", "အဘိညာဉ် ၆ ပါး — Full Practice Manual");
   UI.$("#btn-doc-roadmap").onclick = () => openDoc("abhinna-6-roadmap.md", "အဘိညာဉ် ၆ ပါး — Roadmap");
+  UI.$("#btn-doc-sources").onclick = () => openDoc("PRACTICE_SOURCES.md", "Practice sources — the ledger");
+
+  // Learn: source map, jhāna module, troubleshooting — rendered from CORE so the
+  // same structures the tests audit are what the reader sees
+  (function renderLearn() {
+    const esc = UI.esc;
+    const srcLine = s => '<p class="faint" style="margin:6px 0 0">Source: ' + esc(s) + "</p>";
+    const cardDetails = list => list.map(c =>
+      "<details><summary>" + esc(c.title || c.q) + "</summary><p class='dim'>" + esc(c.body) + "</p>" + srcLine(c.source) + "</details>").join("");
+    UI.$("#learn-sources").innerHTML =
+      '<div class="card"><h3 style="margin-top:0">The source map <span class="badge gold">traditional claim</span></h3>' +
+      '<p class="dim">Four ways the same breath is taught. Related practices — all watch the breath, all return from wandering — but not one doctrine. Each card names whose instruction it is; the full citations live in the source ledger below.</p>' +
+      cardDetails(CORE.PRACTICE_SOURCE_MAP) + "</div>";
+    const j = CORE.JHANA_MODULE;
+    UI.$("#learn-jhana").innerHTML =
+      '<div class="card"><h3 style="margin-top:0">' + esc(j.title) + ' <span class="badge gold">' + esc(j.badge) + '</span></h3>' +
+      "<p class='dim'>" + esc(j.body) + "</p>" +
+      '<div class="notice" style="margin-top:8px"><strong>' + esc(j.boundary) + "</strong></div>" + srcLine(j.source) + "</div>";
+    UI.$("#learn-troubleshoot").innerHTML =
+      '<div class="card"><h3 style="margin-top:0">Troubleshooting <span class="badge">practice guidance</span></h3>' +
+      '<p class="dim">Short answers for common snags. Where the traditions disagree, the disagreement is shown, not averaged.</p>' +
+      cardDetails(CORE.TROUBLESHOOTING) + "</div>";
+  })();
 
   // today tab wiring
   UI.renderPresets();
   UI.$("#sit-object").addEventListener("change", () => {
     UI.$("#sit-object-custom").hidden = UI.$("#sit-object").value !== "custom";
   });
+
+  // practice-instruction card renders from the current mode (source-tracked
+  // wording — see PRACTICE_SOURCES.md; Learn carries the full source map)
+  (function renderPracticeInstructions() {
+    const mode = CORE.currentPracticeMode({ currentPracticeMode: STORE.getSetting("currentPracticeMode", null) });
+    UI.$("#practice-instructions").innerHTML =
+      '<strong style="color:var(--fg)">How to practice — ' + UI.esc(mode.name) + '</strong> <span class="badge">practice guidance</span><br>' +
+      UI.esc(mode.prepCue) + " " + UI.esc(mode.objectLine) + " " + UI.esc(mode.instruction) + " " +
+      UI.esc(mode.returnCue) + " " + UI.esc(mode.subtleCue) +
+      '<br><span class="faint">Sources and how the traditions differ: the Learn tab.</span>';
+  })();
+
+  // restore the last-used sit configuration so opening the app arms the usual
+  // practice with zero setup (saved on every Start; see the design note)
+  (function applySavedSitConfig() {
+    const c = STORE.getSetting("sitConfig", null);
+    if (!c || typeof c !== "object") return;
+    const $ = UI.$;
+    $("#opt-prep").checked = CORE.isNum(c.prepSec) && c.prepSec > 0;
+    if (CORE.isNum(c.prepSec) && [10, 20, 30, 60].indexOf(c.prepSec) >= 0) $("#opt-prep-sec").value = String(c.prepSec);
+    $("#opt-interval").checked = CORE.isNum(c.intervalMin) && c.intervalMin > 0;
+    if (CORE.isNum(c.intervalMin) && [5, 10, 15].indexOf(c.intervalMin) >= 0) $("#opt-interval-min").value = String(c.intervalMin);
+    $("#opt-final").checked = c.finalBell !== false;
+    $("#opt-wakelock").checked = c.wantWakeLock !== false;
+    if (c.object && CORE.OBJECTS.indexOf(c.object) >= 0) {
+      $("#sit-object").value = c.object;
+      $("#sit-object-custom").hidden = c.object !== "custom";
+      if (c.object === "custom" && c.objectCustom) $("#sit-object-custom").value = c.objectCustom;
+    }
+    if (CORE.isNum(c.min)) {
+      const p = CORE.PRESETS.find(x => x.min === c.min);
+      if (p) UI.selectPreset(p.id);
+      else {
+        UI.selectPreset("custom");
+        const ci = $("#custom-min");
+        if (ci) { ci.value = String(c.min); UI.renderTimer(); }
+      }
+    }
+  })();
   UI.$("#btn-start").onclick = () => TIMER.start();
   UI.$("#btn-pause").onclick = () => {
     const snap = TIMER.snapshot();

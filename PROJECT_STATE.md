@@ -1,7 +1,58 @@
 # PROJECT_STATE — Sit Tracker
 
 *A future session should be able to resume from this file alone.*
-*Last verified: 2026-07-11, visual-identity run (every claim below was exercised on that date unless dated otherwise).*
+*Last verified: 2026-08-18, practice-training run (sections below dated as verified).*
+
+## Practice-training run (v4.4.0, 2026-08-18) — the app becomes a training cockpit
+
+Mission: evolve timer+journal into a quiet cockpit for the owner's actual
+practice (natural breath at the nostril rim / upper lip), with sourced teaching
+and zero new gamification. Design decisions + evidence:
+`docs/design/practice-training-design.md`; source ledger: `PRACTICE_SOURCES.md`
+(ships beside the app, SW-precached, readable from Learn).
+
+- **Practice modes (schema v6).** `CORE.PRACTICE_MODES` — one real mode,
+  `nostril_breath` (objects nostril+upperlip), with sourced instruction/cues.
+  Sessions gain nullable `practiceMode`, `contactWhere`, `breathSubtle`,
+  `pleasantFeeling`; v5→v6 migration nulls them on old records; CSV + import/
+  export round-trip tested. DATA_CONTRACT.md updated (authoritative).
+- **One-tap start.** `settings.sitConfig` remembers the full sit configuration
+  on every Start and re-arms it at boot; Today leads with a Current-practice
+  card (mode, saved config, object line, last sit + owner's own last note
+  excerpt — continuity, no levels/scores/predictions).
+- **The sit is a fact.** Timer completions save immediately (minimal honest
+  record incl. practiceMode stamp); the review opens as enrichment of the
+  saved entry ("Close — sit is saved"); reset still discards. Three new one-tap
+  reflection rows (breath clearest at / became subtle / pleasant feeling —
+  yes/no/not sure), all nullable.
+- **Orb demoted during the sit** (design §12, option D): settle animation only
+  during the prep countdown (`body.settling`); static dim disc while running —
+  the practice object is the breath, not the screen.
+- **Learn rebuilt.** Source map = four distinct tradition cards (what MN 118
+  itself says — and does NOT specify; Pa-Auk; Brasington; Thai Forest), a
+  "Jhāna, honestly" module with the boundary sentence ("The app records your
+  practice. It does not decide what meditative state you attained"), and 8
+  troubleshooting cards that preserve genuine tradition disagreements (subtle
+  breath, lights) instead of averaging them. The old "every source says the
+  same" lights card was removed as fake consensus. All content lives in CORE
+  structures (`PRACTICE_SOURCE_MAP`, `JHANA_MODULE`, `TROUBLESHOOTING`) so
+  tests hold every card to a source + label. In-app content is attributed
+  summary, not quotation (direct fetches were proxy-blocked; verification
+  method recorded in PRACTICE_SOURCES.md).
+- **Progress.** Three new deterministic questions (focus-point distribution,
+  subtle-breath frequency with answered-question denominators, own-notes
+  replay after highest-ratio sits) under the same range/n/strength honesty
+  contract.
+- **Gates (all exercised 2026-08-18):** node suite **447/447** (394→447);
+  payload 341,771 bytes under the ADR-0003 ceiling 344,064 (ceiling + SW/app
+  version match now machine-enforced by tests/run-core-tests.mjs); SW v4.4.0
+  precaches PRACTICE_SOURCES.md; browser pass 34/34 in Playwright-driven
+  Chromium at 390×844 (hero→skip→one-tap start→markers→pause→finish→auto-save
+  →reflections→reload re-arm→Learn incl. in-app ledger→Progress honesty→
+  offline reload from SW→responsive sweep 360/390/844×390/768, zero console
+  errors after adding the missing favicon link); file:// double-click
+  self-tests 447/447 in-DOM. Real phone hardware still untested (unchanged
+  limitation). Fresh-context review: see section below.
 
 ## Current practice position
 
@@ -14,12 +65,12 @@
 
 ## App version & schema
 
-- App **v4.2.0** (`CORE.APP_VERSION`), SW cache **v4.2.0** (`sw.js` SW_VERSION — ⚠ bump on
-  every HTML edit or installed clients keep the stale shell; the update notice was verified
-  live again this run: notice → reload → old cache deleted, data intact).
-- **Data schema v5** in envelope `jhanaTracker.v2` — see DATA_CONTRACT.md (authoritative).
-  v5 adds session `timelineSource` ('markers'|'manual'|null); the tested v4→v5 migration
-  marks every pre-v5 timeline 'manual'. Migration chain v1→v5 tested end to end.
+- App **v4.4.0** (`CORE.APP_VERSION`), SW cache **v4.4.0** (`sw.js` SW_VERSION — ⚠ bump on
+  every HTML edit or installed clients keep the stale shell; the version match is now
+  machine-enforced by the test runner).
+- **Data schema v6** in envelope `jhanaTracker.v2` — see DATA_CONTRACT.md (authoritative).
+  v6 adds nullable session `practiceMode`/`contactWhere`/`breathSubtle`/`pleasantFeeling`;
+  migration chain v1→v6 tested end to end (older records get nulls, never guesses).
 - `nimitta` and `aiConfidence` stored names remain permanent.
 
 ## Product shape (v4.0.0 family-beta + 2026-07-10 depth run)

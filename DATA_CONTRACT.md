@@ -1,4 +1,4 @@
-# DATA_CONTRACT — persisted data, schema v5
+# DATA_CONTRACT — persisted data, schema v6
 
 This is the authoritative contract for any future client (iOS wrapper, sync tool).
 Stored names are permanent; changes require a `schemaVersion` bump + migration + tests.
@@ -6,7 +6,7 @@ Stored names are permanent; changes require a `schemaVersion` bump + migration +
 ## Envelope — localStorage key `jhanaTracker.v2`
 | Field | Type | Semantics |
 |---|---|---|
-| schemaVersion | int (5) | current schema; see version history below |
+| schemaVersion | int (6) | current schema; see version history below |
 | sessions | Session[] | append-mostly log; union-merge by `id` on import |
 | feedback | {at, entry, text}[] | local-only family-beta feedback reports (v4) |
 | settings | object | scalar preferences, last-write-wins (see Settings) |
@@ -35,6 +35,10 @@ Stored names are permanent; changes require a `schemaVersion` bump + migration +
 | energyBefore/After, calmBefore/After | int 1–5 | yes | self-rated scales |
 | stability | int 1–5 | yes | quick-log: attention steadiness (1 scattered … 5 steady), self-rated |
 | breathClarity | int 1–5 | yes | quick-log: breath clarity (1 faint … 5 clear), self-rated |
+| practiceMode | string\|null | yes | (v6) id of the saved practice the sit belongs to (`nostril_breath`); any non-empty string valid for forward compatibility; null = unknown/none — never guessed |
+| contactWhere | 'nostril'\|'upperlip'\|'both'\|'elsewhere'\|'unclear' | yes | (v6) where the breath was clearest, self-reported |
+| breathSubtle | 'yes'\|'no'\|'notsure' | yes | (v6) whether the breath became subtle/faint at some point, self-reported; null = question not answered (≠ 'no') |
+| pleasantFeeling | 'yes'\|'no'\|'notsure' | yes | (v6) whether a pleasant bodily feeling was noticed, self-reported; a neutral report, never evidence of any state |
 | afterStateReport | 'calmer'\|'no change'\|'more agitated'\|'tired'\|'energized' | yes | directional self-report (journal-derived) |
 | hindrances | {key→'mild'\|'moderate'\|'strong'} | no (may be {}) | keys: sensualDesire, illWill, sloth, restlessness, doubt |
 | dominantHindrance | key\|null | yes | at most one |
@@ -62,7 +66,9 @@ local only; **stripped from every JSON export** — a restored backup requires r
 `bellVolume` 0–100 · `lastExportAt` 'YYYY-MM-DD'|null · `backupSnoozeUntil` 'YYYY-MM-DD'|null ·
 `onboarding` {done:bool, step:int} (first-launch introduction state, v4) ·
 `language` 'en'|'my' (default 'en'; Burmese strings are owner-supplied in `CORE.I18N`,
-never machine-translated; the toggle only appears once ≥1 screen is fully translated).
+never machine-translated; the toggle only appears once ≥1 screen is fully translated) ·
+`guideSeen` bool · `currentPracticeMode` string (v6, default 'nostril_breath') ·
+`sitConfig` object|null (v6, last-used sit configuration — see version history).
 
 ## Map
 `{currentLevel: 0–5, levels: [{evidence, teacherNotes, reviewDate}] ×6}` with evidence ∈
@@ -83,8 +89,14 @@ timestamps, never stored.
 - **v4** (2026-07-09 beta run): adds session `stability` + `breathClarity` (null = not
   reported), envelope `feedback[]`, settings `onboarding`. JSON exports exclude synthetic
   entries and the AI key.
-- **v5** (current, 2026-07-10 depth run): adds session `timelineSource` provenance;
+- **v5** (2026-07-10 depth run): adds session `timelineSource` provenance;
   migration marks every pre-v5 timeline `'manual'` (they were all hand-entered), else null.
+- **v6** (current, 2026-08-18 practice-training run): adds session `practiceMode`,
+  `contactWhere`, `breathSubtle`, `pleasantFeeling` — all null on migrated records
+  (missing stays missing). CSV gains the four columns. New scalar settings (no
+  migration needed): `currentPracticeMode` (default `nostril_breath`) and
+  `sitConfig` `{min, prepSec, intervalMin, finalBell, wantWakeLock, object,
+  objectCustom}` — the last-used sit configuration, rewritten on every timer start.
 
 ## Sync contract (two devices, no accounts)
 Transport = the JSON export file (user's own cloud folder). Merge = union by session `id` +

@@ -4,7 +4,22 @@ Every entry cites its evidence (RESEARCH_NOTES.md §n, PROJECT_STATE.md, or a da
 Protected differentiators (never trade away): no account, no paywall, offline, exportable
 data, evidence-honest labels (RESEARCH_NOTES §5).
 
-## Now (done in the 2026-07-11 visual-identity run)
+## Now (done in the 2026-08-18 practice-training run, v4.4.0)
+- Practice-mode system (`nostril_breath`, schema v6) + persistent one-tap sit
+  configuration; timer completions auto-save with the review as enrichment;
+  three nullable one-tap reflection rows (clearest spot / subtle breath /
+  pleasant feeling). Evidence: docs/design/practice-training-design.md.
+- Learn rebuilt around a four-tradition source map (MN 118 as-written, Pa-Auk,
+  Brasington, Thai Forest), a jhāna module with the no-certification boundary,
+  and divergence-preserving troubleshooting; every card sourced + labeled;
+  ledger in PRACTICE_SOURCES.md (SW-precached, readable in-app).
+- Orb static during the running sit (settle animation only in prep) — the
+  screen no longer competes with the breath.
+- Progress: three new deterministic questions under the same honesty contract.
+- ADR-0003 payload ceiling (336 KiB) + SW/app version match, both enforced by
+  the test runner. Suite 394 → 447.
+
+### Earlier (2026-07-11 visual-identity run)
 - Identity system: token layer (brave system-stack type, midnight palette AA-audited,
   glass, three gradients, motion vocabulary), documented in ARCHITECTURE.md.
 - First-open hero; Today signature screen (stat tiles, hero timer, oversized CTA);
