@@ -121,7 +121,7 @@ section[role="tabpanel"].active{display:block;animation:tabIn var(--tr)}
 button,.btn{font:inherit;cursor:pointer;border-radius:var(--r-sm);border:var(--edge);background:var(--surface-elevated);color:var(--label-primary);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);font-weight:600;min-height:44px;transition:transform var(--dur-1) var(--ease-out),border-color var(--tr),background var(--tr),box-shadow var(--tr)}
 button:hover{border-color:var(--separator-strong)}
 button:active{transform:scale(.97)}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button.primary{background:var(--grad-cta);border-color:transparent;color:var(--on-accent);font-weight:700;box-shadow:0 4px 18px rgba(100,151,200,.28)}
 button.primary:hover{box-shadow:0 6px 24px rgba(142,195,234,.4);border-color:transparent}
 button.big{font-size:var(--fs-md);padding:var(--sp-3) var(--sp-6);min-height:56px;border-radius:var(--r)}
@@ -218,7 +218,7 @@ details[open] summary{color:var(--label-primary)}
 .tstat .v{white-space:nowrap}
 .tstat .v .unit{font-size:.48em;font-weight:600;color:var(--label-secondary);margin-left:1px}
 .tstat .l{margin-top:2px}
-.tstat .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tstat .n{overflow-wrap:anywhere}
 .tstat.done{border-color:rgba(99,179,171,.45)}
 .tstat.done .v{color:var(--success)}
 @media(max-width:480px){.today-stats{gap:var(--sp-2)}.tstat{padding:var(--sp-3)}}
@@ -339,7 +339,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
         <circle class="arc-track" cx="120" cy="120" r="112"/>
         <circle class="arc-fill" id="arc-fill" cx="120" cy="120" r="112"/>
       </svg>
-      <div class="timer-big" id="timer-display" role="timer" aria-live="off">30:00</div>
+      <div class="timer-big" id="timer-display" role="timer" aria-label="Time remaining" aria-live="off">30:00</div>
     </div>
     <div class="timer-sub" id="timer-sub">planned 30 min</div>
     <div class="row" style="justify-content:center;margin-top:var(--sp-4)">
@@ -357,7 +357,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
       <button data-marker="agitated">Agitated</button>
       <button data-marker="notable">Notable</button>
     </div>
-    <div class="faint" id="marker-log" class="mt2" aria-live="polite"></div>
+    <div class="faint mt2" id="marker-log" aria-live="polite"></div>
   </div>
 
   <div class="hide-zen" id="sit-config">
@@ -528,7 +528,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
       <button id="btn-export-csv">Export CSV (sessions)</button>
       <label class="btn" style="display:inline-flex;align-items:center">Import JSON… <input type="file" id="import-file" accept=".json,application/json" class="sr-only"></label>
     </div>
-    <p class="faint" id="storage-info" class="mt2"></p>
+    <p class="faint mt2" id="storage-info"></p>
     <div id="storage-health" class="mt2"></div>
   </div>
 
@@ -3448,7 +3448,7 @@ const UI = (function () {
     const stale = $("#custom-row");
     if (stale) stale.remove(); // renderPresets runs repeatedly
     grid.insertAdjacentHTML("afterend",
-      '<div class="row" id="custom-row"' + (presetSel === "custom" ? "" : " hidden") + ' class="mt2">' +
+      '<div class="row mt2" id="custom-row"' + (presetSel === "custom" ? "" : " hidden") + '>' +
       '<label class="row" style="gap:6px">Custom length ' +
       '<input type="number" id="custom-min" min="1" max="480" step="1" inputmode="numeric" aria-label="Custom duration in minutes"> min</label></div>');
     $$(".preset-card", grid).forEach(card => card.onclick = () => {
@@ -3663,7 +3663,7 @@ const REVIEW = (function () {
       "</div>" +
       '<div class="row between"><span class="dim" id="rv-ratio">' + (ratio === null ? "no estimate given yet" : "concentration ratio: " + Math.round(ratio * 100) + "%") + "</span>" +
       '<button id="rv-conc-clear" class="ghost">clear (not reported)</button></div>' +
-      '<div class="row" role="group" aria-label="Estimate confidence" class="mt2"><span class="dim">confidence:</span>' +
+      '<div class="row mt2" role="group" aria-label="Estimate confidence"><span class="dim">confidence:</span>' +
       CORE.CONFIDENCES.map(c => '<button class="chip rv-conf" data-c="' + c + '" aria-pressed="' + (p.confidence === c ? "true" : "false") + '">' + c + "</button>").join("") +
       "</div>" +
 
@@ -4135,7 +4135,7 @@ const HISTORY = (function () {
       '<button class="chip" id="tr-30" aria-pressed="true">Last 30 days</button>' +
       '<button class="chip" id="tr-90" aria-pressed="false">Last 90 days</button>' +
       '<button class="chip" id="tr-custom" aria-pressed="false">Custom…</button></div>' +
-      '<div class="grid3" id="tr-range" hidden class="mt2">' +
+      '<div class="grid3 mt2" id="tr-range" hidden>' +
       FL+'tr-from">From</label><input type="date" id="tr-from" value="' + CORE.addDays(today, -29) + '"></div>' +
       FL+'tr-to">To</label><input type="date" id="tr-to" value="' + today + '"></div></div>' +
       '<label class="check mt2"><input type="checkbox" id="tr-notes" checked> Include the notes column</label>' +

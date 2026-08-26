@@ -35,3 +35,15 @@ if (!scriptBody) { console.error("✗ could not locate the inline <script> block
 try { new Function(scriptBody); }
 catch (e) { console.error("✗ inline script does not parse: " + e.message); process.exit(1); }
 console.log("inline script: parses");
+
+// Duplicate-attribute gate. HTML keeps the FIRST occurrence of an attribute and silently
+// discards later ones, so `class="a" id="x" class="b"` drops class b with no error
+// anywhere. This bit us once when a utility-class rewrite ran over non-adjacent
+// attributes; it must not happen again. Covers static markup and generated strings.
+const dupAttr = [...src.matchAll(/class="[^"]*"[^<>]*class="[^"]*"/g)].map(m => m[0].slice(0, 70));
+if (dupAttr.length) {
+  console.error("\u2717 element(s) carry two class attributes; the second is discarded:");
+  dupAttr.forEach(d => console.error("    " + d));
+  process.exit(1);
+}
+console.log("attributes: no duplicate class attributes");
