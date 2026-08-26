@@ -369,6 +369,33 @@ async function main() {
   await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
   await page.setViewportSize({ width: 390, height: 844 });
 
+  section("FIXED-BAR OCCLUSION");
+  // a fixed bottom bar must not cover content at the end of any screen — and a `padding`
+  // shorthand in a narrow-width media query silently wiped the inset that prevents it
+  for (const w of [320, 390]) {
+    await page.setViewportSize({ width: w, height: 844 });
+    for (const t of ["today", "journal", "progress", "learn", "settings"]) {
+      await page.evaluate(x => { const b = document.querySelector("#tabbtn-" + x); if (b) b.click(); }, t);
+      await page.waitForTimeout(200);
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await page.waitForTimeout(200);
+      const hidden = await page.evaluate(() => {
+        const nav = document.querySelector("nav.tabs");
+        if (!nav || getComputedStyle(nav).position !== "fixed") return [];
+        const n = nav.getBoundingClientRect();
+        const panel = document.querySelector('section[role="tabpanel"].active');
+        if (!panel) return [];
+        return [...new Set([...panel.querySelectorAll("button,a[href],input,select,textarea")]
+          .filter(e => e.checkVisibility && e.checkVisibility())
+          .filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.bottom > n.top + 1 && r.top < n.bottom; })
+          .map(e => e.id || (e.textContent || "").trim().slice(0, 18) || e.tagName))];
+      });
+      gate(`nothing on ${t} is hidden behind the tab bar at ${w}px`, hidden.length === 0, hidden.join(", "));
+    }
+  }
+  await page.evaluate(() => { const b = document.querySelector("#tabbtn-today"); if (b) b.click(); });
+  await page.setViewportSize({ width: 390, height: 844 });
+
   section("MOTION");
 
   const reducedCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });

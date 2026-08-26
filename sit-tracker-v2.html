@@ -106,7 +106,7 @@ nav.tabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;backgrou
 nav.tabs button{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:none;border:none;border-radius:var(--r-sm);color:var(--label-secondary);padding:var(--sp-1) 0;font-size:12px;font-weight:600;cursor:pointer;min-height:44px;transition:color var(--tr),background var(--tr)}
 nav.tabs button[aria-selected="true"]{color:var(--accent);background:var(--surface-elevated)}
 nav.tabs button:hover{color:var(--label-primary)}
-main{max-width:860px;margin:0 auto;padding:var(--sp-4);padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+main{max-width:860px;margin:0 auto;padding:var(--sp-4);padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 @media(min-width:768px){nav.tabs{position:static;justify-content:center;gap:4px;width:fit-content;max-width:100%;margin:var(--sp-3) auto 0;padding:4px;background:var(--fill-subtle);border:var(--edge);border-top:var(--edge);border-radius:var(--r-pill)}nav.tabs button{flex:0 0 auto;padding:var(--sp-2) var(--sp-4);font-size:14px;border-radius:var(--r-pill)}main{padding-bottom:var(--sp-6)}}
 section[role="tabpanel"]{display:none}
 section[role="tabpanel"].active{display:block;animation:tabIn var(--tr)}
@@ -201,7 +201,7 @@ details[open] summary{color:var(--label-primary)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media(prefers-reduced-transparency:reduce){dialog,#toast{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--surface-elevated)}}
-@media(max-width:400px){main{padding:var(--sp-3)}.card{padding:var(--sp-3)}}
+@media(max-width:400px){main{padding-inline:var(--sp-3)}.card{padding:var(--sp-3)}}
 /* ============ surface layer (built on the tokens above) ============ */
 @keyframes tabIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 .section-title{font-size:var(--fs-xs);color:var(--label-secondary);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;margin:var(--sp-5) 0 var(--sp-3)}
