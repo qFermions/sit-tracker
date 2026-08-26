@@ -26,3 +26,12 @@ const swSrc = readFileSync(join(dirname(path), "sw.js"), "utf8");
 const swVer = (swSrc.match(/SW_VERSION = "v([^"]+)"/) || [])[1];
 console.log(`sw: v${swVer} · app: v${CORE.APP_VERSION}`);
 if (swVer !== CORE.APP_VERSION) { console.error("✗ sw.js SW_VERSION does not match CORE.APP_VERSION — bump both together"); process.exit(1); }
+// Whole-script syntax gate. The CORE extraction above only parses lines between the
+// CORE markers, so a syntax error anywhere in the app modules (STORE/TIMER/UI/REVIEW/…)
+// previously passed all 447 tests while the app failed to boot at all. Parse the entire
+// inline script so that can't happen again.
+const scriptBody = (src.match(/<script>([\s\S]*)<\/script>/) || [])[1];
+if (!scriptBody) { console.error("✗ could not locate the inline <script> block"); process.exit(1); }
+try { new Function(scriptBody); }
+catch (e) { console.error("✗ inline script does not parse: " + e.message); process.exit(1); }
+console.log("inline script: parses");

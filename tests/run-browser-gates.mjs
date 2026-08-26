@@ -9,7 +9,14 @@
  *           npx http-server -p 8099 -s .
  *         and playwright resolvable (NODE_PATH=/opt/node22/lib/node_modules).
  */
-import { chromium } from "playwright";
+import { createRequire } from "node:module";
+/* Resolve playwright from NODE_PATH too — ESM does not honour it on its own.
+   Set PLAYWRIGHT_DIR or NODE_PATH if playwright lives outside the repo. */
+const req = createRequire(import.meta.url);
+const pwRoot = process.env.PLAYWRIGHT_DIR || (process.env.NODE_PATH || "").split(":")[0];
+let chromium;
+try { ({ chromium } = req("playwright")); }
+catch { ({ chromium } = req(pwRoot + "/playwright")); }
 
 const BASE = process.argv[2] || "http://127.0.0.1:8099";
 const APP = BASE + "/sit-tracker-v2.html";
@@ -43,13 +50,53 @@ const CONTRAST_FN = `
     for (let i = stack.length-1; i >= 0; i--) base = over(stack[i][0], base, stack[i][1]);
     return base;
   };
+  window.__gradientSkipped = [];
+  // Pull every rgb/rgba stop out of a computed gradient so we can test the WORST one,
+  // rather than skipping gradient-backed text and calling the result a pass.
+  const stopsOf = img => {
+    const out = [];
+    const re = /rgba?\(([^)]+)\)/g; let m;
+    while ((m = re.exec(img))) {
+      const v = m[1].split(",").map(x => parseFloat(x));
+      if (v.length >= 3) out.push({ c: v.slice(0,3), a: v.length > 3 ? v[3] : 1 });
+    }
+    return out;
+  };
   window.__contrast = el => {
     const cs = getComputedStyle(el);
+    const fg0 = parse(cs.color); if (!fg0) return null;
+    // Find the nearest layer that actually paints behind this text. An OPAQUE gradient
+    // replaces whatever is under it — including it as an extra candidate would compare
+    // the label against a page background it completely covers.
+    const behind = bgOf(el);
+    let cands = null;
+    for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+      const s2 = getComputedStyle(n);
+      const img = s2.backgroundImage || "";
+      if (img.indexOf("gradient") !== -1) {
+        const st = stopsOf(img);
+        if (!st.length) { window.__gradientSkipped.push(el.id ? "#" + el.id : el.tagName.toLowerCase()); return null; }
+        const opaque = st.filter(x => x.a >= 0.999);
+        if (opaque.length) { cands = opaque.map(x => x.c); break; }   // covers what is under it
+        // fully translucent gradient (e.g. the orb glow): it tints, it does not cover
+        cands = st.map(x => over(x.c, behind, x.a)).concat([behind]); break;
+      }
+      if (parse(s2.backgroundColor) && alpha(s2.backgroundColor) >= 0.999) { cands = [parse(s2.backgroundColor)]; break; }
+    }
+    if (!cands) cands = [behind];
+    let worst = Infinity;
+    for (const bg of cands) {
+      const f = alpha(cs.color) < 1 ? over(fg0, bg, alpha(cs.color)) : fg0;
+      const l1 = lum(f), l2 = lum(bg);
+      const r = (Math.max(l1,l2) + 0.05) / (Math.min(l1,l2) + 0.05);
+      if (r < worst) worst = r;
+    }
+    return worst === Infinity ? null : worst;
+  };
+  window.__unused = el => {
+    const cs = getComputedStyle(el);
     const fg = parse(cs.color); if (!fg) return null;
-    const bg = bgOf(el);
-    const f = alpha(cs.color) < 1 ? over(fg, bg, alpha(cs.color)) : fg;
-    const l1 = lum(f), l2 = lum(bg);
-    return (Math.max(l1,l2) + 0.05) / (Math.min(l1,l2) + 0.05);
+    return null;
   };
   return true;
 })()`;
@@ -57,10 +104,10 @@ const CONTRAST_FN = `
 const WIDTHS = [320, 360, 375, 390, 430, 768, 834, 1024, 1280];
 
 async function main() {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
   const consoleErrors = [];
 
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: "dark" });
   const page = await ctx.newPage();
   page.on("console", m => { if (m.type() === "error") consoleErrors.push(m.text()); });
   page.on("pageerror", e => consoleErrors.push("pageerror: " + e.message));
@@ -139,14 +186,25 @@ async function main() {
   });
   gate("no button without an accessible name", emptyButtons.length === 0, emptyButtons.slice(0, 8).join(", "));
 
-  const genericDialogName = await page.evaluate(() => {
+  // Measure the name of an ACTUALLY OPEN dialog — a closed one legitimately carries none.
+  const dialogName = await page.evaluate(() => {
+    const h = window.__sitTracker;
+    if (!h) return { why: "no test hook" };
     const d = document.querySelector("dialog");
-    if (!d) return null;
-    const n = (d.getAttribute("aria-label") || "").trim().toLowerCase();
-    return ["dialog", "modal", "window", ""].includes(n) ? (n || "(none)") : null;
+    if (!d) return { why: "no dialog element" };
+    // drive a real modal through the app's own helper
+    const ui = document.querySelector("#btn-invite") || document.querySelector("#btn-feedback");
+    if (ui) ui.click();
+    if (!d.open) return { why: "could not open a modal to measure" };
+    const byId = d.getAttribute("aria-labelledby");
+    const named = byId && document.getElementById(byId) ? document.getElementById(byId).textContent.trim() : (d.getAttribute("aria-label") || "").trim();
+    d.close();
+    return { name: named };
   });
-  gate("the dialog's accessible name is not a generic placeholder", genericDialogName === null,
-    genericDialogName ? `aria-label="${genericDialogName}"` : "");
+  const generic = ["dialog", "modal", "window", ""];
+  gate("an open dialog is named by its own heading, not a generic placeholder",
+    !!(dialogName.name && !generic.includes(dialogName.name.toLowerCase())),
+    dialogName.why || `name = "${dialogName.name}"`);
 
   section("TOUCH TARGETS (>=44x44, visible interactive elements)");
 
@@ -198,8 +256,10 @@ async function main() {
   }
 
   const cDark = await contrastScan("dark");
+  const skipped = await page.evaluate(() => (window.__gradientSkipped || []).length);
   gate("all rendered text meets WCAG contrast (dark appearance)", cDark.length === 0,
-    cDark.slice(0, 8).join(" | ") + (cDark.length > 8 ? ` (+${cDark.length - 8} more)` : ""));
+    cDark.length ? cDark.slice(0, 8).join(" | ") + (cDark.length > 8 ? ` (+${cDark.length - 8} more)` : "")
+                 : `gradient stops sampled at worst case; ${skipped} element(s) unmeasurable`);
 
   section("APPEARANCE");
 
@@ -244,7 +304,7 @@ async function main() {
       if (cs.visibility === "hidden" || cs.opacity === "0") continue;
       const px = parseFloat(cs.fontSize), w = parseInt(cs.fontWeight, 10) || 400;
       const need = (px >= 24 || (px >= 18.66 && w >= 700)) ? 3.0 : 4.5;
-      const r = window.__contrast(el);
+      const r = window.__contrast(el);   // null when a gradient makes it unmeasurable
       if (r && r < need) bad.push(`${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""} ${r.toFixed(2)}:1 (needs ${need}) "${el.textContent.trim().slice(0,28)}"`);
     }
     return [...new Set(bad)];
@@ -324,13 +384,26 @@ async function main() {
 
   section("PRIVACY / DATA");
 
-  const exportHygiene = await page.evaluate(() => {
+  const exportHygiene = await page.evaluate(async () => {
     const h = window.__sitTracker;
     if (!h || !h.STORE) return { ok: false, why: "no test hook" };
     try {
       h.STORE.setSetting("aiKey", "sk-SHOULD-NEVER-APPEAR");
-      const json = h.STORE.exportJSON ? h.STORE.exportJSON() : JSON.stringify(h.STORE.load());
-      return { ok: json.indexOf("SHOULD-NEVER-APPEAR") === -1, why: "" };
+      if (h.STORE.getSetting("aiKey", "") !== "sk-SHOULD-NEVER-APPEAR")
+        return { ok: false, why: "could not seed the key" };
+      // capture whatever the real export writes, by intercepting the object URL
+      let captured = null;
+      const realCreate = URL.createObjectURL;
+      URL.createObjectURL = b => { captured = b; return realCreate.call(URL, b); };
+      const btn = document.querySelector("#btn-export-json");
+      if (!btn) { URL.createObjectURL = realCreate; return { ok: false, why: "#btn-export-json missing" }; }
+      btn.click();
+      await new Promise(r => setTimeout(r, 120));
+      URL.createObjectURL = realCreate;
+      if (!captured) return { ok: false, why: "export produced no blob to inspect" };
+      const text = await captured.text();
+      if (!text.length) return { ok: false, why: "export blob was empty" };
+      return { ok: text.indexOf("SHOULD-NEVER-APPEAR") === -1, why: "inspected " + text.length + " bytes of real export" };
     } catch (e) { return { ok: false, why: e.message }; }
   });
   gate("the API key never appears in an export", exportHygiene.ok, exportHygiene.why);

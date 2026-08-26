@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
 <title>Sit Tracker — ဈာန်</title>
 <meta name="theme-color" content="#0a0e15">
 <link rel="manifest" href="manifest.json">
@@ -16,232 +16,269 @@
 <style>
 /* ==================================================================
    IDENTITY SYSTEM — one token layer, documented in ARCHITECTURE.md.
-   Type: system stack, zero embedded bytes; hierarchy from brave sizes
-   + weight + tracking, not from a webfont. Numerals always tabular.
-   Color: midnight base · moonlit accent · restrained gold · teal ok.
-   Depth: three elevation levels + one glass recipe (dialogs, toast).
-   Gradients: exactly three recipes (page wash, card sheen, CTA).
-   Motion: 120/220/480ms, decel ease; transform+opacity only; press =
-   scale .97; nothing loops while idle; reduced-motion kills all.
+   Tokens are named for PURPOSE, not appearance, and are DEFINED here
+   for dark (the app's home look) then REDEFINED per appearance below:
+   light, increased contrast, reduced transparency. No token is only
+   ever defined inside a media query.
+   Type: system stack, zero embedded bytes. Four weights only —
+   400/500/600/700 (HIG: avoid Light/Thin). Numerals always tabular.
+   Depth: three elevation levels + one glass recipe (dialog, toast).
+   Motion: 120/220/480ms, decel ease; transform/opacity/scale only;
+   press = scale .97; nothing loops while idle; reduced-motion kills all.
    ================================================================== */
 :root{
-  /* color */
-  --bg:#0a0e15; --bg2:#121926; --bg3:#1a2333; --line:#253044; --line-hi:#33415c;
-  --fg:#e9eef6; --fg-dim:#9fadc0; --fg-faint:#76849b;
-  --accent:#8ec3ea; --accent-deep:#3f6f96; --accent-ink:#0a1520; --gold:#d4b078;
-  --ok:#86c996; --warn:#ddb076; --err:#e08b8b;
-  /* type scale (display sizes are meant to be brave) */
-  --fs-hero:clamp(2.7rem,9vw,4.2rem);
-  --fs-display:clamp(1.9rem,5.5vw,2.75rem);
+  color-scheme:dark light;
+  /* backgrounds — three levels of hierarchy */
+  --background:#0a0e15; --surface:#121926; --surface-elevated:#1a2333;
+  /* structure — never used as text colour */
+  --separator:#253044; --separator-strong:#33415c;
+  /* labels — four descending levels */
+  --label-primary:#e9eef6; --label-secondary:#9fadc0; --label-tertiary:#828fa5;
+  /* meaning */
+  --accent:#8ec3ea; --on-accent:#0a1520; --accent-muted:#3d6a8a; --tradition:#d4b078;
+  --success:#86c996; --warning:#ddb076; --destructive:#e08b8b; --danger-edge:#5a2f2f;
+  --fill-subtle:rgba(18,25,38,.6); --glass:rgba(16,23,35,.78);
+  /* type scale */
+  --fs-hero:clamp(2.4rem,8vw,3.6rem);
+  --fs-display:clamp(1.8rem,5.5vw,2.6rem);
   --fs-timer:clamp(3.4rem,15vw,6rem);
-  --fs-xl:1.55rem; --fs-lg:1.22rem; --fs-md:1rem; --fs-sm:.875rem; --fs-xs:.76rem;
-  --track-tight:-.025em; --track-caps:.09em;
+  --fs-xl:1.5rem; --fs-lg:1.18rem; --fs-md:1rem; --fs-sm:.875rem; --fs-xs:.8125rem;
+  --track-tight:-.02em; --track-caps:.08em;
   /* rhythm · radius */
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:40px;
   --r-lg:22px; --r:14px; --r-sm:10px; --r-pill:999px;
-  /* elevation + glass */
+  --edge:1px solid var(--separator);
+  /* elevation */
   --elev-1:0 1px 0 rgba(255,255,255,.04) inset, 0 2px 10px rgba(0,0,0,.35);
   --elev-2:0 1px 0 rgba(255,255,255,.05) inset, 0 12px 32px rgba(0,0,0,.45);
   --elev-3:0 1px 0 rgba(255,255,255,.06) inset, 0 28px 80px rgba(0,0,0,.62);
-  --glass-bg:rgba(16,23,35,.78);
-  /* gradient recipes (the only three) */
+  /* gradients — each has a job */
   --grad-cta:linear-gradient(135deg,#a6d4f4 0%,#6497c8 100%);
   --grad-card:linear-gradient(180deg,#17202e 0%,#121926 100%);
   --grad-wash:radial-gradient(120% 90% at 50% -10%, #141c2a 0%, #0a0e15 58%);
-  /* motion vocabulary */
+  --grad-hero:radial-gradient(110% 100% at 50% 0%, #16202f 0%, #090d13 70%);
+  --grad-orb:radial-gradient(circle at 42% 36%, rgba(142,195,234,.18), rgba(85,103,158,.11) 45%, rgba(10,14,21,0) 72%);
+  --grad-recommend:linear-gradient(180deg,#1d2331 0%, var(--surface) 100%);
+  /* motion */
   --dur-1:120ms; --dur-2:220ms; --dur-3:480ms;
   --ease-out:cubic-bezier(.16,1,.3,1);
+  --tr:var(--dur-2) var(--ease-out);
   --glow:rgba(142,195,234,.16); --gold-glow:rgba(212,176,120,.12);
-  --indigo:#55679e; --teal:#63b3ab;
 }
+/* LIGHT — a paper ground, not a white one. Every value re-picked and
+   contrast-verified; the dark accent is unusable on white (1.7:1). */
+@media(prefers-color-scheme:light){:root{
+  --background:#f5f6f8; --surface:#fff; --surface-elevated:#eef1f5;
+  --separator:#d9dee6; --separator-strong:#b9c2cf;
+  --label-primary:#11151c; --label-secondary:#515c6b; --label-tertiary:#616b7a;
+  --accent:#1f6191; --on-accent:#fff; --accent-muted:#4a7ba6; --tradition:#7a5a1f;
+  --success:#1f6b42; --warning:#8a5a12; --destructive:#a52c2c; --danger-edge:#e3b4b4;
+  --fill-subtle:rgba(255,255,255,.72); --glass:rgba(255,255,255,.86);
+  --elev-1:0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+  --elev-2:0 4px 12px rgba(16,24,40,.10), 0 2px 4px rgba(16,24,40,.06);
+  --elev-3:0 20px 48px rgba(16,24,40,.18), 0 4px 10px rgba(16,24,40,.08);
+  --grad-cta:linear-gradient(135deg,#2c74a8 0%,#1a5580 100%);
+  --grad-card:linear-gradient(180deg,#fff 0%,#fbfcfd 100%);
+  --grad-wash:radial-gradient(120% 90% at 50% -10%, #fff 0%, #f5f6f8 58%);
+  --grad-hero:radial-gradient(110% 100% at 50% 0%, #fff 0%, #e9eef4 70%);
+  --grad-orb:radial-gradient(circle at 42% 36%, rgba(31,97,145,.16), rgba(85,103,158,.10) 45%, rgba(245,246,248,0) 72%);
+  --grad-recommend:linear-gradient(180deg,#f1f6fa 0%, var(--surface) 100%);
+  --glow:rgba(31,97,145,.14); --gold-glow:rgba(122,90,31,.12);
+}}
+/* INCREASED CONTRAST — the escape hatch the guideline names explicitly. */
+@media(prefers-contrast:more){:root{
+  --label-secondary:#c9d3e0; --label-tertiary:#a8b4c6;
+  --separator:#3d4a63; --separator-strong:#5a6b8c;
+}}
+@media(prefers-contrast:more) and (prefers-color-scheme:light){:root{
+  --label-secondary:#2b333d; --label-tertiary:#434c58;
+  --separator:#9aa5b4; --separator-strong:#6c7e91;
+  --accent:#14496f;
+}}
 *{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none !important}
-html{-webkit-text-size-adjust:100%}
-body{background:var(--grad-wash) fixed, var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:var(--fs-md);line-height:1.55;min-height:100vh;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
-body.zen .hide-zen{display:none !important}
-h1{font-size:var(--fs-lg);font-weight:800;letter-spacing:var(--track-tight)}
+body{background:var(--grad-wash) fixed, var(--background);color:var(--label-primary);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:var(--fs-md);line-height:1.55;min-height:100dvh;padding-inline:env(safe-area-inset-left) env(safe-area-inset-right)}
+body.zen .hide-zen,body.running .hide-zen{display:none !important}
+h1{font-size:var(--fs-xl);font-weight:700;letter-spacing:var(--track-tight)}
 h2{font-size:var(--fs-lg);font-weight:700;letter-spacing:var(--track-tight);margin-bottom:var(--sp-3)}
-h3{font-size:var(--fs-md);font-weight:650;margin:var(--sp-4) 0 var(--sp-2);color:var(--fg)}
+h3{font-size:var(--fs-md);font-weight:600;margin:var(--sp-4) 0 var(--sp-2);color:var(--label-primary)}
 p{margin-bottom:var(--sp-2)}
 a{color:var(--accent)}
-small,.dim{color:var(--fg-dim);font-size:var(--fs-sm)}
-.faint{color:var(--fg-faint);font-size:var(--fs-xs)}
-.label-caps{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-dim)}
+small,.dim{color:var(--label-secondary);font-size:var(--fs-sm)}
+.faint{color:var(--label-tertiary);font-size:var(--fs-xs)}
+.label-caps{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--label-secondary)}
 header.app{display:flex;align-items:baseline;gap:var(--sp-3);padding:calc(var(--sp-4) + env(safe-area-inset-top)) var(--sp-4) 0;max-width:860px;margin:0 auto}
-header.app .mm{color:var(--gold);font-size:var(--fs-sm)}
-nav.tabs{display:flex;gap:4px;overflow-x:auto;width:fit-content;max-width:calc(100% - 2*var(--sp-4));margin:var(--sp-3) auto 0;padding:4px;background:rgba(18,25,38,.6);border:1px solid var(--line);border-radius:var(--r-pill);scrollbar-width:none}
-@media(max-width:420px){nav.tabs button{padding:var(--sp-2) var(--sp-3)}}
-nav.tabs::-webkit-scrollbar{display:none}
-nav.tabs button{flex:0 0 auto;background:none;border:none;border-radius:var(--r-pill);color:var(--fg-dim);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);font-weight:600;cursor:pointer;white-space:nowrap;min-height:38px;transition:color var(--dur-2) var(--ease-out),background var(--dur-2) var(--ease-out)}
-nav.tabs button[aria-selected="true"]{color:var(--fg);background:var(--bg3);box-shadow:var(--elev-1)}
-nav.tabs button:hover{color:var(--fg)}
-main{max-width:860px;margin:0 auto;padding:var(--sp-4);padding-bottom:calc(var(--sp-6) + env(safe-area-inset-bottom))}
+header.app .mm{color:var(--tradition);font-size:var(--fs-sm)}
+nav.tabs{display:flex;gap:2px;position:fixed;left:0;right:0;bottom:0;z-index:40;justify-content:space-around;background:var(--surface);border-top:var(--edge);padding:2px var(--sp-2) calc(2px + env(safe-area-inset-bottom))}
+nav.tabs button{flex:1 1 0;min-width:0;background:none;border:none;border-radius:var(--r-sm);color:var(--label-secondary);padding:var(--sp-1) 2px;font-size:var(--fs-xs);font-weight:600;cursor:pointer;min-height:44px;transition:color var(--tr),background var(--tr)}
+nav.tabs button[aria-selected="true"]{color:var(--accent);background:var(--surface-elevated)}
+nav.tabs button:hover{color:var(--label-primary)}
+main{max-width:860px;margin:0 auto;padding:var(--sp-4);padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+@media(min-width:768px){nav.tabs{position:static;justify-content:center;gap:4px;width:fit-content;max-width:100%;margin:var(--sp-3) auto 0;padding:4px;background:var(--fill-subtle);border:var(--edge);border-top:var(--edge);border-radius:var(--r-pill)}nav.tabs button{flex:0 0 auto;padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);border-radius:var(--r-pill)}main{padding-bottom:var(--sp-6)}}
 section[role="tabpanel"]{display:none}
-section[role="tabpanel"].active{display:block}
-.card{background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-5);margin-bottom:var(--sp-4);box-shadow:var(--elev-1)}
-.card.sub{background:var(--bg3)}
+section[role="tabpanel"].active{display:block;animation:tabIn var(--tr)}
+.card,.stat,.sess-item,.tstat,.preset-card{background:var(--grad-card);border:var(--edge);border-radius:var(--r);box-shadow:var(--elev-1)}
+.card{padding:var(--sp-5);margin-bottom:var(--sp-4)}
+.card.sub{background:var(--surface-elevated)}
 .row{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center}
 .row.between{justify-content:space-between}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
 .grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--sp-3)}
 @media(max-width:480px){.grid2{grid-template-columns:1fr}}
-button,.btn{font:inherit;cursor:pointer;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--bg3);color:var(--fg);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);font-weight:600;min-height:44px;transition:transform var(--dur-1) var(--ease-out),border-color var(--dur-2) var(--ease-out),background var(--dur-2) var(--ease-out),box-shadow var(--dur-2) var(--ease-out)}
-button:hover{border-color:var(--line-hi)}
+button,.btn{font:inherit;cursor:pointer;border-radius:var(--r-sm);border:var(--edge);background:var(--surface-elevated);color:var(--label-primary);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);font-weight:600;min-height:44px;transition:transform var(--dur-1) var(--ease-out),border-color var(--tr),background var(--tr),box-shadow var(--tr)}
+button:hover{border-color:var(--separator-strong)}
 button:active{transform:scale(.97)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-button.primary{background:var(--grad-cta);border-color:transparent;color:var(--accent-ink);font-weight:700;box-shadow:0 4px 18px rgba(100,151,200,.28)}
+button.primary{background:var(--grad-cta);border-color:transparent;color:var(--on-accent);font-weight:700;box-shadow:0 4px 18px rgba(100,151,200,.28)}
 button.primary:hover{box-shadow:0 6px 24px rgba(142,195,234,.4);border-color:transparent}
 button.big{font-size:var(--fs-md);padding:var(--sp-3) var(--sp-6);min-height:56px;border-radius:var(--r)}
-button.danger{border-color:#5a2f2f;color:var(--err)}
-button.ghost{background:none;border-color:transparent;color:var(--fg-dim);box-shadow:none}
-button.ghost:hover{color:var(--fg)}
+button.danger{border-color:var(--danger-edge);color:var(--destructive)}
+button.ghost{background:none;border-color:transparent;color:var(--label-secondary);box-shadow:none}
+button.ghost:hover{color:var(--label-primary)}
 button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
 button.chip{min-height:44px;padding:var(--sp-1) var(--sp-3);border-radius:var(--r-pill)}
-button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
-input[type=text],input[type=number],input[type=password],input[type=date],input[type=time],input[type=url],select,textarea{font:inherit;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-sm);color:var(--fg);padding:var(--sp-2) var(--sp-3);min-height:44px;max-width:100%}
+button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
+input[type=text],input[type=number],input[type=password],input[type=date],input[type=time],input[type=url],select,textarea{font:inherit;background:var(--background);border:var(--edge);border-radius:var(--r-sm);color:var(--label-primary);padding:var(--sp-2) var(--sp-3);min-height:44px;max-width:100%}
 input[type=number]{width:90px}
 textarea{width:100%;min-height:110px;resize:vertical}
-label{font-size:var(--fs-sm);color:var(--fg-dim)}
+label{font-size:var(--fs-sm);color:var(--label-secondary)}
 .field{display:flex;flex-direction:column;gap:var(--sp-1);margin-bottom:var(--sp-3)}
-fieldset{border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-3)}
-legend{font-size:var(--fs-sm);color:var(--fg-dim);padding:0 var(--sp-2)}
-input[type=range]{width:100%;accent-color:var(--accent);min-height:40px}
+fieldset{border:var(--edge);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-3)}
+legend{font-size:var(--fs-sm);color:var(--label-secondary);padding:0 var(--sp-2)}
+input[type=range]{width:100%;accent-color:var(--accent);min-height:44px}
 input[type=checkbox],input[type=radio]{width:18px;height:18px;accent-color:var(--accent)}
-.check{display:flex;align-items:center;gap:var(--sp-2);min-height:44px;font-size:var(--fs-sm);color:var(--fg)}
+.check{display:flex;align-items:center;gap:var(--sp-2);min-height:44px;font-size:var(--fs-sm);color:var(--label-primary)}
 /* timer */
 .timer-wrap{text-align:center;padding:var(--sp-5) var(--sp-3)}
-.timer-big{font-size:var(--fs-timer);font-variant-numeric:tabular-nums;font-weight:300;letter-spacing:.03em;line-height:1.1}
-.timer-sub{color:var(--fg-dim);font-variant-numeric:tabular-nums;margin-top:var(--sp-1)}
-.timer-phase{color:var(--gold);font-size:var(--fs-sm);min-height:1.4em;margin-bottom:var(--sp-2)}
+.timer-big{position:relative;z-index:1;font-size:var(--fs-timer);font-variant-numeric:tabular-nums;font-weight:400;letter-spacing:.03em;line-height:1.1}
+.timer-sub{color:var(--label-secondary);font-variant-numeric:tabular-nums;margin-top:var(--sp-1)}
+.timer-phase{color:var(--tradition);font-size:var(--fs-sm);min-height:1.4em;margin-bottom:var(--sp-2)}
 .markers-bar{display:flex;flex-wrap:wrap;gap:var(--sp-2);justify-content:center;margin-top:var(--sp-4)}
 .markers-bar button{font-size:var(--fs-xs);min-height:44px;flex:1 1 30%}
-.instructions{border-left:2px solid var(--gold);padding-left:var(--sp-3);font-size:var(--fs-sm);color:var(--fg-dim)}
+.instructions{border-left:2px solid var(--tradition);padding-left:var(--sp-3);font-size:var(--fs-sm);color:var(--label-secondary)}
 /* stat cards */
-.stat{background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-4);min-height:96px;display:flex;flex-direction:column;box-shadow:var(--elev-1)}
-.stat .v{font-size:var(--fs-display);font-weight:750;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;line-height:1.05}
-.stat .l{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-dim);margin-top:var(--sp-1)}
-.stat .n{font-size:var(--fs-xs);color:var(--fg-faint);margin-top:2px}
+.stat{padding:var(--sp-4);min-height:96px;display:flex;flex-direction:column}
+.stat .v,.tstat .v{font-size:var(--fs-display);font-weight:700;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;line-height:1.05}
+.stat .l,.tstat .l{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);color:var(--label-secondary);margin-top:var(--sp-1)}
+.stat .n,.tstat .n{font-size:var(--fs-xs);color:var(--label-tertiary);margin-top:2px}
 /* charts */
 .chart{margin:var(--sp-4) 0}
-.chart svg{width:100%;height:auto;display:block}
-.chart .cap{font-size:var(--fs-xs);color:var(--fg-dim);margin-top:var(--sp-1)}
-.empty{color:var(--fg-dim);font-size:var(--fs-sm);background:rgba(26,35,51,.4);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-5);text-align:center}
+.chart svg{width:100%;height:auto;display:block}.chart text{font-size:19px}
+.chart .cap{font-size:var(--fs-xs);color:var(--label-secondary);margin-top:var(--sp-1)}
+.empty{color:var(--label-secondary);font-size:var(--fs-sm);background:var(--fill-subtle);border:var(--edge);border-radius:var(--r);padding:var(--sp-5);text-align:center}
 /* history */
-.sess-item{display:flex;gap:var(--sp-4);align-items:flex-start;width:100%;text-align:left;background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--elev-1);transition:transform var(--dur-1) var(--ease-out),border-color var(--dur-2) var(--ease-out)}
-.sess-item:hover{border-color:var(--line-hi);transform:translateY(-1px)}
-.si-min{font-size:var(--fs-xl);font-weight:750;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;min-width:58px;line-height:1.25}
+.sess-item{display:flex;gap:var(--sp-4);align-items:flex-start;width:100%;text-align:left;padding:var(--sp-4);margin-bottom:var(--sp-3);transition:transform var(--dur-1) var(--ease-out),border-color var(--tr)}
+.sess-item:hover{border-color:var(--separator-strong);transform:translateY(-1px)}
+.si-min{font-size:var(--fs-xl);font-weight:700;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;min-width:58px;line-height:1.25}
 .si-body{display:flex;flex-direction:column;gap:2px;min-width:0;font-weight:400}
 .si-top{line-height:1.5}
-.si-sub{font-size:var(--fs-sm);color:var(--fg-dim)}
-.si-note{font-size:var(--fs-xs);color:var(--fg-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.si-sub{font-size:var(--fs-sm);color:var(--label-secondary)}
+.si-note{font-size:var(--fs-xs);color:var(--label-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 /* learn: editorial measure */
-#tab-learn .card p,#tab-learn .card li,#tab-learn .card td{max-width:64ch}
+#tab-learn p,#tab-learn li,#tab-learn td,#tab-learn .notice,#tab-learn .honesty{max-width:68ch}
 #tab-learn details summary{font-weight:600}
-.badge{display:inline-block;font-size:var(--fs-xs);border:1px solid var(--line);border-radius:var(--r-pill);padding:1px 9px;color:var(--fg-dim);margin-left:var(--sp-1)}
-.badge.gold{color:var(--gold);border-color:var(--gold)}
+.badge{display:inline-block;font-size:var(--fs-xs);border:var(--edge);border-radius:var(--r-pill);padding:1px 9px;color:var(--label-secondary);margin-left:var(--sp-1)}
+.badge.gold{color:var(--tradition);border-color:var(--tradition)}
 table.kv{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
-table.kv td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-table.kv td:first-child{color:var(--fg-dim);width:44%}
+table.kv td{padding:5px 8px;border-bottom:var(--edge);vertical-align:top}
+table.kv td:first-child{color:var(--label-secondary);width:44%}
 /* modal — glass recipe */
-dialog{background:var(--glass-bg);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);color:var(--fg);border:1px solid var(--line-hi);border-radius:var(--r-lg);padding:var(--sp-5);margin:auto;max-width:min(560px,92vw);max-height:85vh;overflow:auto;box-shadow:var(--elev-3)}
-dialog[open]{animation:dialogIn var(--dur-2) var(--ease-out)}
+dialog{background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);color:var(--label-primary);border:1px solid var(--separator-strong);border-radius:var(--r-lg);padding:var(--sp-5);margin:auto;max-width:min(560px,92vw);max-height:85dvh;overflow:auto;box-shadow:var(--elev-3)}
+dialog[open]{animation:dialogIn var(--tr)}
 @keyframes dialogIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
 dialog::backdrop{background:rgba(4,7,12,.65)}
 /* toast — glass pill */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--glass-bg);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--line-hi);border-radius:var(--r-pill);padding:var(--sp-2) var(--sp-5);font-size:var(--fs-sm);font-weight:600;opacity:0;pointer-events:none;transition:opacity var(--dur-2) var(--ease-out),transform var(--dur-2) var(--ease-out);z-index:50;max-width:90vw;box-shadow:var(--elev-2)}
+#toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(8px);background:var(--glass);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--separator-strong);border-radius:var(--r-pill);padding:var(--sp-2) var(--sp-5);font-size:var(--fs-sm);font-weight:600;opacity:0;pointer-events:none;transition:opacity var(--tr),transform var(--tr);z-index:50;max-width:90vw;box-shadow:var(--elev-2)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.notice{border:1px solid var(--accent-dim);background:rgba(61,106,138,.12);border-radius:var(--r-sm);padding:var(--sp-3);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
-.notice.warn{border-color:var(--warn);background:rgba(217,168,106,.08)}
-.honesty{font-size:var(--fs-xs);color:var(--fg-faint);border-top:1px solid var(--line);padding-top:var(--sp-2);margin-top:var(--sp-3)}
+.notice{border:1px solid var(--accent-muted);background:rgba(61,106,138,.12);border-radius:var(--r-sm);padding:var(--sp-3);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
+.notice.warn{border-color:var(--warning);background:rgba(221,176,118,.10)}
+.honesty{font-size:var(--fs-xs);color:var(--label-tertiary);border-top:var(--edge);padding-top:var(--sp-2);margin-top:var(--sp-3)}
 /* map */
-.level{border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-3);background:var(--bg2)}
-.level.current{border-color:var(--gold)}
+.level{border:var(--edge);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-3);background:var(--surface)}
+.level.current{border-color:var(--tradition)}
 .level h3{margin-top:0}
 details{margin:var(--sp-2) 0}
-details summary{cursor:pointer;color:var(--fg-dim);font-size:var(--fs-sm);min-height:44px;display:flex;align-items:center}
-details[open] summary{color:var(--fg)}
+details summary{cursor:pointer;color:var(--label-secondary);font-size:var(--fs-sm);min-height:44px;display:list-item;list-style-position:inside;padding:11px 0}
+details[open] summary{color:var(--label-primary)}
 /* draft table */
-.draft-field{display:grid;grid-template-columns:130px 1fr auto;gap:var(--sp-2);align-items:center;padding:var(--sp-1) 0;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
-.draft-field .ev{grid-column:2/4;color:var(--fg-faint);font-size:var(--fs-xs);font-style:italic}
-.conf-high{color:var(--ok)}.conf-medium{color:var(--warn)}.conf-low{color:var(--err)}
-.diff-old{color:var(--err);text-decoration:line-through}
-.diff-new{color:var(--ok)}
+.draft-field{display:grid;grid-template-columns:130px 1fr auto;gap:var(--sp-2);align-items:center;padding:var(--sp-1) 0;border-bottom:var(--edge);font-size:var(--fs-sm)}
+.draft-field .ev{grid-column:2/4;color:var(--label-tertiary);font-size:var(--fs-xs);font-style:italic}
+.conf-high{color:var(--success)}.conf-medium{color:var(--warning)}.conf-low{color:var(--destructive)}
+.mt2{margin-top:var(--sp-2)}.mt3{margin-top:var(--sp-3)}.end{justify-content:flex-end}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(prefers-reduced-transparency:reduce){dialog,#toast{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--surface-elevated)}}
 @media(max-width:400px){main{padding:var(--sp-3)}.card{padding:var(--sp-3)}}
 /* ============ surface layer (built on the tokens above) ============ */
-section[role="tabpanel"].active{animation:tabIn var(--dur-2) var(--ease-out)}
 @keyframes tabIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-.section-title{font-size:var(--fs-xs);color:var(--fg-dim);font-weight:650;letter-spacing:var(--track-caps);text-transform:uppercase;margin:var(--sp-5) 0 var(--sp-3)}
-.beta-chip{margin-left:auto;background:none;border:1px solid var(--line);color:var(--fg-faint);font-size:var(--fs-xs);font-weight:600;border-radius:var(--r-pill);min-height:28px;padding:2px 12px;cursor:pointer;transition:color var(--dur-2) var(--ease-out),border-color var(--dur-2) var(--ease-out)}
-.beta-chip:hover{color:var(--gold);border-color:var(--gold)}
+.section-title{font-size:var(--fs-xs);color:var(--label-secondary);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;margin:var(--sp-5) 0 var(--sp-3)}
+.beta-chip{margin-left:auto;background:none;border:var(--edge);color:var(--label-tertiary);font-size:var(--fs-xs);font-weight:600;border-radius:var(--r-pill);min-height:28px;padding:2px 12px;cursor:pointer;transition:color var(--tr),border-color var(--tr)}
+.beta-chip:hover{color:var(--tradition);border-color:var(--tradition)}
 /* today status strip */
-.status-strip{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin-bottom:var(--sp-4);font-size:var(--fs-sm);color:var(--fg-dim)}
-.status-strip .pill{border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 14px;background:rgba(18,25,38,.7);display:inline-flex;align-items:center;gap:7px;font-weight:600}
-.status-strip .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block}
-.status-strip .pill.today-done{border-color:var(--teal);color:var(--fg)}
+.status-strip{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin-bottom:var(--sp-4);font-size:var(--fs-sm);color:var(--label-secondary)}
+.status-strip .pill{border:var(--edge);border-radius:var(--r-pill);padding:5px 14px;background:var(--fill-subtle);display:inline-flex;align-items:center;gap:7px;font-weight:600;min-height:44px}
+.status-strip .pill a{min-height:44px;display:inline-flex;align-items:center}
+.status-strip .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block}
 /* today stat tiles */
 .today-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3);margin-bottom:var(--sp-3)}
-.tstat{background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-3) var(--sp-4);box-shadow:var(--elev-1);min-width:0}
-.tstat .v{font-size:var(--fs-display);font-weight:750;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;line-height:1.05;white-space:nowrap}
-.tstat .v .unit{font-size:.48em;font-weight:650;color:var(--fg-dim);margin-left:1px}
-.tstat .l{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-dim);margin-top:2px}
-.tstat .n{font-size:var(--fs-xs);color:var(--fg-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tstat{padding:var(--sp-3) var(--sp-4);min-width:0}
+.tstat .v{white-space:nowrap}
+.tstat .v .unit{font-size:.48em;font-weight:600;color:var(--label-secondary);margin-left:1px}
+.tstat .l{margin-top:2px}
+.tstat .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tstat.done{border-color:rgba(99,179,171,.45)}
-.tstat.done .v{color:var(--teal)}
+.tstat.done .v{color:var(--success)}
 @media(max-width:480px){.today-stats{gap:var(--sp-2)}.tstat{padding:var(--sp-3)}}
 /* hero timer card + oversized primary action */
 #timer-card{border-radius:var(--r-lg);box-shadow:var(--elev-2)}
 #btn-start{min-width:min(340px,100%);font-size:var(--fs-lg)}
 /* timer stage: orb + arc (the sit itself stays quiet — no new motion here) */
 .timer-stage{position:relative;width:min(320px,74vw);height:min(320px,74vw);margin:0 auto;display:flex;align-items:center;justify-content:center}
-.orb{position:absolute;inset:8%;border-radius:50%;background:radial-gradient(circle at 42% 36%, rgba(142,195,234,.18), rgba(85,103,158,.11) 45%, rgba(10,14,21,0) 72%);filter:blur(2px);transform:scale(.97)}
+.orb{position:absolute;inset:8%;border-radius:50%;background:var(--grad-orb);filter:blur(2px);scale:.97;transition:scale var(--dur-3) var(--ease-out),opacity var(--dur-3) var(--ease-out)}
 /* The orb settles WITH you during the countdown, then holds still for the sit
    itself: the practice object is the breath at the nostrils, not the screen
    (design note §during-a-sit; ADR of record in docs/design). */
 body.settling .orb{animation:orbBreathe 8s ease-in-out infinite}
 body.running:not(.settling) .orb{opacity:.55;animation:none}
 body.timer-paused .orb{opacity:.5;animation:none}
-@keyframes orbBreathe{0%,100%{transform:scale(.94);opacity:.75}50%{transform:scale(1.05);opacity:1}}
+@keyframes orbBreathe{0%,100%{scale:.94;opacity:.75}50%{scale:1.05;opacity:1}}
 .arc{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
 .arc circle{fill:none;stroke-width:3}
 .arc-track{stroke:rgba(142,195,234,.10)}
 .arc-fill{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:703.7;stroke-dashoffset:703.7;transition:stroke-dashoffset .3s linear}
-body.timer-paused .arc-fill{stroke:var(--fg-faint)}
-.timer-big{position:relative;z-index:1}
+body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
 /* preset cards */
 .preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:var(--sp-3)}
-.preset-card{text-align:left;display:flex;flex-direction:column;gap:4px;padding:var(--sp-4);border-radius:var(--r);border:1px solid var(--line);background:var(--grad-card);min-height:128px;cursor:pointer;box-shadow:var(--elev-1);transition:transform var(--dur-1) var(--ease-out),border-color var(--dur-2) var(--ease-out),box-shadow var(--dur-2) var(--ease-out)}
-.preset-card:hover{border-color:var(--line-hi);transform:translateY(-2px);box-shadow:var(--elev-2)}
+.preset-card{text-align:left;display:flex;flex-direction:column;gap:4px;padding:var(--sp-4);min-height:128px;cursor:pointer;transition:transform var(--dur-1) var(--ease-out),border-color var(--tr),box-shadow var(--tr)}
+.preset-card:hover{border-color:var(--separator-strong);transform:translateY(-2px);box-shadow:var(--elev-2)}
 .preset-card:active{transform:scale(.98)}
-.preset-card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent), 0 8px 24px var(--glow)}
-.preset-card .p-min{font-size:var(--fs-display);font-weight:750;letter-spacing:var(--track-tight);color:var(--fg);line-height:1.05;font-variant-numeric:tabular-nums}
-.preset-card .p-name{font-size:var(--fs-sm);color:var(--fg);font-weight:650}
-.preset-card .p-why{font-size:var(--fs-xs);color:var(--fg-dim);line-height:1.4}
-.preset-card .p-commit{font-size:var(--fs-xs);color:var(--fg-faint);margin-top:auto;padding-top:var(--sp-2)}
-.preset-card.recommended{border-color:rgba(212,176,120,.55);background:linear-gradient(180deg,#1d2331 0%, var(--bg2) 100%);box-shadow:0 0 0 1px rgba(212,176,120,.18), 0 8px 24px var(--gold-glow)}
-.preset-card.recommended .p-tag{color:var(--gold);font-size:var(--fs-xs);font-weight:650;letter-spacing:var(--track-caps);text-transform:uppercase}
+.preset-card .p-min{font-size:var(--fs-display);font-weight:700;letter-spacing:var(--track-tight);color:var(--label-primary);line-height:1.05;font-variant-numeric:tabular-nums}
+.preset-card .p-name{font-size:var(--fs-sm);color:var(--label-primary);font-weight:600}
+.preset-card .p-why{font-size:var(--fs-xs);color:var(--label-secondary);line-height:1.4}
+.preset-card .p-commit{font-size:var(--fs-xs);color:var(--label-tertiary);margin-top:auto;padding-top:var(--sp-2)}
+.preset-card.recommended{border-color:var(--tradition);background:var(--grad-recommend);box-shadow:0 0 0 1px var(--gold-glow), 0 8px 24px var(--gold-glow)}
+.preset-card.recommended[aria-pressed="true"],.preset-card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent), 0 8px 24px var(--glow)}
+.preset-card.recommended .p-tag{color:var(--tradition);font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase}
 /* quick-log chips */
-.qrow{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:1px solid var(--line)}
-.qrow .ql{min-width:130px;font-size:var(--fs-sm);color:var(--fg-dim)}
+.qrow{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:var(--edge)}
+.qrow .ql{min-width:130px;font-size:var(--fs-sm);color:var(--label-secondary)}
 /* onboarding + first-open hero */
-.onboard{position:fixed;inset:0;z-index:60;background:radial-gradient(110% 100% at 50% 0%, #16202f 0%, #090d13 70%);display:flex;align-items:center;justify-content:center;padding:var(--sp-4);overflow-y:auto}
+.onboard{position:fixed;inset:0;z-index:60;background:var(--grad-hero);display:flex;align-items:center;justify-content:center;padding:var(--sp-4);overflow-y:auto}
 .onboard-inner{max-width:440px;width:100%;text-align:center;position:relative;padding:var(--sp-5) var(--sp-4)}
-.ob-orb{position:absolute;left:50%;top:-40px;width:190px;height:190px;inset:auto;transform:translateX(-50%);opacity:.85;animation:orbBreathe 8s ease-in-out 3}
-.onboard h2{font-size:var(--fs-xl);font-weight:750;letter-spacing:var(--track-tight);line-height:1.2}
+.ob-orb{position:absolute;inset:auto;left:50%;top:-40px;width:190px;height:190px;transform:translateX(-50%);opacity:.85;animation:orbBreathe 8s ease-in-out 3}
+.onboard h2{font-size:var(--fs-xl);font-weight:700;letter-spacing:var(--track-tight);line-height:1.2}
 #ob-body{position:relative;z-index:1;margin-top:130px}
-.ob-text{color:var(--fg-dim);margin:var(--sp-3) 0 var(--sp-5);line-height:1.7}
+.ob-text{color:var(--label-secondary);margin:var(--sp-3) 0 var(--sp-5);line-height:1.7}
 .ob-step-dots{letter-spacing:8px;color:var(--accent);font-size:10px;margin-bottom:var(--sp-3)}
 .ob-actions{display:flex;flex-direction:column;gap:var(--sp-2);position:relative;z-index:1}
 .ob-actions button{width:100%}
 /* hero mode: the product's above-the-fold */
 .onboard-inner.hero .ob-orb{width:min(270px,64vw);height:min(270px,64vw);top:-56px;filter:blur(1px)}
 .onboard-inner.hero #ob-body{margin-top:min(180px,42vw)}
-.ob-hero-name{font-size:var(--fs-hero);font-weight:800;letter-spacing:var(--track-tight);line-height:1.04;color:var(--fg)}
-.ob-hero-mm{display:block;color:var(--gold);font-size:var(--fs-md);font-weight:600;letter-spacing:.16em;margin-top:var(--sp-2)}
-.onboard-inner.hero .ob-text{font-size:var(--fs-lg);line-height:1.6;max-width:26ch;margin-left:auto;margin-right:auto}
+.ob-hero-name{font-size:var(--fs-hero);font-weight:700;letter-spacing:var(--track-tight);line-height:1.04;color:var(--label-primary)}
+.ob-hero-mm{display:block;color:var(--tradition);font-size:var(--fs-md);font-weight:600;letter-spacing:.16em;margin-top:var(--sp-2)}
+.onboard-inner.hero .ob-text{font-size:var(--fs-lg);line-height:1.6;max-width:26ch;margin-inline:auto}
 .onboard-inner.hero .ob-actions{max-width:320px;margin:0 auto}
-@media(prefers-reduced-motion:reduce){.orb,.ob-orb{animation:none !important}}
 /* teacher report: hidden on screen, the only thing visible in print */
 #print-report{display:none}
 @media print{
@@ -295,7 +332,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
   <div id="today-status" class="hide-zen"></div>
   <div id="resume-banner" class="notice" hidden>
     <strong>A sit was in progress.</strong> <span id="resume-detail"></span>
-    <div class="row" style="margin-top:8px">
+    <div class="row mt2">
       <button id="btn-resume-timer" class="primary">Continue sit</button>
       <button id="btn-discard-timer">Discard</button>
     </div>
@@ -327,14 +364,14 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <button data-marker="agitated">Agitated</button>
       <button data-marker="notable">Notable</button>
     </div>
-    <div class="faint" id="marker-log" style="margin-top:var(--sp-2)" aria-live="polite"></div>
+    <div class="faint" id="marker-log" class="mt2" aria-live="polite"></div>
   </div>
 
   <div class="hide-zen" id="sit-config">
     <h2 class="section-title" data-i18n="today.choose">Choose a practice</h2>
     <div class="preset-grid" id="preset-grid" role="group" aria-label="Practice presets"></div>
 
-    <details class="card sub" style="margin-top:var(--sp-3)">
+    <details class="card sub mt3">
       <summary>Options — focus point, bells, screen</summary>
       <h3>Meditation focus</h3>
       <div class="row">
@@ -371,7 +408,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     <p class="dim">Describe the sit in your own words — the app turns it into a <strong>draft entry</strong> you check before anything is saved. Unmentioned things stay blank; nothing is guessed.</p>
     <div class="notice" id="ai-engine-notice"></div>
     <textarea id="journal-text" aria-label="Journal text" placeholder="Example: I sat for 30 minutes. The first seven minutes were scattered. I think I had about 16 minutes of real concentration…"></textarea>
-    <div class="row" style="margin-top:var(--sp-2)">
+    <div class="row mt2">
       <button id="btn-parse" class="primary">Create draft</button>
       <button id="btn-journal-clear" class="ghost">Clear</button>
     </div>
@@ -386,7 +423,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
         <button id="btn-manual-entry">+ Manual entry</button>
       </span>
     </div>
-    <div class="row" style="margin-top:var(--sp-3)">
+    <div class="row mt3">
       <input type="text" id="hist-search" placeholder="Search notes / journal…" aria-label="Search sessions" style="flex:1;min-width:140px">
       <select id="hist-filter-object" aria-label="Filter by object"><option value="">Any object</option></select>
       <select id="hist-filter-hindrance" aria-label="Filter by hindrance"><option value="">Any hindrance</option></select>
@@ -394,7 +431,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <select id="hist-filter-source" aria-label="Filter by entry source"><option value="">Any source</option><option value="timer">Timer</option><option value="manual">Manual</option><option value="ai">AI draft</option><option value="imported">Imported</option></select>
       <select id="hist-filter-review" aria-label="Filter by teacher review"><option value="">Any review state</option><option value="none">Not reviewed</option><option value="flagged">Flagged for teacher</option><option value="discussed">Discussed</option><option value="reviewed">Teacher reviewed</option></select>
     </div>
-    <div id="history-list" style="margin-top:var(--sp-3)"></div>
+    <div id="history-list" class="mt3"></div>
   </div>
 </section>
 
@@ -407,7 +444,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     <button class="chip" data-range="year">This year</button>
     <button class="chip" data-range="all">All</button>
   </div>
-  <div id="progress-container" style="margin-top:var(--sp-3)"></div>
+  <div id="progress-container" class="mt3"></div>
 </section>
 
 <!-- ============ LEARN ============ -->
@@ -462,7 +499,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     </details>
     <details>
       <summary>The classical stage ladder, honestly labeled</summary>
-      <table class="kv" style="margin-top:8px">
+      <table class="kv mt2">
         <tr><td>Foundation & daily sitting</td><td><span class="badge">scientific finding</span> attention training at this level is well documented in modern practitioners</td></tr>
         <tr><td>Access concentration & absorption</td><td><span class="badge">scientific finding</span> absorption states have been recorded in meditators under fMRI · <span class="badge gold">traditional claim</span> the detailed stage maps · best done with a teacher — intensive practice can destabilize</td></tr>
         <tr><td>Kasina expansion, 8 attainments</td><td><span class="badge gold">traditional claim</span> full-time practitioner territory in every source</td></tr>
@@ -484,7 +521,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <button id="btn-doc-manual">Read the practice manual</button>
       <button id="btn-doc-roadmap">Read the roadmap</button>
     </div>
-    <p class="faint" style="margin-top:8px">The source ledger (PRACTICE_SOURCES.md) records every teacher and text behind the cards above — URLs, access dates, and how each was verified. Also referenced: Visuddhimagga (Ñāṇamoli trans.) · SN 51.20 · MN 118 · AN 5.28 · DN 2.</p>
+    <p class="faint mt2">The source ledger (PRACTICE_SOURCES.md) records every teacher and text behind the cards above — URLs, access dates, and how each was verified. Also referenced: Visuddhimagga (Ñāṇamoli trans.) · SN 51.20 · MN 118 · AN 5.28 · DN 2.</p>
   </div>
 </section>
 
@@ -498,15 +535,15 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <button id="btn-export-csv">Export CSV (sessions)</button>
       <label class="btn" style="display:inline-flex;align-items:center">Import JSON… <input type="file" id="import-file" accept=".json,application/json" class="sr-only"></label>
     </div>
-    <p class="faint" id="storage-info" style="margin-top:var(--sp-2)"></p>
-    <div id="storage-health" style="margin-top:var(--sp-2)"></div>
+    <p class="faint" id="storage-info" class="mt2"></p>
+    <div id="storage-health" class="mt2"></div>
   </div>
 
   <div class="card">
     <h2>AI provider (optional)</h2>
     <p class="dim">By default the Journal uses a <strong>local, deterministic parser</strong> — nothing leaves the device. If you configure a provider, journal text is sent to that endpoint when you press “Create draft”. The key is stored only in this browser's localStorage, in plain text.</p>
     <label class="check"><input type="checkbox" id="ai-enabled"> Use external provider when configured</label>
-    <div class="grid2" style="margin-top:var(--sp-2)">
+    <div class="grid2 mt2">
       <div class="field"><label for="ai-endpoint">Endpoint URL</label><input type="url" id="ai-endpoint" placeholder="https://api.anthropic.com/v1/messages"></div>
       <div class="field"><label for="ai-model">Model</label><input type="text" id="ai-model" placeholder="claude-haiku-4-5"></div>
       <div class="field" style="grid-column:1/-1"><label for="ai-key">API key (stored locally, never committed)</label><input type="password" id="ai-key" autocomplete="off"></div>
@@ -587,7 +624,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
   </div>
 
   <div class="card">
-    <h2 style="color:var(--err)">Danger zone</h2>
+    <h2 style="color:var(--destructive)">Danger zone</h2>
     <p class="dim">Deletes the tracker envelope from this browser. Legacy v1 keys (<code>janSits</code>, <code>janGates</code>) are never touched. Export first.</p>
     <button id="btn-wipe" class="danger">Delete all tracker data…</button>
   </div>
@@ -608,7 +645,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
   </div>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
-<dialog id="modal" aria-label="Dialog"><div id="modal-body"></div></dialog>
+<dialog id="modal"><div id="modal-body"></div></dialog>
 <div id="print-report" aria-hidden="true"></div>
 
 <script>
@@ -3345,7 +3382,14 @@ const UI = (function () {
   }
   function modal(html) {
     const dlg = $("#modal");
-    $("#modal-body").innerHTML = html;
+    if (dlg.open) dlg.close();           // never showModal() on an open dialog
+    const body = $("#modal-body");
+    body.innerHTML = html;
+    // Name the dialog from its own heading — one shared aria-label would announce
+    // every one of the 14 modals as "Dialog".
+    const h = body.querySelector("h2,h3");
+    if (h) { h.id = "modal-h"; dlg.setAttribute("aria-labelledby", "modal-h"); dlg.removeAttribute("aria-label"); }
+    else { dlg.removeAttribute("aria-labelledby"); dlg.setAttribute("aria-label", (body.textContent || "").trim().slice(0, 60) || "Message"); }
     dlg.showModal();
     return dlg;
   }
@@ -3354,7 +3398,7 @@ const UI = (function () {
     return new Promise(resolve => {
       const dlg = modal(
         "<p>" + esc(message) + "</p>" +
-        '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
+        '<div class="row mt3 end">' +
         '<button id="cm-cancel">Cancel</button>' +
         '<button id="cm-ok" class="danger">' + esc(actionLabel || "Confirm") + "</button></div>"
       );
@@ -3414,9 +3458,9 @@ const UI = (function () {
     const stale = $("#custom-row");
     if (stale) stale.remove(); // renderPresets runs repeatedly
     grid.insertAdjacentHTML("afterend",
-      '<div class="row" id="custom-row"' + (presetSel === "custom" ? "" : " hidden") + ' style="margin-top:var(--sp-2)">' +
+      '<div class="row" id="custom-row"' + (presetSel === "custom" ? "" : " hidden") + ' class="mt2">' +
       '<label class="row" style="gap:6px">Custom length ' +
-      '<input type="number" id="custom-min" min="1" max="480" step="1" inputmode="numeric" aria-label="Custom duration in minutes" style="width:90px"> min</label></div>');
+      '<input type="number" id="custom-min" min="1" max="480" step="1" inputmode="numeric" aria-label="Custom duration in minutes"> min</label></div>');
     $$(".preset-card", grid).forEach(card => card.onclick = () => {
       const id = card.dataset.preset;
       if (id === "__review") { showTab("journal"); return; }
@@ -3547,7 +3591,7 @@ const REVIEW = (function () {
   function hindranceRows() {
     return CORE.HINDRANCES.map(h => {
       const cur = (pending.hindrances || {})[h] || "";
-      return '<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:4px 0">' +
+      return '<div class="row" style="justify-content:space-between;border-bottom:var(--edge);padding:4px 0">' +
         '<span style="font-size:var(--fs-sm)">' + esc(CORE.HINDRANCE_LABELS[h]) + "</span>" +
         '<span class="row" role="group" aria-label="' + esc(CORE.HINDRANCE_LABELS[h]) + ' intensity">' +
         ["", "mild", "moderate", "strong"].map(lvl =>
@@ -3622,7 +3666,7 @@ const REVIEW = (function () {
       "</div>" +
       '<div class="row between"><span class="dim" id="rv-ratio">' + (ratio === null ? "no estimate given yet" : "concentration ratio: " + Math.round(ratio * 100) + "%") + "</span>" +
       '<button id="rv-conc-clear" class="ghost">clear (not reported)</button></div>' +
-      '<div class="row" role="group" aria-label="Estimate confidence" style="margin-top:8px"><span class="dim">confidence:</span>' +
+      '<div class="row" role="group" aria-label="Estimate confidence" class="mt2"><span class="dim">confidence:</span>' +
       CORE.CONFIDENCES.map(c => '<button class="chip rv-conf" data-c="' + c + '" aria-pressed="' + (p.confidence === c ? "true" : "false") + '">' + c + "</button>").join("") +
       "</div>" +
 
@@ -3637,14 +3681,14 @@ const REVIEW = (function () {
       '<div class="field" style="margin-top:10px"><label for="rv-quicknote">What did you notice? (optional)</label>' +
       '<textarea id="rv-quicknote" style="min-height:64px" placeholder="one or two honest sentences">' + esc(p.notes || "") + "</textarea></div>" +
 
-      '<div id="rv-errors" style="color:var(--err);font-size:var(--fs-sm);margin-top:8px" aria-live="polite"></div>' +
-      '<div class="row" style="margin-top:12px">' +
+      '<div id="rv-errors" style="color:var(--destructive);font-size:var(--fs-sm);margin-top:8px" aria-live="polite"></div>' +
+      '<div class="row mt3">' +
       '<button id="rv-save" class="primary big">' + (editingId ? "Save changes" : "Save session") + "</button>" +
       (editingId ? '<button id="rv-delete" class="danger">Delete…</button>' : "") +
       "</div>" +
 
       '<details style="margin-top:16px"><summary>Attention details (settling, wandering, longest stretch)</summary>' +
-      '<div class="grid3" style="margin-top:8px">' +
+      '<div class="grid3 mt2">' +
       '<div class="field"><label for="rv-settle">Minutes to first settle</label><input type="number" id="rv-settle" min="0" step="0.5" inputmode="decimal" value="' + (p.settleMin ?? "") + '" placeholder="not reported"></div>' +
       '<div class="field"><label for="rv-longest">Longest steady stretch (min)</label><input type="number" id="rv-longest" min="0" step="0.5" inputmode="decimal" value="' + (p.longestSteadyMin ?? "") + '" placeholder="not reported"></div>' +
       '<div class="field"><label for="rv-wander">Major wandering episodes</label><input type="number" id="rv-wander" min="0" step="1" inputmode="numeric" value="' + (p.wanderings ?? "") + '" placeholder="not reported"></div>' +
@@ -3654,23 +3698,23 @@ const REVIEW = (function () {
       "</details>" +
 
       '<details' + (p.timelineSource === "markers" ? " open" : "") + '><summary>Session timeline (optional — derives the estimate from segments)</summary>' +
-      (p.timelineSource === "markers" ? '<p class="notice" style="margin-top:8px">Suggested from your in-sit markers — a convention, not a measurement. Edit or remove segments freely; editing marks the timeline as yours.</p>' : "") +
-      '<div id="rv-timeline" style="margin-top:8px">' + timelineRows() + "</div>" +
+      (p.timelineSource === "markers" ? '<p class="notice mt2">Suggested from your in-sit markers — a convention, not a measurement. Edit or remove segments freely; editing marks the timeline as yours.</p>' : "") +
+      '<div id="rv-timeline" class="mt2">' + timelineRows() + "</div>" +
       '<div class="row"><button id="rv-tl-add">+ Add segment</button>' +
       (derived ? '<span class="dim">timeline-derived estimate: <strong>' + derived.concMin + "′</strong> (longest steady " + derived.longestSteadyMin + "′)</span><button id=\"rv-tl-use\">Use derived values</button>" : "") +
       "</div>" +
-      (mismatch ? '<p class="notice warn" style="margin-top:8px">Your manual estimate (' + conc + '′) differs from the timeline-derived value (' + derived.concMin + "′). Both are kept — the manual value is what gets saved.</p>" : "") +
+      (mismatch ? '<p class="notice warn mt2">Your manual estimate (' + conc + '′) differs from the timeline-derived value (' + derived.concMin + "′). Both are kept — the manual value is what gets saved.</p>" : "") +
       '<p class="faint">Segment weights: continuous 100% · mostly steady 75% · intermittent 35% · wandering/dull/agitated/uncertain 0%. A convention, not a measurement.</p>' +
       "</details>" +
 
-      '<details><summary>Hindrances (none required)</summary><div style="margin-top:8px">' + hindranceRows() +
+      '<details><summary>Hindrances (none required)</summary><div class="mt2">' + hindranceRows() +
       '<button id="rv-dom-clear" class="ghost" style="margin-top:6px">clear dominant</button></div></details>' +
 
-      '<details><summary>Reported qualities</summary><div class="grid3" style="margin-top:8px">' +
+      '<details><summary>Reported qualities</summary><div class="grid3 mt2">' +
       CORE.QUALITIES.map(q => '<label class="check"><input type="checkbox" class="rv-quality" value="' + q + '"' + ((p.qualities || []).indexOf(q) >= 0 ? " checked" : "") + "> " + esc(CORE.QUALITY_LABELS[q]) + "</label>").join("") +
       '</div><p class="faint">These are reports of experience, not evidence of attainment.</p></details>' +
 
-      '<details><summary>Light / image report</summary><div style="margin-top:8px">' +
+      '<details><summary>Light / image report</summary><div class="mt2">' +
       '<div class="field"><label for="rv-nim-cat">Report</label><select id="rv-nim-cat">' +
       '<option value="">not reported</option>' +
       CORE.NIMITTA_CATEGORIES.map(c => '<option value="' + c + '"' + (p.nimitta && p.nimitta.category === c ? " selected" : "") + ">" + esc(CORE.NIMITTA_LABELS[c]) + "</option>").join("") +
@@ -3689,7 +3733,7 @@ const REVIEW = (function () {
       "</div>" +
       '<p class="faint">Recorded neutrally as a reported experience. Consider discussing repeated or destabilizing experiences with a qualified teacher.</p></div></details>' +
 
-      '<details><summary>Body, energy, context</summary><div class="grid3" style="margin-top:8px">' +
+      '<details><summary>Body, energy, context</summary><div class="grid3 mt2">' +
       '<div class="field"><label for="rv-object">Object</label><select id="rv-object"><option value="">—</option>' +
       CORE.OBJECTS.map(o => '<option value="' + o + '"' + (p.object === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
       '<div class="field"><label for="rv-posture">Posture</label><select id="rv-posture"><option value="">—</option>' +
@@ -3703,7 +3747,7 @@ const REVIEW = (function () {
       CORE.AFTER_STATES.map(a => '<option value="' + a + '"' + (p.afterStateReport === a ? " selected" : "") + ">" + a + "</option>").join("") + "</select></div>" +
       "</div></details>" +
 
-      '<details><summary>Teacher review & original text</summary><div style="margin-top:8px">' +
+      '<details><summary>Teacher review & original text</summary><div class="mt2">' +
       (p.journalText ? '<div class="field"><label>Original journal text (kept verbatim)</label><div class="card sub" style="font-size:var(--fs-sm)">' + esc(p.journalText) + "</div></div>" : "") +
       '<div class="grid2">' +
       '<div class="field"><label for="rv-review">Teacher review state</label><select id="rv-review">' +
@@ -3922,12 +3966,12 @@ const HISTORY = (function () {
     list.innerHTML = shown.slice(0, 200).map(s => {
       const r = s.ratio !== null ? Math.round(s.ratio * 100) + "%" : "—";
       const badges =
-        (CORE.isTestSession(s) ? '<span class="badge" style="color:var(--warn);border-color:var(--warn)">' + (s._demo ? "demo" : "test") + "</span>" : "") +
+        (CORE.isTestSession(s) ? '<span class="badge" style="color:var(--warning);border-color:var(--warning)">' + (s._demo ? "demo" : "test") + "</span>" : "") +
         (s.object ? '<span class="badge">' + esc(s.object) + "</span>" : "") +
         (s.entrySource ? '<span class="badge">' + esc(s.entrySource) + "</span>" : "") +
         (s.nimitta && s.nimitta.category !== "none" ? '<span class="badge gold">light report</span>' : "") +
         ((s.teacherReview || "none") !== "none" ? '<span class="badge">' + esc(CORE.REVIEW_LABELS[s.teacherReview]) + "</span>" : "");
-      return '<button class="sess-item" data-id="' + esc(s.id) + '" aria-label="Open session ' + esc(s.date) + '">' +
+      return '<button class="sess-item" data-id="' + esc(s.id) + '">' +
         '<span class="si-min">' + (CORE.isNum(s.actualMin) ? Math.round(s.actualMin) + "′" : "—") + "</span>" +
         '<span class="si-body">' +
         '<span class="si-top"><strong>' + esc(s.date) + "</strong>" + (s.startTime ? '<span class="dim"> · ' + esc(s.startTime) + "</span>" : "") + badges + "</span>" +
@@ -3976,7 +4020,7 @@ const HISTORY = (function () {
     const dlg = UI.modal(
       "<h2>Session " + esc(s.date) + "</h2>" +
       '<table class="kv">' + rows.join("") + "</table>" +
-      '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
+      '<div class="row mt3 end">' +
       '<button id="sd-close">Close</button>' +
       (CORE.isTestSession(s) ? "" : '<button id="sd-share">Share…</button>') +
       '<button id="sd-flag">' + ((s.teacherReview || "none") === "none" ? "Flag for teacher…" : "Teacher note…") + "</button>" +
@@ -4012,7 +4056,7 @@ const HISTORY = (function () {
         : "This session is already " + esc(CORE.REVIEW_LABELS[cur].toLowerCase()) + " — the note is updated without changing that.") + "</p>" +
       '<div class="field"><label for="fl-note">Private note (what to ask or mention)</label>' +
       '<textarea id="fl-note" style="min-height:70px">' + esc(s.teacherNotes || "") + "</textarea></div>" +
-      '<div class="row" style="justify-content:flex-end"><button id="fl-cancel">Cancel</button>' +
+      '<div class="row end"><button id="fl-cancel">Cancel</button>' +
       '<button id="fl-save" class="primary">' + (cur === "none" ? "Flag session" : "Save note") + "</button></div>"
     );
     UI.$("#fl-cancel").onclick = () => dlg.close();
@@ -4091,10 +4135,10 @@ const HISTORY = (function () {
       '<button class="chip" id="tr-30" aria-pressed="true">Last 30 days</button>' +
       '<button class="chip" id="tr-90" aria-pressed="false">Last 90 days</button>' +
       '<button class="chip" id="tr-custom" aria-pressed="false">Custom…</button></div>' +
-      '<div class="grid3" id="tr-range" hidden style="margin-top:8px">' +
+      '<div class="grid3" id="tr-range" hidden class="mt2">' +
       '<div class="field"><label for="tr-from">From</label><input type="date" id="tr-from" value="' + CORE.addDays(today, -29) + '"></div>' +
       '<div class="field"><label for="tr-to">To</label><input type="date" id="tr-to" value="' + today + '"></div></div>' +
-      '<label class="check" style="margin-top:8px"><input type="checkbox" id="tr-notes" checked> Include the notes column</label>' +
+      '<label class="check mt2"><input type="checkbox" id="tr-notes" checked> Include the notes column</label>' +
       '<div class="row" style="justify-content:flex-end;margin-top:8px"><button id="tr-cancel">Cancel</button>' +
       '<button id="tr-print" class="primary">Print report</button></div>'
     );
@@ -4156,7 +4200,7 @@ const PROGRESS = (function () {
     const poly = pts.map((p, i) => x(i).toFixed(1) + "," + y(p.y).toFixed(1)).join(" ");
     return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.label || "line chart") + '">' +
       '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="#253044"/>' +
-      '<text x="' + (P - 4) + '" y="' + (y(yMax) + 4) + '" fill="#76849b" font-size="10" text-anchor="end">' + (o.yFmt ? o.yFmt(yMax) : yMax) + "</text>" +
+      '<text x="' + (P - 4) + '" y="' + (y(yMax) + 4) + '" fill="#76849b" text-anchor="end">' + (o.yFmt ? o.yFmt(yMax) : yMax) + "</text>" +
       '<polyline points="' + poly + '" fill="none" stroke="#8ec3ea" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' +
       pts.map((p, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.y).toFixed(1) + '" r="2.6" fill="#8ec3ea"/>').join("") +
       "</svg>";
@@ -4179,11 +4223,11 @@ const PROGRESS = (function () {
       } else {
         bars += '<rect rx="2" x="' + (cx - bw / 2) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" fill="#4a7ba6"/>';
       }
-      if (it.label) bars += '<text x="' + cx + '" y="' + (H - P + 12) + '" fill="#76849b" font-size="9" text-anchor="middle">' + esc(String(it.label).slice(0, 10)) + "</text>";
+      if (it.label) bars += '<text x="' + cx + '" y="' + (H - P + 12) + '" fill="#76849b" text-anchor="middle">' + esc(String(it.label).slice(0, 10)) + "</text>";
     });
     return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.label || "bar chart") + '">' +
       '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="#253044"/>' +
-      '<text x="' + (P - 4) + '" y="' + (P + 4) + '" fill="#76849b" font-size="10" text-anchor="end">' + (o.yFmt ? o.yFmt(max) : max) + "</text>" + bars + "</svg>";
+      '<text x="' + (P - 4) + '" y="' + (P + 4) + '" fill="#76849b" text-anchor="end">' + (o.yFmt ? o.yFmt(max) : max) + "</text>" + bars + "</svg>";
   }
 
   function calendar(sessions, today) {
@@ -4236,7 +4280,7 @@ const PROGRESS = (function () {
       "</div>";
 
     // 30-day goal note (Gate 0)
-    html += '<div class="row between" style="margin-top:8px"><p class="faint" style="margin:0">Gate 0 target: a 30-day unbroken streak before booking the first retreat. Current: ' + mAll.currentStreak + "/30.</p>" +
+    html += '<div class="row between mt2"><p class="faint" style="margin:0">Gate 0 target: a 30-day unbroken streak before booking the first retreat. Current: ' + mAll.currentStreak + "/30.</p>" +
       '<button id="btn-share-card" class="ghost">Share a card…</button></div>';
     if (synthCount) html += '<p class="faint">' + synthCount + " demo/test entries exist and are excluded from everything on this page.</p>";
 
@@ -4267,7 +4311,7 @@ const PROGRESS = (function () {
       "self-reported");
 
     // hindrances
-    const hCounts = CORE.HINDRANCES.map(h => ({ label: CORE.HINDRANCE_LABELS[h].split(" ")[0], v: sel.filter(s => s.hindrances && s.hindrances[h]).length }));
+    const hCounts = CORE.HINDRANCES.map(h => ({ label: CORE.HINDRANCE_LABELS[h], v: sel.filter(s => s.hindrances && s.hindrances[h]).length }));
     html += chartBlock("Hindrance frequency (sessions reporting each)",
       hCounts.some(h => h.v > 0) ? svgBars(hCounts, { label: "hindrance frequency" }) : null,
       sel.length + " sessions in range", "No hindrances recorded in this range.");
@@ -4313,7 +4357,7 @@ const PROGRESS = (function () {
       "</div>";
     if (askId) {
       const a = CORE.answerQuestion(askId, all);
-      if (a) html += '<div class="card sub" style="margin-top:8px" id="ask-answer"><p style="margin:0">' + esc(a.text) + "</p>" +
+      if (a) html += '<div class="card sub mt2" id="ask-answer"><p style="margin:0">' + esc(a.text) + "</p>" +
         '<div class="faint">range: ' + esc(a.range) + " · n=" + a.n + " · metric: " + esc(a.metric) + " · evidence strength: " + esc(a.strength) + "</div></div>";
     }
     html += '<p class="honesty">All concentration values are self-reported estimates. Charts and answers show associations only; nothing here demonstrates attainment or causation.</p>';
@@ -4363,7 +4407,7 @@ const MAP = (function () {
       } else {
         html += "<p style='font-size:var(--fs-sm)'>" + esc(lv.body) + "</p>";
       }
-      html += '<div class="row" style="margin-top:8px">' +
+      html += '<div class="row mt2">' +
         '<label for="map-ev-' + i + '">evidence:</label>' +
         '<select id="map-ev-' + i + '" class="map-evidence" data-i="' + i + '">' +
         CORE.MAP_EVIDENCE.map(e => '<option value="' + e + '"' + (lvState.evidence === e ? " selected" : "") + ">" + e.replace(/-/g, " ") + "</option>").join("") +
@@ -4489,8 +4533,8 @@ const JOURNAL = (function () {
     html += fieldRow("After-state",
       '<select id="df-after"><option value="">null</option>' + CORE.AFTER_STATES.map(a => '<option value="' + a + '"' + (d.afterStateReport === a ? " selected" : "") + ">" + a + "</option>").join("") + "</select>", "afterStateReport");
     html += '<div class="draft-field"><span class="dim">Date</span><span><input type="date" id="df-date" value="' + esc(d.date || STORE.todayStr()) + '"></span><span></span></div>';
-    html += '<div id="df-errors" style="color:var(--err);font-size:var(--fs-sm);margin-top:8px" aria-live="polite">' + (v.ok ? "" : v.errors.map(esc).join("<br>")) + "</div>";
-    html += '<div class="row" style="margin-top:12px">' +
+    html += '<div id="df-errors" style="color:var(--destructive);font-size:var(--fs-sm);margin-top:8px" aria-live="polite">' + (v.ok ? "" : v.errors.map(esc).join("<br>")) + "</div>";
+    html += '<div class="row mt3">' +
       '<button id="df-save" class="primary big">Save as session…</button>' +
       '<button id="df-reject" class="danger">Reject draft</button>' +
       "</div>" +
@@ -4534,7 +4578,7 @@ const JOURNAL = (function () {
         const dlg = UI.modal("<h2>Confirm save</h2>" +
           (dup ? '<div class="notice warn">A session with the same date, start and duration already exists (' + esc(dup.date) + ", " + dup.actualMin + "′). Saving will create a <strong>second</strong> session, not overwrite it.</div>" : "") +
           summary +
-          '<div class="row" style="margin-top:12px;justify-content:flex-end"><button id="dfc-cancel">Back</button><button id="dfc-ok" class="primary">Save session</button></div>');
+          '<div class="row mt3 end"><button id="dfc-cancel">Back</button><button id="dfc-ok" class="primary">Save session</button></div>');
         $("#dfc-ok").onclick = () => { dlg.close(); resolve(true); };
         $("#dfc-cancel").onclick = () => { dlg.close(); resolve(false); };
         dlg.oncancel = () => resolve(false);
@@ -4605,7 +4649,7 @@ const SETTINGS = (function () {
     reader.onload = () => {
       const res = CORE.parseImport(String(reader.result), STORE.sessions(), STORE.nowIso());
       if (!res.ok) {
-        UI.modal("<h2>Import rejected</h2><p>" + esc(res.error) + '</p><div class="row" style="justify-content:flex-end"><button onclick="document.getElementById(\'modal\').close()">Close</button></div>');
+        UI.modal("<h2>Import rejected</h2><p>" + esc(res.error) + '</p><div class="row end"><button onclick="document.getElementById(\'modal\').close()">Close</button></div>');
         return;
       }
       let html = "<h2>Import preview</h2>" +
@@ -4625,7 +4669,7 @@ const SETTINGS = (function () {
           res.fresh.slice(0, 5).map(s => "• " + esc(s.date) + " · " + s.actualMin + "′" + (s.concMin !== null ? " · contact " + s.concMin + "′" : "")).join("<br>") +
           (res.fresh.length > 5 ? "<br>…and " + (res.fresh.length - 5) + " more" : "") + "</div></details>";
       }
-      html += '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
+      html += '<div class="row mt3 end">' +
         '<button id="imp-cancel">Cancel</button>' +
         (res.fresh.length ? '<button id="imp-ok" class="primary">Import ' + res.fresh.length + " sessions</button>" : "") +
         "</div>";
@@ -4757,7 +4801,7 @@ const SETTINGS = (function () {
       const dlg = UI.modal("<h2>Delete all tracker data</h2>" +
         "<p>This deletes the <code>jhanaTracker.v2</code> envelope (" + STORE.sessions().length + " sessions) from this browser. Legacy keys are untouched. <strong>Export a backup first.</strong></p>" +
         '<p>Type <code>DELETE</code> to confirm:</p><input type="text" id="wipe-confirm" autocomplete="off">' +
-        '<div class="row" style="margin-top:12px;justify-content:flex-end"><button id="wipe-cancel">Cancel</button><button id="wipe-ok" class="danger" disabled>Delete everything</button></div>');
+        '<div class="row mt3 end"><button id="wipe-cancel">Cancel</button><button id="wipe-ok" class="danger" disabled>Delete everything</button></div>');
       $("#wipe-confirm").addEventListener("input", () => { $("#wipe-ok").disabled = $("#wipe-confirm").value !== "DELETE"; });
       $("#wipe-cancel").onclick = () => dlg.close();
       $("#wipe-ok").onclick = () => {
@@ -4827,7 +4871,7 @@ const TODAY = (function () {
       STORE.setSetting("guideSeen", true);
       const dlg = UI.modal("<h2>How to use</h2>" +
         CORE.GUIDE.map(s => "<h3>" + s[0] + "</h3><p class='dim'>" + s[1] + "</p>").join("") +
-        '<div class="row" style="justify-content:flex-end"><button id="gd-close" class="primary">Done</button></div>');
+        '<div class="row end"><button id="gd-close" class="primary">Done</button></div>');
       $("#gd-close").onclick = () => { dlg.close(); renderStatus(); };
     };
     const hint = $("#install-hint");
@@ -4932,7 +4976,7 @@ const FEEDBACK = (function () {
       '<div class="field"><label for="fb-broken">What didn\'t work?</label><textarea id="fb-broken" style="min-height:60px"></textarea></div>' +
       '<div class="field"><label for="fb-impression">General impression?</label><input type="text" id="fb-impression"></div>' +
       '<p class="faint">device (auto): ' + esc(deviceLine()) + "</p>" +
-      '<div class="row" style="justify-content:flex-end"><button id="fb-cancel">Cancel</button><button id="fb-make" class="primary">Create report</button></div>'
+      '<div class="row end"><button id="fb-cancel">Cancel</button><button id="fb-make" class="primary">Create report</button></div>'
     );
     $("#fb-cancel").onclick = () => dlg.close();
     $("#fb-make").onclick = () => {
@@ -5025,8 +5069,8 @@ const SHARE = (function () {
       '<div class="row" role="group" aria-label="Card format">' +
       '<button class="chip" id="sh-story" aria-pressed="true">Story</button>' +
       '<button class="chip" id="sh-square" aria-pressed="false">Square</button></div>' +
-      '<canvas id="sh-canvas" style="width:100%;max-width:250px;display:block;margin:12px auto;border-radius:14px;border:1px solid var(--line)" aria-label="Share card preview"></canvas>' +
-      '<div class="row" style="justify-content:flex-end"><button id="sh-close">Close</button><button id="sh-save" class="primary">Save image</button></div>'
+      '<canvas id="sh-canvas" style="width:100%;max-width:250px;display:block;margin:12px auto;border-radius:14px;border:var(--edge)" aria-label="Share card preview"></canvas>' +
+      '<div class="row end"><button id="sh-close">Close</button><button id="sh-save" class="primary">Save image</button></div>'
     );
     let aspect = "story";
     const paint = () => draw($("#sh-canvas"), d, aspect);
@@ -5215,7 +5259,7 @@ const APP = (function () {
       (text
         ? '<p class="dim">Unaltered source document (' + UI.esc(file) + ").</p><pre style='white-space:pre-wrap;font-size:var(--fs-xs);max-height:60vh;overflow:auto'>" + UI.esc(text) + "</pre>"
         : '<p class="dim">The document could not be loaded here. It lives beside the app as <code>' + UI.esc(file) + "</code> — open it directly from the folder with any text editor.</p>") +
-      '<div class="row" style="justify-content:flex-end"><button id="doc-close" class="primary">Close</button></div>'
+      '<div class="row end"><button id="doc-close" class="primary">Close</button></div>'
     );
     UI.$("#doc-close").onclick = () => UI.closeModal();
   };
@@ -5238,7 +5282,7 @@ const APP = (function () {
     UI.$("#learn-jhana").innerHTML =
       '<div class="card"><h3 style="margin-top:0">' + esc(j.title) + ' <span class="badge gold">' + esc(j.badge) + '</span></h3>' +
       "<p class='dim'>" + esc(j.body) + "</p>" +
-      '<div class="notice" style="margin-top:8px"><strong>' + esc(j.boundary) + "</strong></div>" + srcLine(j.source) + "</div>";
+      '<div class="notice mt2"><strong>' + esc(j.boundary) + "</strong></div>" + srcLine(j.source) + "</div>";
     UI.$("#learn-troubleshoot").innerHTML =
       '<div class="card"><h3 style="margin-top:0">Troubleshooting <span class="badge">practice guidance</span></h3>' +
       '<p class="dim">Short answers for common snags. Where the traditions disagree, the disagreement is shown, not averaged.</p>' +
@@ -5256,7 +5300,7 @@ const APP = (function () {
   (function renderPracticeInstructions() {
     const mode = CORE.currentPracticeMode({ currentPracticeMode: STORE.getSetting("currentPracticeMode", null) });
     UI.$("#practice-instructions").innerHTML =
-      '<strong style="color:var(--fg)">How to practice — ' + UI.esc(mode.name) + '</strong> <span class="badge">practice guidance</span><br>' +
+      '<strong style="color:var(--label-primary)">How to practice — ' + UI.esc(mode.name) + '</strong> <span class="badge">practice guidance</span><br>' +
       UI.esc(mode.prepCue) + " " + UI.esc(mode.objectLine) + " " + UI.esc(mode.instruction) + " " +
       UI.esc(mode.returnCue) + " " + UI.esc(mode.subtleCue) +
       '<br><span class="faint">Sources and how the traditions differ: the Learn tab.</span>';
