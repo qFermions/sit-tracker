@@ -158,6 +158,38 @@ const exported = await page.evaluate(async () => {
 ok("export produces a real backup", !!exported && exported.length > 50, exported ? exported.length + " bytes" : "nothing");
 ok("the export carries the saved sit", !!exported && JSON.parse(exported).sessions.length >= 1);
 
+console.log("\n=== IMPORT ROUND-TRIP ===");
+// wipe, then bring the exported backup back through the real import control
+const roundTrip = await page.evaluate(async json => {
+  const h = window.__sitTracker;
+  const had = h.STORE.sessions().length;
+  h.STORE.wipe();
+  const after = h.STORE.sessions().length;
+  const inp = document.querySelector("#import-file");
+  if (!inp) return { why: "#import-file missing" };
+  const dt = new DataTransfer();
+  dt.items.add(new File([json], "backup.json", { type: "application/json" }));
+  inp.files = dt.files;
+  inp.dispatchEvent(new Event("change", { bubbles: true }));
+  await new Promise(r => setTimeout(r, 500));
+  return { had, afterWipe: after };
+}, exported);
+ok("wiping clears the store", roundTrip.afterWipe === 0, JSON.stringify(roundTrip));
+// the app shows an import preview before writing — confirm it, then check the data landed
+const confirmed = await page.evaluate(async () => {
+  const dlg = document.querySelector("dialog");
+  if (!dlg || !dlg.open) return "no import preview appeared";
+  const btns = [...dlg.querySelectorAll("button")];
+  const go = btns.find(b => /import|confirm|merge|apply/i.test(b.textContent || ""));
+  if (!go) return "preview had no confirm control: " + btns.map(b => b.textContent.trim()).join("/");
+  go.click();
+  await new Promise(r => setTimeout(r, 400));
+  return "confirmed";
+});
+ok("import shows a preview and can be confirmed", confirmed === "confirmed", confirmed);
+ok("the imported sit is back in the store",
+  await page.evaluate(() => window.__sitTracker.STORE.sessions().length) >= 1);
+
 console.log("\n=== RELOAD + OFFLINE ===");
 await page.reload({ waitUntil: "networkidle" }); await page.waitForTimeout(600);
 ok("the saved sit survives a reload", await page.evaluate(() => window.__sitTracker.STORE.sessions().length) >= 1);
