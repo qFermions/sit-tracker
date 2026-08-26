@@ -4,8 +4,8 @@ Derived from `APPLE_HIG_AUDIT.md`. Ranked P0 (ship-blocking) to P4 (nice to have
 Status is factual: **DONE** means implemented *and* verified by a named check.
 
 Payload reality throughout: the app must stay under **344,064 bytes** (ADR-0003). It
-started this pass at 341,984 with 2,080 bytes of headroom and ends at **344,059 with
-5 bytes free**. Roughly **3,700 bytes** were reclaimed from dead and duplicated code, and
+started this pass at 341,984 with 2,080 bytes of headroom and ends at **344,058 with
+6 bytes free**. Roughly **3,700 bytes** were reclaimed from dead and duplicated code, and
 a further **312** from removing a redundant onboarding step, to fund the work.
 **The ceiling was not moved.** That constraint is the honest reason several P2–P4 items
 below are still open, and it is called out per item.
@@ -121,7 +121,7 @@ than presented as pre-existing defects.
 | B2 | First-launch onboarding unreachable by keyboard and hidden from screen readers: focus never entered, Tab walked into the app behind it, Escape did nothing | Pre-existing. Root cause: `render()` called `.focus()` while the element was still `hidden`, which silently no-ops | **FIXED** — now a native `<dialog>` + `showModal()`, which supplies focus containment, Escape and focus restore. Escape routes through Skip so the choice persists |
 | B3 | "Quiet screen" was a dead control — clicking it mid-sit changed **zero** elements | **Self-inflicted.** Adding `body.running .hide-zen` meant a running sit already hid everything the button would hide | **FIXED** — it is the *maximum* absence mode, so it now also drops the marker bar, marker log, Reset and the elapsed/planned line. Verified: the timer card goes 629px → 466px and 10 elements change state |
 | B4 | Three screens scrolled horizontally at 200% text | **Self-inflicted test gap.** My zoom gate only tested the default tab | **FIXED** — root cause was unbreakable long words, not the grids. `overflow-wrap:anywhere` on body, `table-layout:fixed`, `.field{min-width:0}`. All five tabs clean at 320/390px × 150/200% |
-| B5 | Chart axis labels clipped and overlapping — a y-axis "100%" at left = −8.9px; 29 of 29 adjacent x-label pairs colliding | Partly self-inflicted: moving chart text to CSS made labels larger than the gutter allowed | **FIXED** — gutters widened, x labels thinned to ~six and staggered onto two baselines. Rotation was tried first and rejected (it clipped the leftmost label). Verified across five real charts: 0 clipped, 0 overlapping |
+| B5 | Chart axis labels clipped and overlapping — a y-axis "100%" at left = −8.9px; 29 of 29 adjacent x-label pairs colliding | Partly self-inflicted: moving chart text to CSS made labels larger than the gutter allowed | **FIXED, in two rounds.** Round 1 (gutters widened, x labels thinned to ~six and staggered onto two baselines) cleared the labels but **introduced NEW-1**: the widened padding applied to both axes, so the vertical span `H−2P` went negative (−6) and every line chart collapsed to a ~1px band drawn *below* the axis with higher values plotting lower — caught by the re-review, because the gates tested clipping and overlap, not geometry. Round 2 splits the paddings (`P` horizontal only, `Q=20` vertical), restoring a 90-unit span. Verified live: 31.5-unit span, all points above the axis, data max at the top. A geometry gate now asserts both properties |
 
 Non-blocking items from the same review that were also fixed:
 
@@ -136,6 +136,13 @@ Still open from that review, and not claimed as fixed: `role="tablist"` without 
 the post-sit review; single-select option sets modelled as toggle buttons rather than
 radios; two links used as buttons; and the selected tab being invisible under
 `forced-colors: active`.
+
+Also from the re-review, open and pre-existing (not caused by these fixes): the
+consistency calendar hard-codes its dark-theme hex ramp, so in the light appearance a
+"no sit" cell is the *darkest* element on a white card — perceptually inverting the
+more-practice-more-ink encoding — and the calendar ignores `prefers-contrast: more`.
+The fix is the same CSS-class treatment the other charts got, plus a light ramp;
+roughly +150 bytes against 6 free, so it waits for the owner's byte decision.
 
 Fixed since that list was written: the sparkline text equivalent now announces the
 **data** maximum, not the axis cap — the ratio chart (which passes an explicit
@@ -159,3 +166,6 @@ Each of these covers a class of bug that reached a reviewer because nothing chec
   single-word label IS the mid-word fracture `scrollWidth` cannot see), true two-axis
   rect intersection (a left/right-only check flags a legitimate wrapped row as overlap),
   and the fixed bar's height against `main`'s bottom reserve.
+- Line-chart **geometry**: every polyline must draw entirely above its axis, and varying
+  data must span more than 5 units — the two signatures of the NEW-1 failure class,
+  which the typography gates were structurally unable to see.
