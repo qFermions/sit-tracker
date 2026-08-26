@@ -3587,7 +3587,7 @@ const REVIEW = (function () {
         ["", "mild", "moderate", "strong"].map(lvl =>
           '<button class="chip rv-hindrance" data-h="' + h + '" data-lvl="' + lvl + '" aria-pressed="' + ((cur || "") === lvl ? "true" : "false") + '">' + (lvl || "none") + "</button>"
         ).join("") +
-        '<label class="check" style="min-height:auto"><input type="radio" name="rv-dominant" class="rv-dominant" value="' + h + '"' + (pending.dominantHindrance === h ? " checked" : "") + " aria-label=\"dominant\"> dom.</label>" +
+        '<label class="check"><input type="radio" name="rv-dominant" class="rv-dominant" value="' + h + '"' + (pending.dominantHindrance === h ? " checked" : "") + " aria-label=\"dominant\"> dom.</label>" +
         "</span></div>";
     }).join("");
   }
@@ -4238,7 +4238,6 @@ const PROGRESS = (function () {
     for (const s of sessions) byDate[s.date] = (byDate[s.date] || 0) + (s.actualMin || 0);
     const weeks = 16;
     let html = '<svg viewBox="0 0 ' + (weeks * 14 + 20) + ' 112" role="img" aria-label="' + esc("practice consistency, last " + weeks + " weeks: sat on " + Object.keys(byDate).length + " days") + '">';
-    // find the sunday on/before (today - (weeks*7-1))
     const start = CORE.addDays(today, -(weeks * 7 - 1));
     for (let i = 0; i < weeks * 7; i++) {
       const d = CORE.addDays(start, i);
@@ -4297,7 +4296,7 @@ const PROGRESS = (function () {
     }
 
     const lastN = sel.slice(-30);
-    html += chartBlock("Practice consistency (last 16 weeks, all sessions)", calendar(all, today), "cell shade = minutes sat that day");
+    html += chartBlock("Practice consistency (last 16 weeks, all sessions)", calendar(all, today), "cell shade = minutes sat that day: none · under 15 · 15\u201329 · 30\u201359 · 60+");
     html += chartBlock("Duration vs estimated contact minutes",
       lastN.filter(s => CORE.isNum(s.actualMin)).length >= 1 ? svgBars(lastN.map(s => ({ v: s.actualMin || 0, v2: CORE.isNum(s.concMin) ? s.concMin : 0, label: s.date.slice(5) })), { dual: true, label: "duration vs contact", yFmt: v => Math.round(v) + "′" }) : null,
       "left bar = duration · right bar = self-reported contact minutes · last " + lastN.length + " sessions");

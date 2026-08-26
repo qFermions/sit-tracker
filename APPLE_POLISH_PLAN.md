@@ -52,7 +52,7 @@ several P2–P4 items below are still open, and it is called out per item.
 | P2-7 | Six font weights, two non-canonical (650→700, 750→900 on static fallbacks) | **DONE** | Four weights only |
 | P2-8 | Nothing marks the settling→sit transition for someone with their eyes closed | **OPEN** | ~150 bytes. The clearest remaining product gap |
 | P2-9 | Progress has no `h2`; 11 tiles silently mix all-time and range-scoped numbers | **OPEN** | ~100 bytes net. The mixing is the real defect — tapping "7 d" leaves three tiles unchanged |
-| P2-10 | One radio label cancels the 44 pt rule with an inline `min-height:auto` (~24 px) | **OPEN** | −24 bytes to fix; missed in this pass, should be first in the next |
+| P2-10 | One radio label cancelled the 44 pt rule with an inline `min-height:auto` (~24 px) | **DONE** | Inline override removed; −24 bytes |
 | P2-11 | Source documents fetch with no loading state | **PARTIAL** | The crash half is fixed (`modal()` now closes an open dialog before re-showing); the spinner half is open |
 
 ## P3 — content and data presentation
@@ -64,8 +64,8 @@ several P2–P4 items below are still open, and it is called out per item.
 | P3-3 | The dual-series legend named two colours as its only key | **DONE** | Now names position: "left bar / right bar" |
 | P3-4 | Progress' empty state told a returning practitioner they had never sat | **DONE** | Branches on the store, not the range |
 | P3-5 | Uppercase micro-labels — 11 at once on Progress, 6 on Today | **DONE** | Dropped from `.stat .l` / `.tstat .l`; kept on the two genuinely singular labels |
-| P3-6 | Heatmap has no legend and no stated thresholds | **OPEN** | ~80 bytes |
-| P3-7 | Heatmap rows are not weekdays, and a comment claims an alignment the code never performs | **OPEN** | Either fix the maths (~55 bytes) or delete the misleading comment (−20). The comment is the cheaper honesty fix |
+| P3-6 | Heatmap had no legend and no stated thresholds | **DONE** | Thresholds now named in the caption: none · under 15 · 15–29 · 30–59 · 60+ |
+| P3-7 | Heatmap rows are not weekdays; a comment claimed an alignment the code never performs | **PARTIAL** | The false comment is deleted (−20 bytes). The grid still is not weekday-aligned and its rows rotate daily — fixing the maths (~55 bytes) remains open |
 | P3-8 | Journal note excerpt truncated twice; second truncation invisible | **OPEN** | ~60 bytes |
 | P3-9 | Search has no scope, no result count, no reset | **OPEN** | ~250 bytes — the largest single open item |
 | P3-10 | Draft fields have no `<label for>`, and `null` is user-facing copy | **OPEN** | ~200 bytes. Note the *review* form already gets this right |
