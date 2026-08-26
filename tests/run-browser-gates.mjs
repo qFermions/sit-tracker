@@ -371,18 +371,33 @@ async function main() {
     await page.evaluate(() => { const b = document.querySelector("#tabbtn-today"); if (b) b.click(); });
     const r = { over: worst.length > 0, bleeding: worst };
     gate(`no horizontal overflow on ANY tab at ${w}px with text at ${z}`, !r.over, r.bleeding.join(" | "));
-    // document-level overflow does not catch labels colliding INSIDE the tab bar
+    // Three failure modes scrollWidth cannot see: a single-word label wrapping onto a
+    // second line (mid-word fracture — scrollWidth reads clean because the text DID fit,
+    // vertically), two buttons' rects intersecting, and a wrapped multi-row bar growing
+    // taller than the reserve main keeps for it (content slides underneath).
     const tabs = await page.evaluate(() => {
       const bs = [...document.querySelectorAll("nav.tabs button")];
-      const clipped = bs.filter(b => b.scrollWidth > b.clientWidth + 1).map(b => b.textContent.trim());
+      const fractured = bs.filter(b => {
+        const r = document.createRange(); r.selectNodeContents(b);
+        return new Set([...r.getClientRects()].map(x => Math.round(x.top))).size > 1;
+      }).map(b => b.textContent.trim());
       const rects = bs.map(b => b.getBoundingClientRect());
       let overlap = false;
-      for (let i = 1; i < rects.length; i++) if (rects[i].left < rects[i-1].right - 1) overlap = true;
-      return { clipped, overlap };
+      for (let i = 1; i < rects.length; i++)
+        for (let j = 0; j < i; j++)
+          if (rects[i].left < rects[j].right - 0.5 && rects[j].left < rects[i].right - 0.5 &&
+              rects[i].top < rects[j].bottom - 0.5 && rects[j].top < rects[i].bottom - 0.5) overlap = true;
+      const nav = document.querySelector("nav.tabs");
+      const fixed = getComputedStyle(nav).position === "fixed";
+      const navH = nav.getBoundingClientRect().height;
+      const reserve = parseFloat(getComputedStyle(document.querySelector("main")).paddingBottom);
+      return { fractured, overlap, tooTall: fixed && navH > reserve, navH: Math.round(navH), reserve: Math.round(reserve) };
     });
-    gate(`tab labels are not clipped or overlapping at ${w}px / ${z}`,
-      tabs.clipped.length === 0 && !tabs.overlap,
-      (tabs.overlap ? "overlapping; " : "") + (tabs.clipped.length ? "clipped: " + tabs.clipped.join(", ") : ""));
+    gate(`tab labels intact, not overlapping, bar within its reserve at ${w}px / ${z}`,
+      tabs.fractured.length === 0 && !tabs.overlap && !tabs.tooTall,
+      (tabs.fractured.length ? "mid-word: " + tabs.fractured.join(", ") + "; " : "") +
+      (tabs.overlap ? "overlapping; " : "") +
+      (tabs.tooTall ? `bar ${tabs.navH}px > reserve ${tabs.reserve}px` : ""));
   }
   await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
   await page.setViewportSize({ width: 390, height: 844 });
