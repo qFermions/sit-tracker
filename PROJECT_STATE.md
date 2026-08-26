@@ -42,14 +42,23 @@ text equivalents for every chart, and semantic purpose-named colour tokens.
 dependency, localStorage, offline via the service worker, **schema v6 untouched** — a
 visual redesign that made zero data-contract changes. The ADR-0003 ceiling was **not**
 moved: ~3,400 bytes were reclaimed from dead and duplicated code to fund the work.
-Final payload **343,984 / 344,064 bytes** (80 free) — the binding constraint on what
+Final payload **344,058 / 344,064 bytes** (6 free) — the binding constraint on what
 remains open in `APPLE_POLISH_PLAN.md`.
 
-**Verification:** Node **447/447** (plus a new whole-script syntax gate — the CORE
+**Verification:** Node **447/447** (plus new gates: whole-script syntax — the CORE
 extraction previously let a syntax error anywhere in the app modules pass all 447 tests
-while the app failed to boot), browser gates **32/32**, interaction flow **32/32**,
-sweep at 320/360/375/390/430/768/834/1024 in both appearances plus text at 150% and 200%,
-zero horizontal overflow and zero console errors. Real phone hardware remains untested.
+while the app failed to boot — and duplicate `class` attributes), browser gates
+**49/49**, interaction flow **35/35**, sweep at 320/360/375/390/430/768/834/1024 in both
+appearances plus text at 150% and 200%, zero horizontal overflow and zero console errors.
+
+**Independent review:** a fresh-context reviewer ran the app in a browser and returned
+BLOCKED with five findings (frozen tab labels, keyboard-unreachable onboarding, a dead
+Quiet-screen control, 200%-zoom overflow, clipped chart labels — three of the five caused
+by this pass's own earlier fixes). All five were repaired, each repair gated; one repair
+round introduced a further regression each (mid-word tab fracture; flattened line charts),
+both caught by review, both fixed and gated. Final independent verdict on `78acb6a`:
+**PASS**. Full trail in `APPLE_POLISH_PLAN.md`. Final payload **344,058 / 344,064**.
+Real phone hardware remains untested.
 
 ## Practice-training run (v4.4.0, 2026-08-18) — the app becomes a training cockpit
 
