@@ -4,10 +4,11 @@ Derived from `APPLE_HIG_AUDIT.md`. Ranked P0 (ship-blocking) to P4 (nice to have
 Status is factual: **DONE** means implemented *and* verified by a named check.
 
 Payload reality throughout: the app must stay under **344,064 bytes** (ADR-0003). It
-started this pass at 341,984 with 2,080 bytes of headroom and ends at **343,963 with
-101 bytes free**. Roughly **3,400 bytes** were reclaimed from dead and duplicated code to
-fund the work. **The ceiling was not moved.** That constraint is the honest reason
-several P2–P4 items below are still open, and it is called out per item.
+started this pass at 341,984 with 2,080 bytes of headroom and ends at **344,059 with
+5 bytes free**. Roughly **3,700 bytes** were reclaimed from dead and duplicated code, and
+a further **312** from removing a redundant onboarding step, to fund the work.
+**The ceiling was not moved.** That constraint is the honest reason several P2–P4 items
+below are still open, and it is called out per item.
 
 ---
 
@@ -104,3 +105,57 @@ There are three honest ways forward, and the choice is the owner's:
    applies: a redesign being verbose is not a reason to move the limit, and an ADR whose
    only purpose is "we wanted more CSS" should not be written. Nothing here justifies it
    yet — option 1 or 2 should be exhausted first.
+
+---
+
+# Repair round — independent review blockers
+
+An independent reviewer with fresh eyes ran the build in a browser and returned
+**BLOCKED** with five findings. All five are now fixed and re-verified. **Three of the
+five were caused by fixes made earlier in this same pass** — recorded that way rather
+than presented as pre-existing defects.
+
+| # | Blocker | Cause | Status |
+|---|---|---|---|
+| B1 | Nav labels frozen at 12px, never responding to user text size — measured 12px at root 16/24/32/64px, and below the app's own `--fs-xs` | **Self-inflicted.** I froze them to stop labels colliding, trading a layout bug for an accessibility exclusion | **FIXED, in two rounds.** Round 1 (bounded clamp + wrap) itself regressed: un-freezing let body's `overflow-wrap:anywhere` fracture "Progress" **mid-word at 320px at default text** (intrinsic 64.9px vs a 62.0px box) — and the gate missed it because `scrollWidth` reads clean when text fits *vertically*. Round 2 is the root-cause fix: `min-width:0` had suppressed flexbox's content-based minimum, so the row could never break. Now `min-width:max-content` floors each button at its full label width and `flex-wrap` reflows the bar to a second row under enlarged text, letting the clamp ceiling rise to 23px (desktop 28px). Verified: every label single-line at root 16–64px, zero true rect intersections, bar within main's reserve. The gate now measures per-label line count, two-axis intersection, and bar height |
+| B2 | First-launch onboarding unreachable by keyboard and hidden from screen readers: focus never entered, Tab walked into the app behind it, Escape did nothing | Pre-existing. Root cause: `render()` called `.focus()` while the element was still `hidden`, which silently no-ops | **FIXED** — now a native `<dialog>` + `showModal()`, which supplies focus containment, Escape and focus restore. Escape routes through Skip so the choice persists |
+| B3 | "Quiet screen" was a dead control — clicking it mid-sit changed **zero** elements | **Self-inflicted.** Adding `body.running .hide-zen` meant a running sit already hid everything the button would hide | **FIXED** — it is the *maximum* absence mode, so it now also drops the marker bar, marker log, Reset and the elapsed/planned line. Verified: the timer card goes 629px → 466px and 10 elements change state |
+| B4 | Three screens scrolled horizontally at 200% text | **Self-inflicted test gap.** My zoom gate only tested the default tab | **FIXED** — root cause was unbreakable long words, not the grids. `overflow-wrap:anywhere` on body, `table-layout:fixed`, `.field{min-width:0}`. All five tabs clean at 320/390px × 150/200% |
+| B5 | Chart axis labels clipped and overlapping — a y-axis "100%" at left = −8.9px; 29 of 29 adjacent x-label pairs colliding | Partly self-inflicted: moving chart text to CSS made labels larger than the gutter allowed | **FIXED** — gutters widened, x labels thinned to ~six and staggered onto two baselines. Rotation was tried first and rejected (it clipped the leftmost label). Verified across five real charts: 0 clipped, 0 overlapping |
+
+Non-blocking items from the same review that were also fixed:
+
+- **Five duplicate `class` attributes** silently dropping styling. HTML keeps the first and
+  discards the rest, with no error. Self-inflicted by the utility-class rewrite, which
+  matched `class` and `style` only when adjacent. Now **gated** in the Node runner.
+- The Today tile note truncated to `starts with …` at every width from 320 to 430.
+- `role="timer"` with no accessible name.
+- `<summary>` and `<a>` falling through to the UA focus ring.
+
+Still open from that review, and not claimed as fixed: `role="tablist"` without arrow keys; focus not moved into
+the post-sit review; single-select option sets modelled as toggle buttons rather than
+radios; two links used as buttons; and the selected tab being invisible under
+`forced-colors: active`.
+
+Fixed since that list was written: the sparkline text equivalent now announces the
+**data** maximum, not the axis cap — the ratio chart (which passes an explicit
+`yMax: 1` for its axis) previously told a screen-reader user "highest 100%" when the
+data peaked far lower. An honesty defect, fixed first.
+
+## Gate coverage added during the repair
+
+Each of these covers a class of bug that reached a reviewer because nothing checked for it:
+
+- Duplicate `class` attributes (Node).
+- Whole-script syntax parse (Node) — a syntax error outside the CORE block previously
+  passed all 447 tests while the app failed to boot.
+- Chart labels clipped by their own viewBox, or overlapping each other.
+- Text-zoom sweep across **all five tabs** with every `<details>` open.
+- Nothing hidden behind the fixed tab bar, on every screen, at two widths.
+- Tab labels neither clipped nor overlapping.
+- The dialog gate now waits out the entrance animation — it was reporting 44px buttons as
+  43px because the dialog animates from `scale(.98)`.
+- The tab gate measures per-label line count via `Range.getClientRects` (a two-line
+  single-word label IS the mid-word fracture `scrollWidth` cannot see), true two-axis
+  rect intersection (a left/right-only check flags a legitimate wrapped row as overlap),
+  and the fixed bar's height against `main`'s bottom reserve.
