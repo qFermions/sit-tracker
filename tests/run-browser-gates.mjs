@@ -336,6 +336,27 @@ async function main() {
   }
   await page.setViewportSize({ width: 390, height: 844 });
 
+  section("TEXT ZOOM");
+  // the guideline asks that people can enlarge text by at least 200%
+  for (const [w, z] of [[320, "150%"], [320, "200%"], [390, "200%"]]) {
+    await page.setViewportSize({ width: w, height: 844 });
+    await page.evaluate(zz => { document.documentElement.style.fontSize = zz; }, z);
+    await page.waitForTimeout(150);
+    const r = await page.evaluate(() => {
+      const de = document.documentElement, out = [];
+      for (const el of document.querySelectorAll("body *")) {
+        if (!el.offsetParent) continue;
+        const b = el.getBoundingClientRect();
+        if (b.right > de.clientWidth + 1 && b.width > 0)
+          out.push(el.tagName.toLowerCase() + (el.id ? "#" + el.id : ""));
+      }
+      return { over: de.scrollWidth > de.clientWidth + 1, bleeding: [...new Set(out)].slice(0, 5) };
+    });
+    gate(`no horizontal overflow at ${w}px with text at ${z}`, !r.over, r.bleeding.join(", "));
+  }
+  await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
+  await page.setViewportSize({ width: 390, height: 844 });
+
   section("MOTION");
 
   const reducedCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });

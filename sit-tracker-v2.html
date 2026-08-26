@@ -14,18 +14,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sit Tracker">
 <style>
-/* ==================================================================
-   IDENTITY SYSTEM — one token layer, documented in ARCHITECTURE.md.
-   Tokens are named for PURPOSE, not appearance, and are DEFINED here
-   for dark (the app's home look) then REDEFINED per appearance below:
-   light, increased contrast, reduced transparency. No token is only
-   ever defined inside a media query.
-   Type: system stack, zero embedded bytes. Four weights only —
-   400/500/600/700 (HIG: avoid Light/Thin). Numerals always tabular.
-   Depth: three elevation levels + one glass recipe (dialog, toast).
-   Motion: 120/220/480ms, decel ease; transform/opacity/scale only;
-   press = scale .97; nothing loops while idle; reduced-motion kills all.
-   ================================================================== */
+/* IDENTITY SYSTEM — one token layer. Tokens are named for PURPOSE and are
+   defined here for dark, then redefined below for light, increased contrast
+   and reduced transparency; none is defined only inside a media query.
+   Four font weights (400/500/600/700). Full contract + measured contrast
+   ratios: APPLE_DESIGN_SYSTEM.md. Architecture: ARCHITECTURE.md. */
 :root{
   color-scheme:dark light;
   /* backgrounds — three levels of hierarchy */
@@ -41,7 +34,7 @@
   /* type scale */
   --fs-hero:clamp(2.4rem,8vw,3.6rem);
   --fs-display:clamp(1.8rem,5.5vw,2.6rem);
-  --fs-timer:clamp(3.4rem,15vw,6rem);
+  --fs-timer:clamp(2.2rem,15vw,6rem);
   --fs-xl:1.5rem; --fs-lg:1.18rem; --fs-md:1rem; --fs-sm:.875rem; --fs-xs:.8125rem;
   --track-tight:-.02em; --track-caps:.08em;
   /* rhythm · radius */
@@ -107,7 +100,7 @@ a{color:var(--accent)}
 small,.dim{color:var(--label-secondary);font-size:var(--fs-sm)}
 .faint{color:var(--label-tertiary);font-size:var(--fs-xs)}
 .label-caps{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--label-secondary)}
-header.app{display:flex;align-items:baseline;gap:var(--sp-3);padding:calc(var(--sp-4) + env(safe-area-inset-top)) var(--sp-4) 0;max-width:860px;margin:0 auto}
+header.app{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-3);padding:calc(var(--sp-4) + env(safe-area-inset-top)) var(--sp-4) 0;max-width:860px;margin:0 auto}
 header.app .mm{color:var(--tradition);font-size:var(--fs-sm)}
 nav.tabs{display:flex;gap:2px;position:fixed;left:0;right:0;bottom:0;z-index:40;justify-content:space-around;background:var(--surface);border-top:var(--edge);padding:2px var(--sp-2) calc(2px + env(safe-area-inset-bottom))}
 nav.tabs button{flex:1 1 0;min-width:0;background:none;border:none;border-radius:var(--r-sm);color:var(--label-secondary);padding:var(--sp-1) 2px;font-size:var(--fs-xs);font-weight:600;cursor:pointer;min-height:44px;transition:color var(--tr),background var(--tr)}
@@ -163,7 +156,7 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;accent-color:var(-
 .stat .n,.tstat .n{font-size:var(--fs-xs);color:var(--label-tertiary);margin-top:2px}
 /* charts */
 .chart{margin:var(--sp-4) 0}
-.chart svg{width:100%;height:auto;display:block}.chart text{font-size:19px}
+.chart svg{width:100%;height:auto;display:block}.chart text{font-size:19px;fill:var(--label-tertiary)}.ax{stroke:var(--separator)}.ln{stroke:var(--accent);fill:none}.dt,.b1{fill:var(--accent)}.b2{fill:var(--tradition)}
 .chart .cap{font-size:var(--fs-xs);color:var(--label-secondary);margin-top:var(--sp-1)}
 .empty{color:var(--label-secondary);font-size:var(--fs-sm);background:var(--fill-subtle);border:var(--edge);border-radius:var(--r);padding:var(--sp-5);text-align:center}
 /* history */
@@ -204,7 +197,7 @@ details[open] summary{color:var(--label-primary)}
 .draft-field{display:grid;grid-template-columns:130px 1fr auto;gap:var(--sp-2);align-items:center;padding:var(--sp-1) 0;border-bottom:var(--edge);font-size:var(--fs-sm)}
 .draft-field .ev{grid-column:2/4;color:var(--label-tertiary);font-size:var(--fs-xs);font-style:italic}
 .conf-high{color:var(--success)}.conf-medium{color:var(--warning)}.conf-low{color:var(--destructive)}
-.mt2{margin-top:var(--sp-2)}.mt3{margin-top:var(--sp-3)}.end{justify-content:flex-end}
+.m0{margin:0}.mt0{margin-top:0}.mt2{margin-top:var(--sp-2)}.mt4{margin-top:var(--sp-4)}.fss{font-size:var(--fs-sm)}.mt3{margin-top:var(--sp-3)}.end{justify-content:flex-end}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media(prefers-reduced-transparency:reduce){dialog,#toast{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--surface-elevated)}}
@@ -212,7 +205,7 @@ details[open] summary{color:var(--label-primary)}
 /* ============ surface layer (built on the tokens above) ============ */
 @keyframes tabIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 .section-title{font-size:var(--fs-xs);color:var(--label-secondary);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;margin:var(--sp-5) 0 var(--sp-3)}
-.beta-chip{margin-left:auto;background:none;border:var(--edge);color:var(--label-tertiary);font-size:var(--fs-xs);font-weight:600;border-radius:var(--r-pill);min-height:28px;padding:2px 12px;cursor:pointer;transition:color var(--tr),border-color var(--tr)}
+.beta-chip{margin-left:auto;background:none;border:var(--edge);color:var(--label-tertiary);font-size:var(--fs-xs);font-weight:600;border-radius:var(--r-pill);min-height:44px;padding:2px 12px;cursor:pointer;transition:color var(--tr),border-color var(--tr)}
 .beta-chip:hover{color:var(--tradition);border-color:var(--tradition)}
 /* today status strip */
 .status-strip{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin-bottom:var(--sp-4);font-size:var(--fs-sm);color:var(--label-secondary)}
@@ -387,7 +380,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
       <small>Changing the focus point is not automatically progress. The current practice is the nostril rim / upper lip.</small>
       <h3>Bells & screen</h3>
       <div class="grid2">
-        <label class="check"><input type="checkbox" id="opt-prep"> Settling countdown <select id="opt-prep-sec" aria-label="Settling seconds"><option value="10">10 s</option><option value="20" selected>20 s</option><option value="30">30 s</option><option value="60">60 s</option></select></label>
+        <label class="check"><input type="checkbox" id="opt-prep" checked> Settling countdown <select id="opt-prep-sec" aria-label="Settling seconds"><option value="10">10 s</option><option value="20" selected>20 s</option><option value="30">30 s</option><option value="60">60 s</option></select></label>
         <label class="check"><input type="checkbox" id="opt-final" checked> Final bell</label>
         <label class="check"><input type="checkbox" id="opt-interval"> Interval bell every <select id="opt-interval-min" aria-label="Interval bell minutes"><option value="5">5</option><option value="10" selected>10</option><option value="15">15</option></select> min</label>
         <label class="check"><input type="checkbox" id="opt-wakelock" checked> Keep screen awake (if supported)</label>
@@ -417,7 +410,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
 
   <div class="card">
     <div class="row between">
-      <h2 style="margin:0">History</h2>
+      <h2 class="m0">History</h2>
       <span class="row">
         <button id="btn-teacher-report">Teacher report</button>
         <button id="btn-manual-entry">+ Manual entry</button>
@@ -463,7 +456,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0">Start here — your current practice <span class="badge">practice guidance</span></h3>
+    <h3 class="mt0">Start here — your current practice <span class="badge">practice guidance</span></h3>
     <p class="dim">Everything below is the same instruction the Today screen already gives you — spelled out. What this trains: keeping attention with one chosen sensation, noticing when it leaves, and returning — the groundwork every tradition below builds on. Nothing is forced: not the breath, not stillness, not results.</p>
     <details>
       <summary>The daily sit script</summary>
@@ -491,7 +484,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
   <div id="map-container"></div>
 
   <div class="card">
-    <h3 style="margin-top:0">The wider map <span class="badge gold">traditional claim</span></h3>
+    <h3 class="mt0">The wider map <span class="badge gold">traditional claim</span></h3>
     <p class="dim">Where this practice sits in the classical curriculum (Visuddhimagga; Pa-Auk lineage). Optional reading — none of it is needed for today's sit.</p>
     <details>
       <summary>What breath meditation reaches, and what it doesn't</summary>
@@ -514,7 +507,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0">Source library <span class="badge">source text</span></h3>
+    <h3 class="mt0">Source library <span class="badge">source text</span></h3>
     <p class="dim">These documents live beside the app and are shown unaltered (the "source text" label applies to the app's own companion files, displayed byte-for-byte). Nothing here is required for daily practice.</p>
     <div class="row">
       <button id="btn-doc-sources">Read the source ledger</button>
@@ -541,7 +534,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
 
   <div class="card">
     <h2>AI provider (optional)</h2>
-    <p class="dim">By default the Journal uses a <strong>local, deterministic parser</strong> — nothing leaves the device. If you configure a provider, journal text is sent to that endpoint when you press “Create draft”. The key is stored only in this browser's localStorage, in plain text.</p>
+    <p class="dim">By default the Journal uses a <strong>local, deterministic parser</strong> — nothing leaves the device. If you configure a provider, journal text is sent to that endpoint when you press “Create draft”. The key is stored only in this browser's localStorage, in plain text. What that provider stores, logs, or trains on is governed by their terms, not by this app — check them before sending practice notes you would not want retained.</p>
     <label class="check"><input type="checkbox" id="ai-enabled"> Use external provider when configured</label>
     <div class="grid2 mt2">
       <div class="field"><label for="ai-endpoint">Endpoint URL</label><input type="url" id="ai-endpoint" placeholder="https://api.anthropic.com/v1/messages"></div>
@@ -654,7 +647,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
 /* Pure logic. No DOM, no localStorage, no fetch side-effects. Extractable and runnable under Node. */
 const CORE = (function () {
   const SCHEMA_VERSION = 6;
-  const APP_VERSION = "4.4.0";
+  const APP_VERSION = "4.5.0";
   const OBJECTS = ["nostril", "upperlip", "abdomen", "wholebody", "custom"];
   // v6 post-sit self-reports — all nullable; null = not reported, never "no".
   const CONTACT_WHERE = ["nostril", "upperlip", "both", "elsewhere", "unclear"];
@@ -1904,7 +1897,7 @@ const CORE = (function () {
       "2. Open sit-tracker-v2.html in any browser. Double-click works.",
       "3. Want it on your phone like an app? Serve the folder on your wifi (python -m http.server 8080), open it from your phone's browser, then 'Add to Home Screen'.",
       "",
-      "Whatever you record stays on your device. Export is one tap and the file is yours.",
+      "Whatever you record stays on your device unless you turn on an AI provider in Settings. Export is one tap and the file is yours.",
       "",
       "— sent from Sit Tracker v" + appVersion
     ].join("\n");
@@ -1919,7 +1912,7 @@ const CORE = (function () {
     ["Your history", "Journal keeps every entry — tap one to view, edit, or share it. Progress shows totals and charts computed only from what you recorded."],
     ["Share a card", "From a session or from Progress, “Share a card” makes an image you save and send yourself. The app posts nothing."],
     ["Teacher report", "Journal → Teacher report prints a plain summary for a human teacher. Pick the range, print to PDF, send it yourself."],
-    ["Your data", "Everything stays on this phone; nothing is uploaded anywhere. Settings → Export saves a backup file that is yours to keep, and Import brings it back."],
+    ["Your data", "Everything stays on this phone. Nothing is uploaded unless you turn on an external AI provider in Settings — then, and only then, the journal text you press “Create draft” on is sent to the endpoint you chose. Settings → Export saves a backup file that is yours to keep, and Import brings it back."],
     ["On your phone", "Settings → “Install on your phone” adds it to the home screen. After one open online, it works offline."]
   ];
 
@@ -2678,7 +2671,7 @@ const CORE = (function () {
     // --- how-to-use guide: exists, operational-only, excluded from outbound surfaces
     const gAll = GUIDE.map(s => s[0] + " " + s[1]).join(" ");
     t("guide covers the operating topics", ["Start sit", "self-reported", "Export", "home screen", "Teacher report", "Share a card"].every(k => gAll.indexOf(k) >= 0));
-    t("guide states data locality", gAll.indexOf("stays on this phone") >= 0 && gAll.indexOf("nothing is uploaded") >= 0);
+    t("guide states data locality with its one real exception", gAll.indexOf("stays on this phone") >= 0 && /unless you turn on an external AI provider/.test(gAll));
     t("guide never teaches or promises", !/jh[āa]na|attain|enlighten|nimitta|breath|posture|reduc|improv|achiev|anxiety|stress|streak|every ?day|don'?t break/i.test(gAll));
     t("guide dismissal survives persistence round-trip", migrate({ schemaVersion: SCHEMA_VERSION, sessions: [], settings: { guideSeen: true }, map: null, feedback: [] }, null, NOW, TODAY).env.settings.guideSeen === true);
     const gEnv = migrate({ schemaVersion: SCHEMA_VERSION, sessions: [mk(TODAY, { notes: "real note" })], settings: { guideSeen: true }, map: null, feedback: [] }, null, NOW, TODAY).env;
@@ -2854,30 +2847,27 @@ const CORE = (function () {
 
   return {
     SCHEMA_VERSION, OBJECTS, HINDRANCES, HINDRANCE_LABELS, INTENSITIES, QUALITIES, QUALITY_LABELS,
-    NIMITTA_CATEGORIES, NIMITTA_LABELS, ENTRY_SOURCES, REVIEW_STATES, REVIEW_LABELS, CONFIDENCES,
-    AFTER_STATES, SEGMENT_KINDS, SEGMENT_LABELS, SEGMENT_WEIGHTS, MARKER_KINDS, MAP_EVIDENCE, CSV_COLUMNS,
-    clamp, round1, round2, isNum, isDateStr, isTimeStr, addDays, uid, fmtMin, fmtClock,
-    blankSession, normalizeSession, validateSession, computeRatio,
-    validateTimeline, deriveFromTimeline, timelineFromMarkers,
+    NIMITTA_CATEGORIES, NIMITTA_LABELS, REVIEW_STATES, REVIEW_LABELS, CONFIDENCES,
+    AFTER_STATES, SEGMENT_KINDS, SEGMENT_LABELS, MAP_EVIDENCE, clamp, round1, isNum, addDays, fmtMin, fmtClock,
+    normalizeSession, validateSession, computeRatio,
+    deriveFromTimeline, timelineFromMarkers,
     timerSnapshot, startTimerState, pauseTimerState, resumeTimerState, dueBells,
-    computeStreaks, filterRange, summaryMetrics, timeOfDayBucket, insights, strengthLabel,
-    daysBetween, INSIGHT_QUESTIONS, answerQuestion, insightScatteredPrecursors, insightTopHindrance, insightTimeOfDay, insightSettlingTrend,
-    toCSV, sessionFingerprint, parseImport, migrate,
+    filterRange, summaryMetrics, timeOfDayBucket, insights, INSIGHT_QUESTIONS, answerQuestion, toCSV, sessionFingerprint, parseImport, migrate,
     backupStatus, makeTestSessions, isTestSession, realSessions, makeDemoSessions,
     PRESETS, presetById, onboardingState, formatFeedback, APP_VERSION,
     CONTACT_WHERE, CONTACT_WHERE_LABELS, TRI_REPORTS, TRI_LABELS,
-    PRACTICE_MODES, practiceModeById, currentPracticeMode, practiceModeForSit, continuityLine,
+    practiceModeById, currentPracticeMode, practiceModeForSit, continuityLine,
     PRACTICE_SOURCE_MAP, JHANA_MODULE, TROUBLESHOOTING,
-    parseJournal, validateDraft, draftToSession, parseStartTime, isNegated,
-    buildProviderRequest, extractProviderText, parseProviderResponse, PROVIDER_INSTRUCTION,
-    providerErrorSummary, MOCK_PROVIDER_RESPONSES,
+    parseJournal, validateDraft, draftToSession, buildProviderRequest, extractProviderText, parseProviderResponse, providerErrorSummary, MOCK_PROVIDER_RESPONSES,
     nextReviewStateOnFlag, unusualExperienceSummary,
-    I18N, I18N_SCREENS, tr, fullyTranslatedScreens,
+    tr, fullyTranslatedScreens,
     shareCardData, shareCardLines, inviteText, GUIDE,
     runSelfTests
   };
 })();
 /*CORE-END*/
+// labelled-field wrapper, used 29x below
+const FL = '<div class="field"><label for="';
 
 /* ================= STORE — persistence behind an adapter ================= */
 const STORE = (function () {
@@ -3524,10 +3514,10 @@ const UI = (function () {
   }
 
   function paintMarkerLog(st) {
+    // Confirm the tap; keep no score (see APPLE_HIG_AUDIT.md P-2). The full marker
+    // list is already in the post-sit review and the session detail.
     const ms = (st.ctx.markers || []);
-    $("#marker-log").textContent = ms.length
-      ? ms.slice(-4).map(m => m.kind + " @ " + CORE.fmtMin(m.atMin)).join(" · ") + (ms.length > 4 ? " · +" + (ms.length - 4) + " more" : "")
-      : "";
+    $("#marker-log").textContent = ms.length ? "noted · " + ms[ms.length - 1].kind : "";
   }
 
   function setZen(on) {
@@ -3592,7 +3582,7 @@ const REVIEW = (function () {
     return CORE.HINDRANCES.map(h => {
       const cur = (pending.hindrances || {})[h] || "";
       return '<div class="row" style="justify-content:space-between;border-bottom:var(--edge);padding:4px 0">' +
-        '<span style="font-size:var(--fs-sm)">' + esc(CORE.HINDRANCE_LABELS[h]) + "</span>" +
+        '<span class="fss">' + esc(CORE.HINDRANCE_LABELS[h]) + "</span>" +
         '<span class="row" role="group" aria-label="' + esc(CORE.HINDRANCE_LABELS[h]) + ' intensity">' +
         ["", "mild", "moderate", "strong"].map(lvl =>
           '<button class="chip rv-hindrance" data-h="' + h + '" data-lvl="' + lvl + '" aria-pressed="' + ((cur || "") === lvl ? "true" : "false") + '">' + (lvl || "none") + "</button>"
@@ -3637,6 +3627,13 @@ const REVIEW = (function () {
   function render() {
     const box = $("#review-container");
     if (!pending) { box.innerHTML = ""; return; }
+    // preserve what a rebuild would otherwise destroy
+    const wasOpen = UI.$$("#review-card details").map(d => d.open);
+    const ae = document.activeElement, ad = (ae && ae.dataset) || {};
+    const hadFocus = !ae ? null : ae.id ? "#" + CSS.escape(ae.id)
+      : ad.h ? '[data-h="' + ad.h + '"][data-lvl="' + (ad.lvl || "") + '"]'
+      : ad.marker ? '[data-marker="' + ad.marker + '"]' : null;
+    const selStart = ae && "selectionStart" in ae ? ae.selectionStart : null;
     const p = pending;
     const actual = CORE.isNum(p.actualMin) ? p.actualMin : 0;
     const conc = CORE.isNum(p.concMin) ? p.concMin : null;
@@ -3646,15 +3643,15 @@ const REVIEW = (function () {
 
     box.innerHTML =
       '<div class="card" id="review-card">' +
-      '<div class="row between"><h2 style="margin:0">' + (editingId && !justCompleted ? "Edit entry" : "After the sit") + '</h2>' +
+      '<div class="row between"><h2 class="m0">' + (editingId && !justCompleted ? "Edit entry" : "After the sit") + '</h2>' +
       '<button id="rv-close" class="ghost">' + (justCompleted ? "Close — sit is saved" : "Close without saving") + '</button></div>' +
       '<p class="dim">' + (justCompleted
         ? "The sit itself is already saved. Takes about 30 seconds: your honest estimate of minutes in genuine contact with the breath — self-reported, no wrong answer. Close anytime; nothing is lost."
         : (editingId ? "Editing a saved entry." : "Takes about 30 seconds. The one number that matters: your honest estimate of minutes in genuine contact with the breath — self-reported, no wrong answer.")) + "</p>" +
       '<div class="grid3">' +
-      '<div class="field"><label for="rv-date">Date</label><input type="date" id="rv-date" value="' + esc(p.date || "") + '"></div>' +
-      '<div class="field"><label for="rv-start">Start time</label><input type="time" id="rv-start" value="' + esc(p.startTime || "") + '"></div>' +
-      '<div class="field"><label for="rv-actual">Actual duration (min)</label><input type="number" id="rv-actual" min="0.5" step="0.5" inputmode="decimal" value="' + actual + '"></div>' +
+      FL+'rv-date">Date</label><input type="date" id="rv-date" value="' + esc(p.date || "") + '"></div>' +
+      FL+'rv-start">Start time</label><input type="time" id="rv-start" value="' + esc(p.startTime || "") + '"></div>' +
+      FL+'rv-actual">Actual duration (min)</label><input type="number" id="rv-actual" min="0.5" step="0.5" inputmode="decimal" value="' + actual + '"></div>' +
       "</div>" +
 
       '<h3>Estimated minutes of genuine breath contact <span class="badge">self-reported</span></h3>' +
@@ -3687,12 +3684,12 @@ const REVIEW = (function () {
       (editingId ? '<button id="rv-delete" class="danger">Delete…</button>' : "") +
       "</div>" +
 
-      '<details style="margin-top:16px"><summary>Attention details (settling, wandering, longest stretch)</summary>' +
+      '<details class="mt4"><summary>Attention details (settling, wandering, longest stretch)</summary>' +
       '<div class="grid3 mt2">' +
-      '<div class="field"><label for="rv-settle">Minutes to first settle</label><input type="number" id="rv-settle" min="0" step="0.5" inputmode="decimal" value="' + (p.settleMin ?? "") + '" placeholder="not reported"></div>' +
-      '<div class="field"><label for="rv-longest">Longest steady stretch (min)</label><input type="number" id="rv-longest" min="0" step="0.5" inputmode="decimal" value="' + (p.longestSteadyMin ?? "") + '" placeholder="not reported"></div>' +
-      '<div class="field"><label for="rv-wander">Major wandering episodes</label><input type="number" id="rv-wander" min="0" step="1" inputmode="numeric" value="' + (p.wanderings ?? "") + '" placeholder="not reported"></div>' +
-      '<div class="field"><label for="rv-returns">Attention returns</label><input type="number" id="rv-returns" min="0" step="1" inputmode="numeric" value="' + (p.returns ?? "") + '" placeholder="not reported"></div>' +
+      FL+'rv-settle">Minutes to first settle</label><input type="number" id="rv-settle" min="0" step="0.5" inputmode="decimal" value="' + (p.settleMin ?? "") + '" placeholder="not reported"></div>' +
+      FL+'rv-longest">Longest steady stretch (min)</label><input type="number" id="rv-longest" min="0" step="0.5" inputmode="decimal" value="' + (p.longestSteadyMin ?? "") + '" placeholder="not reported"></div>' +
+      FL+'rv-wander">Major wandering episodes</label><input type="number" id="rv-wander" min="0" step="1" inputmode="numeric" value="' + (p.wanderings ?? "") + '" placeholder="not reported"></div>' +
+      FL+'rv-returns">Attention returns</label><input type="number" id="rv-returns" min="0" step="1" inputmode="numeric" value="' + (p.returns ?? "") + '" placeholder="not reported"></div>' +
       "</div>" +
       (p.markers && p.markers.length ? '<p class="faint">markers from the sit: ' + esc(p.markers.map(m => m.kind + "@" + m.atMin + "′").join(", ")) + "</p>" : "") +
       "</details>" +
@@ -3715,49 +3712,52 @@ const REVIEW = (function () {
       '</div><p class="faint">These are reports of experience, not evidence of attainment.</p></details>' +
 
       '<details><summary>Light / image report</summary><div class="mt2">' +
-      '<div class="field"><label for="rv-nim-cat">Report</label><select id="rv-nim-cat">' +
+      FL+'rv-nim-cat">Report</label><select id="rv-nim-cat">' +
       '<option value="">not reported</option>' +
       CORE.NIMITTA_CATEGORIES.map(c => '<option value="' + c + '"' + (p.nimitta && p.nimitta.category === c ? " selected" : "") + ">" + esc(CORE.NIMITTA_LABELS[c]) + "</option>").join("") +
       "</select></div>" +
       '<div class="grid3" id="rv-nim-details"' + (p.nimitta && p.nimitta.category && p.nimitta.category !== "none" ? "" : " hidden") + ">" +
-      '<div class="field"><label for="rv-nim-dur">Approx. duration</label><input type="text" id="rv-nim-dur" value="' + esc(p.nimitta && p.nimitta.duration || "") + '" placeholder="e.g. a few seconds"></div>' +
-      '<div class="field"><label for="rv-nim-color">Color</label><input type="text" id="rv-nim-color" value="' + esc(p.nimitta && p.nimitta.color || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-bright">Brightness</label><input type="text" id="rv-nim-bright" value="' + esc(p.nimitta && p.nimitta.brightness || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-stab">Stability</label><input type="text" id="rv-nim-stab" value="' + esc(p.nimitta && p.nimitta.stability || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-effort">Did effort change it?</label><input type="text" id="rv-nim-effort" value="' + esc(p.nimitta && p.nimitta.effortChanged || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-moved">Remained when attention moved?</label><input type="text" id="rv-nim-moved" value="' + esc(p.nimitta && p.nimitta.persisted || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-emotion">Emotional response</label><input type="text" id="rv-nim-emotion" value="' + esc(p.nimitta && p.nimitta.emotion || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-timing">Occurred</label><select id="rv-nim-timing">' +
+      FL+'rv-nim-dur">Approx. duration</label><input type="text" id="rv-nim-dur" value="' + esc(p.nimitta && p.nimitta.duration || "") + '" placeholder="e.g. a few seconds"></div>' +
+      FL+'rv-nim-color">Color</label><input type="text" id="rv-nim-color" value="' + esc(p.nimitta && p.nimitta.color || "") + '"></div>' +
+      FL+'rv-nim-bright">Brightness</label><input type="text" id="rv-nim-bright" value="' + esc(p.nimitta && p.nimitta.brightness || "") + '"></div>' +
+      FL+'rv-nim-stab">Stability</label><input type="text" id="rv-nim-stab" value="' + esc(p.nimitta && p.nimitta.stability || "") + '"></div>' +
+      FL+'rv-nim-effort">Did effort change it?</label><input type="text" id="rv-nim-effort" value="' + esc(p.nimitta && p.nimitta.effortChanged || "") + '"></div>' +
+      FL+'rv-nim-moved">Remained when attention moved?</label><input type="text" id="rv-nim-moved" value="' + esc(p.nimitta && p.nimitta.persisted || "") + '"></div>' +
+      FL+'rv-nim-emotion">Emotional response</label><input type="text" id="rv-nim-emotion" value="' + esc(p.nimitta && p.nimitta.emotion || "") + '"></div>' +
+      FL+'rv-nim-timing">Occurred</label><select id="rv-nim-timing">' +
       ["", "before strong collectedness", "during strong collectedness", "after strong collectedness", "unrelated / unclear"].map(o => '<option value="' + o + '"' + ((p.nimitta && p.nimitta.timing) === o ? " selected" : "") + ">" + (o || "—") + "</option>").join("") +
       "</select></div>" +
       "</div>" +
       '<p class="faint">Recorded neutrally as a reported experience. Consider discussing repeated or destabilizing experiences with a qualified teacher.</p></div></details>' +
 
       '<details><summary>Body, energy, context</summary><div class="grid3 mt2">' +
-      '<div class="field"><label for="rv-object">Object</label><select id="rv-object"><option value="">—</option>' +
+      FL+'rv-object">Object</label><select id="rv-object"><option value="">—</option>' +
       CORE.OBJECTS.map(o => '<option value="' + o + '"' + (p.object === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
-      '<div class="field"><label for="rv-posture">Posture</label><select id="rv-posture"><option value="">—</option>' +
+      FL+'rv-posture">Posture</label><select id="rv-posture"><option value="">—</option>' +
       ["cross-legged", "seiza/bench", "chair", "standing", "lying"].map(o => '<option value="' + o + '"' + (p.posture === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
-      '<div class="field"><label for="rv-phase">Practice phase</label><select id="rv-phase">' +
+      FL+'rv-phase">Practice phase</label><select id="rv-phase">' +
       ["foundation", "consistency", "stability", "collectedness", "jhana-investigation", "advanced"].map(o => '<option value="' + o + '"' + ((p.phase || "foundation") === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
       ["energyBefore", "energyAfter", "calmBefore", "calmAfter"].map(f =>
-        '<div class="field"><label for="rv-' + f + '">' + f.replace(/([A-Z])/g, " $1").toLowerCase() + ' (1–5)</label><input type="number" id="rv-' + f + '" min="1" max="5" step="1" inputmode="numeric" value="' + (p[f] ?? "") + '" placeholder="—"></div>'
+        FL+'rv-' + f + '">' + f.replace(/([A-Z])/g, " $1").toLowerCase() + ' (1–5)</label><input type="number" id="rv-' + f + '" min="1" max="5" step="1" inputmode="numeric" value="' + (p[f] ?? "") + '" placeholder="—"></div>'
       ).join("") +
-      '<div class="field"><label for="rv-afterstate">Overall after-state</label><select id="rv-afterstate"><option value="">not reported</option>' +
+      FL+'rv-afterstate">Overall after-state</label><select id="rv-afterstate"><option value="">not reported</option>' +
       CORE.AFTER_STATES.map(a => '<option value="' + a + '"' + (p.afterStateReport === a ? " selected" : "") + ">" + a + "</option>").join("") + "</select></div>" +
       "</div></details>" +
 
       '<details><summary>Teacher review & original text</summary><div class="mt2">' +
-      (p.journalText ? '<div class="field"><label>Original journal text (kept verbatim)</label><div class="card sub" style="font-size:var(--fs-sm)">' + esc(p.journalText) + "</div></div>" : "") +
+      (p.journalText ? '<div class="field"><label>Original journal text (kept verbatim)</label><div class="card sub fss">' + esc(p.journalText) + "</div></div>" : "") +
       '<div class="grid2">' +
-      '<div class="field"><label for="rv-review">Teacher review state</label><select id="rv-review">' +
+      FL+'rv-review">Teacher review state</label><select id="rv-review">' +
       CORE.REVIEW_STATES.map(r => '<option value="' + r + '"' + ((p.teacherReview || "none") === r ? " selected" : "") + ">" + esc(CORE.REVIEW_LABELS[r]) + "</option>").join("") +
       "</select></div>" +
-      '<div class="field"><label for="rv-teachernotes">Private teacher notes</label><input type="text" id="rv-teachernotes" value="' + esc(p.teacherNotes || "") + '"></div>' +
+      FL+'rv-teachernotes">Private teacher notes</label><input type="text" id="rv-teachernotes" value="' + esc(p.teacherNotes || "") + '"></div>' +
       "</div></div></details>" +
       "</div>";
 
     wire();
+    UI.$$("#review-card details").forEach((d, i) => { if (wasOpen[i]) d.open = true; });
+    const back = hadFocus && box.querySelector(hadFocus);
+    if (back) { back.focus(); if (selStart !== null && "setSelectionRange" in back) { try { back.setSelectionRange(selStart, selStart); } catch (e) {} } }
   }
 
   function readForm() {
@@ -4054,7 +4054,7 @@ const HISTORY = (function () {
       '<p class="dim">' + (cur === "none"
         ? "Marks this session to bring up with your teacher. It appears in the flagged appendix of the printable report."
         : "This session is already " + esc(CORE.REVIEW_LABELS[cur].toLowerCase()) + " — the note is updated without changing that.") + "</p>" +
-      '<div class="field"><label for="fl-note">Private note (what to ask or mention)</label>' +
+      FL+'fl-note">Private note (what to ask or mention)</label>' +
       '<textarea id="fl-note" style="min-height:70px">' + esc(s.teacherNotes || "") + "</textarea></div>" +
       '<div class="row end"><button id="fl-cancel">Cancel</button>' +
       '<button id="fl-save" class="primary">' + (cur === "none" ? "Flag session" : "Save note") + "</button></div>"
@@ -4136,8 +4136,8 @@ const HISTORY = (function () {
       '<button class="chip" id="tr-90" aria-pressed="false">Last 90 days</button>' +
       '<button class="chip" id="tr-custom" aria-pressed="false">Custom…</button></div>' +
       '<div class="grid3" id="tr-range" hidden class="mt2">' +
-      '<div class="field"><label for="tr-from">From</label><input type="date" id="tr-from" value="' + CORE.addDays(today, -29) + '"></div>' +
-      '<div class="field"><label for="tr-to">To</label><input type="date" id="tr-to" value="' + today + '"></div></div>' +
+      FL+'tr-from">From</label><input type="date" id="tr-from" value="' + CORE.addDays(today, -29) + '"></div>' +
+      FL+'tr-to">To</label><input type="date" id="tr-to" value="' + today + '"></div></div>' +
       '<label class="check mt2"><input type="checkbox" id="tr-notes" checked> Include the notes column</label>' +
       '<div class="row" style="justify-content:flex-end;margin-top:8px"><button id="tr-cancel">Cancel</button>' +
       '<button id="tr-print" class="primary">Print report</button></div>'
@@ -4198,11 +4198,13 @@ const PROGRESS = (function () {
     const x = i => P + (W - 2 * P) * (pts.length === 1 ? 0.5 : i / (pts.length - 1));
     const y = v => H - P - (H - 2 * P) * (v / (yMax || 1));
     const poly = pts.map((p, i) => x(i).toFixed(1) + "," + y(p.y).toFixed(1)).join(" ");
-    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.label || "line chart") + '">' +
-      '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="#253044"/>' +
-      '<text x="' + (P - 4) + '" y="' + (y(yMax) + 4) + '" fill="#76849b" text-anchor="end">' + (o.yFmt ? o.yFmt(yMax) : yMax) + "</text>" +
-      '<polyline points="' + poly + '" fill="none" stroke="#8ec3ea" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' +
-      pts.map((p, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.y).toFixed(1) + '" r="2.6" fill="#8ec3ea"/>').join("") +
+    const f = v => o.yFmt ? o.yFmt(v) : v;
+    const desc = (o.label || "chart") + ": " + pts.length + " points, " + f(pts[0].y) + " to " + f(pts[pts.length - 1].y) + ", highest " + f(yMax);
+    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(desc) + '">' +
+      '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" class="ax"/>' +
+      '<text x="' + (P - 4) + '" y="' + (y(yMax) + 4) + '" text-anchor="end">' + (o.yFmt ? o.yFmt(yMax) : yMax) + "</text>" +
+      '<polyline points="' + poly + '" class="ln" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' +
+      pts.map((p, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.y).toFixed(1) + '" r="2.6" class="dt"/>').join("") +
       "</svg>";
   }
 
@@ -4218,23 +4220,24 @@ const PROGRESS = (function () {
     items.forEach((it, i) => {
       const cx = x(i);
       if (o.dual) {
-        bars += '<rect rx="2" x="' + (cx - bw) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" fill="#4a7ba6"/>';
-        bars += '<rect rx="2" x="' + cx + '" y="' + (H - P - h(it.v2 || 0)) + '" width="' + bw + '" height="' + h(it.v2 || 0) + '" fill="#d4b078"/>';
+        bars += '<rect rx="2" x="' + (cx - bw) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" class="b1"/>';
+        bars += '<rect rx="2" x="' + cx + '" y="' + (H - P - h(it.v2 || 0)) + '" width="' + bw + '" height="' + h(it.v2 || 0) + '" class="b2"/>';
       } else {
-        bars += '<rect rx="2" x="' + (cx - bw / 2) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" fill="#4a7ba6"/>';
+        bars += '<rect rx="2" x="' + (cx - bw / 2) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" class="b1"/>';
       }
-      if (it.label) bars += '<text x="' + cx + '" y="' + (H - P + 12) + '" fill="#76849b" text-anchor="middle">' + esc(String(it.label).slice(0, 10)) + "</text>";
+      if (it.label) bars += '<text x="' + cx + '" y="' + (H - P + 12) + '" text-anchor="middle">' + esc(String(it.label).slice(0, 14)) + "</text>";
     });
-    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.label || "bar chart") + '">' +
-      '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="#253044"/>' +
-      '<text x="' + (P - 4) + '" y="' + (P + 4) + '" fill="#76849b" text-anchor="end">' + (o.yFmt ? o.yFmt(max) : max) + "</text>" + bars + "</svg>";
+    const desc = (o.label || "chart") + ": " + items.map(i => i.label + " " + (i.v || 0) + (o.dual ? " and " + (i.v2 || 0) : "")).join(", ");
+    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(desc) + '">' +
+      '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" class="ax"/>' +
+      '<text x="' + (P - 4) + '" y="' + (P + 4) + '" text-anchor="end">' + (o.yFmt ? o.yFmt(max) : max) + "</text>" + bars + "</svg>";
   }
 
   function calendar(sessions, today) {
     const byDate = {};
     for (const s of sessions) byDate[s.date] = (byDate[s.date] || 0) + (s.actualMin || 0);
     const weeks = 16;
-    let html = '<svg viewBox="0 0 ' + (weeks * 14 + 20) + ' 112" role="img" aria-label="practice consistency calendar, last ' + weeks + ' weeks">';
+    let html = '<svg viewBox="0 0 ' + (weeks * 14 + 20) + ' 112" role="img" aria-label="' + esc("practice consistency, last " + weeks + " weeks: sat on " + Object.keys(byDate).length + " days") + '">';
     // find the sunday on/before (today - (weeks*7-1))
     const start = CORE.addDays(today, -(weeks * 7 - 1));
     for (let i = 0; i < weeks * 7; i++) {
@@ -4280,12 +4283,13 @@ const PROGRESS = (function () {
       "</div>";
 
     // 30-day goal note (Gate 0)
-    html += '<div class="row between mt2"><p class="faint" style="margin:0">Gate 0 target: a 30-day unbroken streak before booking the first retreat. Current: ' + mAll.currentStreak + "/30.</p>" +
+    html += '<div class="row between mt2"><p class="faint m0">Gate 0 target: a 30-day unbroken streak before booking the first retreat. Current: ' + mAll.currentStreak + "/30.</p>" +
       '<button id="btn-share-card" class="ghost">Share a card…</button></div>';
     if (synthCount) html += '<p class="faint">' + synthCount + " demo/test entries exist and are excluded from everything on this page.</p>";
 
     if (!sel.length) {
-      html += '<div class="empty" style="margin-top:16px"><strong>Nothing here yet.</strong><br>That changes after one sit.</div>';
+      html += '<div class="empty mt4"><strong>' + (all.length ? "No sits in this range." : "Nothing here yet.") + "</strong><br>" +
+        (all.length ? "You have " + all.length + " recorded — try a wider range above." : "Charts and observations appear here after your first sit.") + "</div>";
       box.innerHTML = html;
       const shb0 = $("#btn-share-card");
       if (shb0) shb0.onclick = () => SHARE.open();
@@ -4296,7 +4300,7 @@ const PROGRESS = (function () {
     html += chartBlock("Practice consistency (last 16 weeks, all sessions)", calendar(all, today), "cell shade = minutes sat that day");
     html += chartBlock("Duration vs estimated contact minutes",
       lastN.filter(s => CORE.isNum(s.actualMin)).length >= 1 ? svgBars(lastN.map(s => ({ v: s.actualMin || 0, v2: CORE.isNum(s.concMin) ? s.concMin : 0, label: s.date.slice(5) })), { dual: true, label: "duration vs contact", yFmt: v => Math.round(v) + "′" }) : null,
-      "blue = duration · gold = self-reported contact minutes · last " + lastN.length + " sessions");
+      "left bar = duration · right bar = self-reported contact minutes · last " + lastN.length + " sessions");
     html += chartBlock("Concentration ratio over time",
       svgLine(lastN.filter(s => CORE.isNum(s.ratio)).map(s => ({ y: s.ratio })), { yMax: 1, yFmt: v => Math.round(v * 100) + "%", label: "ratio over time" }),
       "self-reported · " + lastN.filter(s => CORE.isNum(s.ratio)).length + " sessions with an estimate");
@@ -4346,18 +4350,18 @@ const PROGRESS = (function () {
     html += "<h3>Observations (computed from your data — never by AI)</h3>";
     if (!ins.length) html += '<div class="empty">Not enough data for grounded observations yet. They appear once patterns have a reasonable sample behind them.</div>';
     else html += ins.map(i =>
-      '<div class="card sub" style="margin-bottom:8px"><p style="margin:0">' + esc(i.text) + "</p>" +
+      '<div class="card sub" style="margin-bottom:8px"><p class="m0">' + esc(i.text) + "</p>" +
       '<div class="faint">range: ' + esc(i.range) + " · n=" + i.n + " · metric: " + esc(i.metric) + " · evidence strength: " + esc(i.strength) + "</div></div>"
     ).join("");
 
     // canned questions, answered locally and instantly
-    html += '<h3 style="margin-top:16px">Ask about your practice</h3>';
+    html += '<h3 class="mt4">Ask about your practice</h3>';
     html += '<div class="row" role="group" aria-label="Practice questions" style="flex-wrap:wrap">' +
       CORE.INSIGHT_QUESTIONS.map(q => '<button class="chip ask-q" data-q="' + q.id + '" aria-pressed="' + (askId === q.id ? "true" : "false") + '">' + esc(q.q) + "</button>").join("") +
       "</div>";
     if (askId) {
       const a = CORE.answerQuestion(askId, all);
-      if (a) html += '<div class="card sub mt2" id="ask-answer"><p style="margin:0">' + esc(a.text) + "</p>" +
+      if (a) html += '<div class="card sub mt2" id="ask-answer"><p class="m0">' + esc(a.text) + "</p>" +
         '<div class="faint">range: ' + esc(a.range) + " · n=" + a.n + " · metric: " + esc(a.metric) + " · evidence strength: " + esc(a.strength) + "</div></div>";
     }
     html += '<p class="honesty">All concentration values are self-reported estimates. Charts and answers show associations only; nothing here demonstrates attainment or causation.</p>';
@@ -4433,7 +4437,7 @@ const MAP = (function () {
   }
 
   function advancedBody() {
-    return '<div style="font-size:var(--fs-sm)">' +
+    return '<div class="fss">' +
       '<p><strong>Educational reference only.</strong> The traditional six higher knowledges (အဘိညာဉ် ၆ ပါး) as described in the Visuddhimagga (ch. XII–XIII) and the Pa-Auk curriculum:</p>' +
       "<ol style='margin:8px 0 8px 20px'>" +
       "<li>ဣဒ္ဓိဝိဓ — supernormal power (traditional claim)</li>" +
@@ -4556,7 +4560,7 @@ const JOURNAL = (function () {
       d.afterStateReport = $("#df-after").value || null;
       d.date = $("#df-date").value || null;
     };
-    box.querySelectorAll("input,select").forEach(el => el.addEventListener("change", () => { readBack(); renderDraft(); }));
+    box.querySelectorAll("input,select").forEach(el => el.addEventListener("change", e => { const back = e.target.id; readBack(); renderDraft(); const n = back && document.getElementById(back); if (n) n.focus(); }));
 
     $("#df-save").onclick = async () => {
       readBack();
@@ -4800,7 +4804,7 @@ const SETTINGS = (function () {
     $("#btn-wipe").onclick = () => {
       const dlg = UI.modal("<h2>Delete all tracker data</h2>" +
         "<p>This deletes the <code>jhanaTracker.v2</code> envelope (" + STORE.sessions().length + " sessions) from this browser. Legacy keys are untouched. <strong>Export a backup first.</strong></p>" +
-        '<p>Type <code>DELETE</code> to confirm:</p><input type="text" id="wipe-confirm" autocomplete="off">' +
+        '<label for="wipe-confirm">Type <code>DELETE</code> to confirm:</label><input type="text" id="wipe-confirm" autocomplete="off" placeholder="DELETE">' +
         '<div class="row mt3 end"><button id="wipe-cancel">Cancel</button><button id="wipe-ok" class="danger" disabled>Delete everything</button></div>');
       $("#wipe-confirm").addEventListener("input", () => { $("#wipe-ok").disabled = $("#wipe-confirm").value !== "DELETE"; });
       $("#wipe-cancel").onclick = () => dlg.close();
@@ -4859,7 +4863,7 @@ const TODAY = (function () {
       '<div class="card" style="margin-bottom:var(--sp-3)">' +
       '<span class="label-caps">Current practice</span>' +
       '<div class="row between" style="align-items:baseline"><strong style="font-size:var(--fs-lg)">' + esc(mode.name) + '</strong>' +
-      '<span class="dim" style="font-size:var(--fs-sm)">' + esc(cfgLine) + "</span></div>" +
+      '<span class="dim fss">' + esc(cfgLine) + "</span></div>" +
       '<p class="dim" style="margin:4px 0 0">' + esc(mode.objectLine) + " " + esc(mode.returnCue) + "</p>" +
       (cont ? '<p class="faint" style="margin:6px 0 0">Last sit: ' + esc(cont.date) + " · " + cont.minutes + "′" +
         (cont.noteExcerpt ? ' — <em>“' + esc(cont.noteExcerpt) + '”</em>' : "") + "</p>" : "") +
@@ -4971,10 +4975,10 @@ const FEEDBACK = (function () {
     const dlg = UI.modal(
       "<h2>Send feedback</h2>" +
       '<p class="dim">Local only — this builds a text report you can copy, download, or email yourself. Nothing is sent automatically.</p>' +
-      '<div class="field"><label for="fb-trying">What were you trying to do?</label><input type="text" id="fb-trying"></div>' +
-      '<div class="field"><label for="fb-confused">What was confusing?</label><textarea id="fb-confused" style="min-height:60px"></textarea></div>' +
-      '<div class="field"><label for="fb-broken">What didn\'t work?</label><textarea id="fb-broken" style="min-height:60px"></textarea></div>' +
-      '<div class="field"><label for="fb-impression">General impression?</label><input type="text" id="fb-impression"></div>' +
+      FL+'fb-trying">What were you trying to do?</label><input type="text" id="fb-trying"></div>' +
+      FL+'fb-confused">What was confusing?</label><textarea id="fb-confused" style="min-height:60px"></textarea></div>' +
+      FL+'fb-broken">What didn\'t work?</label><textarea id="fb-broken" style="min-height:60px"></textarea></div>' +
+      FL+'fb-impression">General impression?</label><input type="text" id="fb-impression"></div>' +
       '<p class="faint">device (auto): ' + esc(deviceLine()) + "</p>" +
       '<div class="row end"><button id="fb-cancel">Cancel</button><button id="fb-make" class="primary">Create report</button></div>'
     );
@@ -5275,16 +5279,16 @@ const APP = (function () {
     const cardDetails = list => list.map(c =>
       "<details><summary>" + esc(c.title || c.q) + "</summary><p class='dim'>" + esc(c.body) + "</p>" + srcLine(c.source) + "</details>").join("");
     UI.$("#learn-sources").innerHTML =
-      '<div class="card"><h3 style="margin-top:0">The source map <span class="badge gold">traditional claim</span></h3>' +
+      '<div class="card"><h3 class="mt0">The source map <span class="badge gold">traditional claim</span></h3>' +
       '<p class="dim">Four ways the same breath is taught. Related practices — all watch the breath, all return from wandering — but not one doctrine. Each card names whose instruction it is; the full citations live in the source ledger below.</p>' +
       cardDetails(CORE.PRACTICE_SOURCE_MAP) + "</div>";
     const j = CORE.JHANA_MODULE;
     UI.$("#learn-jhana").innerHTML =
-      '<div class="card"><h3 style="margin-top:0">' + esc(j.title) + ' <span class="badge gold">' + esc(j.badge) + '</span></h3>' +
+      '<div class="card"><h3 class="mt0">' + esc(j.title) + ' <span class="badge gold">' + esc(j.badge) + '</span></h3>' +
       "<p class='dim'>" + esc(j.body) + "</p>" +
       '<div class="notice mt2"><strong>' + esc(j.boundary) + "</strong></div>" + srcLine(j.source) + "</div>";
     UI.$("#learn-troubleshoot").innerHTML =
-      '<div class="card"><h3 style="margin-top:0">Troubleshooting <span class="badge">practice guidance</span></h3>' +
+      '<div class="card"><h3 class="mt0">Troubleshooting <span class="badge">practice guidance</span></h3>' +
       '<p class="dim">Short answers for common snags. Where the traditions disagree, the disagreement is shown, not averaged.</p>' +
       cardDetails(CORE.TROUBLESHOOTING) + "</div>";
   })();
