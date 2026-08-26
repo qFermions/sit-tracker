@@ -353,6 +353,18 @@ async function main() {
       return { over: de.scrollWidth > de.clientWidth + 1, bleeding: [...new Set(out)].slice(0, 5) };
     });
     gate(`no horizontal overflow at ${w}px with text at ${z}`, !r.over, r.bleeding.join(", "));
+    // document-level overflow does not catch labels colliding INSIDE the tab bar
+    const tabs = await page.evaluate(() => {
+      const bs = [...document.querySelectorAll("nav.tabs button")];
+      const clipped = bs.filter(b => b.scrollWidth > b.clientWidth + 1).map(b => b.textContent.trim());
+      const rects = bs.map(b => b.getBoundingClientRect());
+      let overlap = false;
+      for (let i = 1; i < rects.length; i++) if (rects[i].left < rects[i-1].right - 1) overlap = true;
+      return { clipped, overlap };
+    });
+    gate(`tab labels are not clipped or overlapping at ${w}px / ${z}`,
+      tabs.clipped.length === 0 && !tabs.overlap,
+      (tabs.overlap ? "overlapping; " : "") + (tabs.clipped.length ? "clipped: " + tabs.clipped.join(", ") : ""));
   }
   await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
   await page.setViewportSize({ width: 390, height: 844 });
