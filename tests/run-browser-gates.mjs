@@ -337,22 +337,35 @@ async function main() {
   await page.setViewportSize({ width: 390, height: 844 });
 
   section("TEXT ZOOM");
-  // the guideline asks that people can enlarge text by at least 200%
+  // the guideline asks that people can enlarge text by at least 200%.
+  // This MUST sweep every tab: an earlier version tested only the default tab and so
+  // missed overflow on Settings, Learn and Progress entirely.
+  const TABS = ["today", "journal", "progress", "learn", "settings"];
   for (const [w, z] of [[320, "150%"], [320, "200%"], [390, "200%"]]) {
     await page.setViewportSize({ width: w, height: 844 });
     await page.evaluate(zz => { document.documentElement.style.fontSize = zz; }, z);
     await page.waitForTimeout(150);
-    const r = await page.evaluate(() => {
-      const de = document.documentElement, out = [];
-      for (const el of document.querySelectorAll("body *")) {
-        if (!el.offsetParent) continue;
-        const b = el.getBoundingClientRect();
-        if (b.right > de.clientWidth + 1 && b.width > 0)
-          out.push(el.tagName.toLowerCase() + (el.id ? "#" + el.id : ""));
-      }
-      return { over: de.scrollWidth > de.clientWidth + 1, bleeding: [...new Set(out)].slice(0, 5) };
-    });
-    gate(`no horizontal overflow at ${w}px with text at ${z}`, !r.over, r.bleeding.join(", "));
+    const worst = [];
+    for (const t of TABS) {
+      await page.evaluate(x => { const b = document.querySelector("#tabbtn-" + x); if (b) b.click(); }, t);
+      // open every disclosure: collapsed content cannot overflow, which hides real defects
+      await page.evaluate(() => document.querySelectorAll('section[role="tabpanel"].active details').forEach(d => { d.open = true; }));
+      await page.waitForTimeout(180);
+      const r = await page.evaluate(() => {
+        const de = document.documentElement, out = [];
+        for (const el of document.querySelectorAll("body *")) {
+          if (!el.offsetParent) continue;
+          const b = el.getBoundingClientRect();
+          if (b.right > de.clientWidth + 1 && b.width > 0)
+            out.push(el.tagName.toLowerCase() + (el.id ? "#" + el.id : (el.className ? "." + String(el.className).split(" ")[0] : "")));
+        }
+        return { sw: de.scrollWidth, cw: de.clientWidth, bleeding: [...new Set(out)].slice(0, 4) };
+      });
+      if (r.sw > r.cw + 1) worst.push(`${t}: ${r.sw}>${r.cw} (${r.bleeding.join(", ")})`);
+    }
+    await page.evaluate(() => { const b = document.querySelector("#tabbtn-today"); if (b) b.click(); });
+    const r = { over: worst.length > 0, bleeding: worst };
+    gate(`no horizontal overflow on ANY tab at ${w}px with text at ${z}`, !r.over, r.bleeding.join(" | "));
     // document-level overflow does not catch labels colliding INSIDE the tab bar
     const tabs = await page.evaluate(() => {
       const bs = [...document.querySelectorAll("nav.tabs button")];
