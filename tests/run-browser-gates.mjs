@@ -502,6 +502,25 @@ async function main() {
     return { charts, clipped: [...new Set(clipped)], overlapping: [...new Set(overlapping)] };
   });
   gate("charts render at all once there is data", (chartCheck.charts || 0) > 0, chartCheck.why || `${chartCheck.charts} charts`);
+
+  // Geometry, not just typography: a padding change once made the vertical drawing span
+  // NEGATIVE (H-2P = -6), flattening every line chart to a ~1px inverted band below the
+  // axis — and the clipping/overlap gates passed, because the labels were fine.
+  const lineGeom = await page.evaluate(() => {
+    const bad = [];
+    document.querySelectorAll("#tab-progress .chart svg").forEach(svg => {
+      const pl = svg.querySelector("polyline"); if (!pl) return;
+      const axis = svg.querySelector("line.ax"); if (!axis) { bad.push("no axis line"); return; }
+      const axisY = parseFloat(axis.getAttribute("y1"));
+      const ys = pl.getAttribute("points").trim().split(/\s+/).map(t => parseFloat(t.split(",")[1]));
+      const name = (svg.getAttribute("aria-label") || "").slice(0, 24);
+      if (!ys.every(y => y <= axisY + 0.01)) bad.push(name + ": points below the axis");
+      if (new Set(ys.map(y => Math.round(y))).size > 1 && Math.max(...ys) - Math.min(...ys) < 5)
+        bad.push(name + ": varying data drawn flat (span " + (Math.max(...ys) - Math.min(...ys)).toFixed(1) + ")");
+    });
+    return bad;
+  });
+  gate("line charts draw their data above the axis with real vertical span", lineGeom.length === 0, lineGeom.join("; "));
   gate("no chart label is clipped by its own viewBox", (chartCheck.clipped || []).length === 0, (chartCheck.clipped || []).join(", "));
   gate("no two chart labels overlap", (chartCheck.overlapping || []).length === 0, (chartCheck.overlapping || []).slice(0, 5).join(", "));
 
