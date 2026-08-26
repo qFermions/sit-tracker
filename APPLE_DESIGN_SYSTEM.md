@@ -77,19 +77,22 @@ counts, chart labels — so digits do not jitter:
 > Thin, and Light font weights, which can be difficult to see, especially when text is
 > small."*
 
-The current app sets the timer in `font-weight:300` — a Light weight, at the single
-most important number in the product. It also uses six weights (300/600/650/700/750/800),
+The app previously set the timer in `font-weight:300` — a Light weight, at the single
+most important number in the product. It also used six weights (300/600/650/700/750/800),
 several of which do not render distinctly in a system-font stack that lacks the matching
-variable axis; 650 and 750 silently round on many platforms.
+variable axis; on the static fallback families (Roboto, Segoe UI) 650 rounds to 700 and
+750 rounds to 900, so the intended "one notch above bold" rendered *heavier* than `h1`.
+All six are now collapsed to the four below. The timer is **Regular 400**, not Bold:
+Regular satisfies the guideline and is the calmer choice for a meditation clock.
 
 **The system is four weights and no more:**
 
 | Role | Weight | Used for |
 |---|---|---|
-| Regular | 400 | Body text, long-form reading |
+| Regular | 400 | Body text, long-form reading, **the timer** |
 | Medium | 500 | Secondary labels, metadata |
 | Semibold | 600 | Buttons, section titles, list emphasis |
-| Bold | 700 | Screen titles, the timer, headline numbers |
+| Bold | 700 | Screen titles and headline numbers |
 
 ## Scale — semantic roles, not t-shirt sizes
 
@@ -97,29 +100,36 @@ The current scale (`--fs-hero`, `--fs-xl`, `--fs-lg`, `--fs-md`, `--fs-sm`, `--f
 names sizes. Sizes cannot tell you where they belong, so they get used arbitrarily.
 The replacement names *roles*, the way system text styles do:
 
-| Token | Size | Weight | Role |
+> **Implementation note.** The *roles, sizes and weights* below shipped as specified.
+> The token **names** were left as the existing `--fs-*` identifiers rather than renamed
+> to `--text-*`: the rename is purely cosmetic in the source, and at the time it was
+> considered the payload had 101 bytes of headroom. Recorded as a deliberate trade, not
+> an omission — the mapping is one-to-one and given in the last column.
+
+| Token (shipped) | Size | Weight | Role |
 |---|---|---|---|
-| `--text-timer` | `clamp(3.4rem, 15vw, 6rem)` | 700 | The running clock. One instance in the app. |
-| `--text-hero` | `clamp(2.4rem, 8vw, 3.4rem)` | 700 | First-open wordmark only. |
-| `--text-title` | `clamp(1.5rem, 5vw, 2rem)` | 700 | Screen and stat headline numbers. |
-| `--text-headline` | `1.15rem` | 600 | Card headings (`h2`). |
-| `--text-subhead` | `1rem` | 600 | Sub-headings (`h3`). |
-| `--text-body` | `1rem` | 400 | Reading text. **Default.** |
-| `--text-callout` | `0.9375rem` | 400 | Secondary prose, form labels. |
-| `--text-footnote` | `0.875rem` | 400 | Metadata, captions. |
-| `--text-caption` | `0.8125rem` | 500 | The smallest text in the app. |
+| `--fs-timer` | `clamp(2.2rem, 15vw, 6rem)` | 400 | The running clock. One instance in the app. |
+| `--fs-hero` | `clamp(2.4rem, 8vw, 3.6rem)` | 700 | First-open wordmark only. |
+| `--fs-display` | `clamp(1.8rem, 5.5vw, 2.6rem)` | 700 | Stat and tile headline numbers. |
+| `--fs-xl` | `1.5rem` | 700 | `h1` — the app title. |
+| `--fs-lg` | `1.18rem` | 700 | `h2` — card headings. |
+| `--fs-md` | `1rem` | 600 / 400 | `h3` at 600; reading text at 400. **Default body size.** |
+| `--fs-sm` | `0.875rem` (14 px) | 400 | Secondary prose, form labels, metadata. |
+| `--fs-xs` | `0.8125rem` (13 px) | 500 | The smallest text in the app. |
 
 **Two rules govern the small end.** `typography.md` gives mobile a **17 pt default and
-an 11 pt minimum**. `--text-body` at `1rem` = 16 px sits at the default; `--text-caption`
-at `0.8125rem` = 13 px sits comfortably above the floor. The current `--fs-xs` of
-`.76rem` ≈ 12.2 px was legal but was being asked to carry real information at the
-weakest colour in the palette — see Part 3.
+an 11 pt minimum**. `--fs-md` at `1rem` = 16 px sits at the default; `--fs-xs`
+was raised from `.76rem` (≈ 12.2 px) to `0.8125rem` = 13 px. The old value was legal but
+was being asked to carry real information at the weakest colour in the palette, which
+failed contrast on three of four surfaces — see Part 3.
 
 **Text zoom must work.** Every size is expressed in `rem`, so browser text-size settings
 and page zoom scale the whole interface. The three `clamp()` values are deliberate
-exceptions on display type only, where an unbounded value would overflow a phone; they
-have a `vw` middle term so they still grow with the viewport, and none of them carry
-information that exists nowhere else. Guidance asks that layouts *"adapt to all font
+exceptions on display type only; their **floors are in `rem`**, so they still scale with
+the reader's text size, and their `vw` middle term lets them grow with the viewport.
+The timer's floor is `2.2rem` rather than `3.4rem` for a measured reason: at 200% text on
+a 320 px screen a `3.4rem` floor is 108.8 px and pushes the page sideways. Verified: no
+horizontal overflow at 320 px and 390 px, at both 150% and 200%, and machine-gated. Guidance asks that layouts *"adapt to all font
 sizes"* and that we *"Keep text truncation to a minimum as font size increases"*
 (`typography.md`) — the truncation audit is in the polish plan.
 
@@ -263,7 +273,9 @@ Three states, and the page must be correct in all of them:
 
 1. `prefers-color-scheme: dark` → dark tokens.
 2. `prefers-color-scheme: light` → light tokens.
-3. An explicit in-app override → wins over both.
+3. There is deliberately **no in-app theme switch.** The app follows the device, which is
+   what the setting is for; a third control would add Settings surface and bytes for a
+   preference the OS already owns. Recorded as a decision, not an oversight.
 
 `<meta name="color-scheme" content="dark light">` so form controls, scrollbars, and the
 caret adopt the right appearance. Tokens are defined once on `:root` and *redefined*
@@ -430,9 +442,13 @@ following survive unchanged:
 A visual redesign should make **zero** data-contract changes.
 
 Bytes for new work are funded by **removing obsolete and duplicated CSS first**, not by
-raising the ceiling. Measured cost of the semantic token rename alone: **+831 bytes**
-against **2,080 bytes** of headroom — which is precisely why the reclamation pass comes
-first rather than last.
+raising the ceiling. Measured cost of the semantic token rename alone was **+831 bytes**
+against **2,080 bytes** of starting headroom — which is why the reclamation pass came
+first rather than last. It reclaimed roughly **3,400 bytes** (dead rules and tokens,
+duplicate selectors, a shared card-surface rule, merged stat/tile inner elements,
+utility classes for repeated inline styles, a shared field-wrapper fragment, and 23 CORE
+export names never referenced anywhere). **The ceiling was not moved.** Final payload:
+**343,963 of 344,064 bytes.**
 
 `sw.js`'s `SW_VERSION` must move with every HTML payload change. No exceptions: an
 installed client that does not see a new cache version never receives the redesign.
