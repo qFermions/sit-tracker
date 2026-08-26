@@ -1,7 +1,55 @@
 # PROJECT_STATE — Sit Tracker
 
 *A future session should be able to resume from this file alone.*
-*Last verified: 2026-08-18, practice-training run (sections below dated as verified).*
+*Last verified: 2026-08-26, Apple design pass (sections below dated as verified).*
+
+## Apple design pass (v4.5.0, 2026-08-26) — the app gets a coherent, accessible surface
+
+Mission: make Sit Tracker feel as calm, coherent and native-quality as an excellent
+first-party application, while keeping its meditation identity and its deliberately
+small offline architecture. Audited against a pinned third-party HIG-derived guideline
+corpus (`APPLE_SKILL_PROVENANCE.md` — **not** an Apple certification, and none is
+claimed).
+
+**Documents produced:** `APPLE_SKILL_PROVENANCE.md`, `APPLE_HIG_APPLICABILITY_MATRIX.md`
+(all 53 guideline docs classified, each with a reason verified against the code),
+`APPLE_HIG_AUDIT.md` (42 findings + 8 product-character findings, each carrying how it
+was verified), `APPLE_DESIGN_SYSTEM.md` (thesis + full token contract with measured
+contrast), `APPLE_POLISH_PLAN.md` (ranked ledger with honest open/done status).
+
+**Defects found and fixed** (each reproduced in a real browser before being believed):
+- Every `.notice` in the app rendered with **no border** — `--accent-dim` was referenced
+  and never defined, which invalidates the whole `border` shorthand. Affected the
+  storage-loss and resume-a-sit banners.
+- Chart labels rendered at **4.44–4.93 px** on a 320 px phone.
+- The five nav tabs did not fit at **any** phone width, with both scroll affordances
+  suppressed, so Settings sat off-screen.
+- The in-app guide made an unconditional privacy promise the app does not keep when the
+  AI provider is on — **and a test pinned the false wording in place**.
+- The post-sit review and AI draft destroyed keyboard focus and collapsed the section the
+  user was working inside on every interaction.
+- The orb never animated for a new user (settling countdown was off by default); the
+  onboarding orb sat 38 px off-centre; its animation clobbered its own centring
+  transform.
+- A selected *recommended* preset showed no selected state.
+- Learn's 17 collapsible sections showed no disclosure marker at all.
+
+**Added:** a full light appearance (the app had none), increased-contrast and
+reduced-transparency variants, a convertible tab bar (bottom on phones, top from 768px),
+text equivalents for every chart, and semantic purpose-named colour tokens.
+
+**Architecture unchanged:** one HTML file, no framework, no build step, no runtime
+dependency, localStorage, offline via the service worker, **schema v6 untouched** — a
+visual redesign that made zero data-contract changes. The ADR-0003 ceiling was **not**
+moved: ~3,400 bytes were reclaimed from dead and duplicated code to fund the work.
+Final payload **343,984 / 344,064 bytes** (80 free) — the binding constraint on what
+remains open in `APPLE_POLISH_PLAN.md`.
+
+**Verification:** Node **447/447** (plus a new whole-script syntax gate — the CORE
+extraction previously let a syntax error anywhere in the app modules pass all 447 tests
+while the app failed to boot), browser gates **32/32**, interaction flow **32/32**,
+sweep at 320/360/375/390/430/768/834/1024 in both appearances plus text at 150% and 200%,
+zero horizontal overflow and zero console errors. Real phone hardware remains untested.
 
 ## Practice-training run (v4.4.0, 2026-08-18) — the app becomes a training cockpit
 
@@ -83,7 +131,7 @@ and zero new gamification. Design decisions + evidence:
 
 ## App version & schema
 
-- App **v4.4.0** (`CORE.APP_VERSION`), SW cache **v4.4.0** (`sw.js` SW_VERSION — ⚠ bump on
+- App **v4.5.0** (`CORE.APP_VERSION`), SW cache **v4.5.0** (`sw.js` SW_VERSION — ⚠ bump on
   every HTML edit or installed clients keep the stale shell; the version match is now
   machine-enforced by the test runner).
 - **Data schema v6** in envelope `jhanaTracker.v2` — see DATA_CONTRACT.md (authoritative).
