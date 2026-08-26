@@ -116,14 +116,14 @@ async function main() {
   await page.evaluate(CONTRAST_FN);
 
   /* Dismiss onboarding so the app proper is measurable. */
-  const onboardVisible = await page.locator("#onboard:not([hidden])").count();
+  const onboardVisible = await page.locator("#onboard[open]").count();
   if (onboardVisible) {
     for (let i = 0; i < 8; i++) {
       const btns = page.locator("#ob-actions button:visible");
       if (!(await btns.count())) break;
       await btns.last().click().catch(() => {});
       await page.waitForTimeout(120);
-      if (!(await page.locator("#onboard:not([hidden])").count())) break;
+      if (!(await page.locator("#onboard[open]").count())) break;
     }
   }
 
@@ -187,20 +187,25 @@ async function main() {
   gate("no button without an accessible name", emptyButtons.length === 0, emptyButtons.slice(0, 8).join(", "));
 
   // Measure the name of an ACTUALLY OPEN dialog — a closed one legitimately carries none.
-  const dialogName = await page.evaluate(() => {
+  const dialogName = await page.evaluate(async () => {
     const h = window.__sitTracker;
     if (!h) return { why: "no test hook" };
-    const d = document.querySelector("dialog");
+    const d = document.querySelector("dialog#modal");
     if (!d) return { why: "no dialog element" };
-    // drive a real modal through the app's own helper
+    // drive a real modal through the app's own helper, then WAIT: the dialog plays an
+    // entrance animation, and measuring mid-animation reports scaled (0.98x) geometry
     const ui = document.querySelector("#btn-invite") || document.querySelector("#btn-feedback");
     if (ui) ui.click();
+    await new Promise(r => setTimeout(r, 500));
     if (!d.open) return { why: "could not open a modal to measure" };
     const byId = d.getAttribute("aria-labelledby");
     const named = byId && document.getElementById(byId) ? document.getElementById(byId).textContent.trim() : (d.getAttribute("aria-label") || "").trim();
     d.close();
     return { name: named };
   });
+  // never leave a modal open for later gates to trip over
+  await page.evaluate(() => { const d = document.querySelector("dialog#modal"); if (d && d.open) d.close(); });
+  await page.waitForTimeout(150);
   const generic = ["dialog", "modal", "window", ""];
   gate("an open dialog is named by its own heading, not a generic placeholder",
     !!(dialogName.name && !generic.includes(dialogName.name.toLowerCase())),
@@ -279,14 +284,14 @@ async function main() {
   lightPage.on("pageerror", e => lightErrors.push(e.message));
   await lightPage.goto(APP, { waitUntil: "networkidle" });
   await lightPage.evaluate(CONTRAST_FN);
-  const obL = await lightPage.locator("#onboard:not([hidden])").count();
+  const obL = await lightPage.locator("#onboard[open]").count();
   if (obL) {
     for (let i = 0; i < 8; i++) {
       const b = lightPage.locator("#ob-actions button:visible");
       if (!(await b.count())) break;
       await b.last().click().catch(() => {});
       await lightPage.waitForTimeout(120);
-      if (!(await lightPage.locator("#onboard:not([hidden])").count())) break;
+      if (!(await lightPage.locator("#onboard[open]").count())) break;
     }
   }
   const bodyBgLight = await lightPage.evaluate(() => getComputedStyle(document.body).backgroundColor);
@@ -454,6 +459,36 @@ async function main() {
     `animationName=${orbLive.during}`);
   gate("live check: orb animates while settling", orbLive.settling !== "none",
     `animationName=${orbLive.settling}`);
+
+  section("CHARTS (with real data)");
+  // Charts only exist once there are sessions, so seed some through CORE's own generator
+  // and strip the synthetic marker, then measure every label's rendered box.
+  const chartCheck = await page.evaluate(async () => {
+    const h = window.__sitTracker;
+    if (!h || !h.CORE || !h.CORE.makeTestSessions) return { why: "no seeding hook" };
+    const raw = h.CORE.makeTestSessions(120, h.STORE.todayStr(), h.STORE.nowIso());
+    const clean = raw.map(x => { const c = JSON.parse(JSON.stringify(x)); delete c._test;
+      if (c.notes) c.notes = c.notes.replace(/\[TEST DATA\]\s*/g, ""); return c; });
+    h.STORE.mergeImported(clean);
+    document.querySelector("#tabbtn-progress").click();
+    await new Promise(r => setTimeout(r, 700));
+    const clipped = [], overlapping = [];
+    document.querySelectorAll("#tab-progress .chart svg").forEach(svg => {
+      const sr = svg.getBoundingClientRect();
+      const ts = [...svg.querySelectorAll("text")];
+      ts.forEach(t => { const r = t.getBoundingClientRect();
+        if (r.left < sr.left - 0.5 || r.right > sr.right + 0.5) clipped.push(t.textContent); });
+      const byY = {};
+      ts.forEach(t => { const r = t.getBoundingClientRect(); (byY[Math.round(r.top)] = byY[Math.round(r.top)] || []).push({ r, s: t.textContent }); });
+      Object.values(byY).forEach(g => { g.sort((a, b) => a.r.left - b.r.left);
+        for (let i = 1; i < g.length; i++) if (g[i].r.left < g[i - 1].r.right - 0.5) overlapping.push(g[i - 1].s + "/" + g[i].s); });
+    });
+    const charts = document.querySelectorAll("#tab-progress .chart svg").length;
+    return { charts, clipped: [...new Set(clipped)], overlapping: [...new Set(overlapping)] };
+  });
+  gate("charts render at all once there is data", (chartCheck.charts || 0) > 0, chartCheck.why || `${chartCheck.charts} charts`);
+  gate("no chart label is clipped by its own viewBox", (chartCheck.clipped || []).length === 0, (chartCheck.clipped || []).join(", "));
+  gate("no two chart labels overlap", (chartCheck.overlapping || []).length === 0, (chartCheck.overlapping || []).slice(0, 5).join(", "));
 
   section("PRIVACY / DATA");
 

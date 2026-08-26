@@ -30,16 +30,16 @@ await page.goto(APP, { waitUntil: "networkidle" });
 await page.waitForTimeout(400);
 
 console.log("\n=== FIRST OPEN ===");
-ok("the onboarding hero appears on a first open", await page.locator("#onboard:not([hidden])").count() === 1);
+ok("the onboarding hero appears on a first open", await page.locator("#onboard[open]").count() === 1);
 // walk it the way a person would
 for (let i = 0; i < 8; i++) {
   const b = page.locator("#ob-actions button:visible");
   if (!(await b.count())) break;
   await b.last().click().catch(() => {});
   await page.waitForTimeout(150);
-  if (!(await page.locator("#onboard:not([hidden])").count())) break;
+  if (!(await page.locator("#onboard[open]").count())) break;
 }
-ok("onboarding can be completed and does not reappear", await page.locator("#onboard:not([hidden])").count() === 0);
+ok("onboarding can be completed and does not reappear", await page.locator("#onboard[open]").count() === 0);
 
 console.log("\n=== TODAY: what am I practising, how long, how do I begin ===");
 await page.locator("#tabbtn-today").click();
@@ -177,7 +177,7 @@ const roundTrip = await page.evaluate(async json => {
 ok("wiping clears the store", roundTrip.afterWipe === 0, JSON.stringify(roundTrip));
 // the app shows an import preview before writing — confirm it, then check the data landed
 const confirmed = await page.evaluate(async () => {
-  const dlg = document.querySelector("dialog");
+  const dlg = document.querySelector("dialog#modal");   // #onboard is also a <dialog> now
   if (!dlg || !dlg.open) return "no import preview appeared";
   const btns = [...dlg.querySelectorAll("button")];
   const go = btns.find(b => /import|confirm|merge|apply/i.test(b.textContent || ""));

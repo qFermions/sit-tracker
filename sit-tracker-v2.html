@@ -103,11 +103,11 @@ small,.dim{color:var(--label-secondary);font-size:var(--fs-sm)}
 header.app{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-3);padding:calc(var(--sp-4) + env(safe-area-inset-top)) var(--sp-4) 0;max-width:860px;margin:0 auto}
 header.app .mm{color:var(--tradition);font-size:var(--fs-sm)}
 nav.tabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:var(--edge);padding:2px var(--sp-1) calc(2px + env(safe-area-inset-bottom))}
-nav.tabs button{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:none;border:none;border-radius:var(--r-sm);color:var(--label-secondary);padding:var(--sp-1) 0;font-size:12px;font-weight:600;cursor:pointer;min-height:44px;transition:color var(--tr),background var(--tr)}
+nav.tabs button{flex:1 1 0;min-width:0;line-height:1.15;background:none;border:none;border-radius:var(--r-sm);color:var(--label-secondary);padding:var(--sp-1) 0;font-size:clamp(12px,.8125rem,15px);font-weight:600;cursor:pointer;min-height:44px;transition:color var(--tr),background var(--tr)}
 nav.tabs button[aria-selected="true"]{color:var(--accent);background:var(--surface-elevated)}
 nav.tabs button:hover{color:var(--label-primary)}
 main{max-width:860px;margin:0 auto;padding:var(--sp-4);padding-bottom:calc(96px + env(safe-area-inset-bottom))}
-@media(min-width:768px){nav.tabs{position:static;justify-content:center;gap:4px;width:fit-content;max-width:100%;margin:var(--sp-3) auto 0;padding:4px;background:var(--fill-subtle);border:var(--edge);border-top:var(--edge);border-radius:var(--r-pill)}nav.tabs button{flex:0 0 auto;padding:var(--sp-2) var(--sp-4);font-size:14px;border-radius:var(--r-pill)}main{padding-bottom:var(--sp-6)}}
+@media(min-width:768px){nav.tabs{position:static;justify-content:center;gap:4px;width:fit-content;max-width:100%;margin:var(--sp-3) auto 0;padding:4px;background:var(--fill-subtle);border:var(--edge);border-top:var(--edge);border-radius:var(--r-pill)}nav.tabs button{flex:0 0 auto;padding:var(--sp-2) var(--sp-4);font-size:clamp(14px,.9375rem,19px);border-radius:var(--r-pill)}main{padding-bottom:var(--sp-6)}}
 section[role="tabpanel"]{display:none}
 section[role="tabpanel"].active{display:block;animation:tabIn var(--tr)}
 .card,.stat,.sess-item,.tstat,.preset-card{background:var(--grad-card);border:var(--edge);border-radius:var(--r);box-shadow:var(--elev-1)}
@@ -256,7 +256,8 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
 .qrow{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:var(--edge)}
 .qrow .ql{min-width:130px;font-size:var(--fs-sm);color:var(--label-secondary)}
 /* onboarding + first-open hero */
-.onboard{position:fixed;inset:0;z-index:60;background:var(--grad-hero);display:flex;align-items:center;justify-content:center;padding:var(--sp-4);overflow-y:auto}
+.onboard{position:fixed;inset:0;z-index:60;background:var(--grad-hero);align-items:center;justify-content:center;padding:var(--sp-4);overflow-y:auto;max-width:none;max-height:none;width:100%;height:100%;border:0;border-radius:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.onboard[open]{display:flex}
 .onboard-inner{max-width:440px;width:100%;text-align:center;position:relative;padding:var(--sp-5) var(--sp-4)}
 .ob-orb{position:absolute;inset:auto;left:50%;top:-40px;width:190px;height:190px;transform:translateX(-50%);opacity:.85;animation:orbBreathe 8s ease-in-out 3}
 .onboard h2{font-size:var(--fs-xl);font-weight:700;letter-spacing:var(--track-tight);line-height:1.2}
@@ -626,7 +627,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
 </section>
 </main>
 
-<div id="onboard" class="onboard" hidden role="dialog" aria-modal="true" aria-labelledby="ob-title">
+<dialog id="onboard" class="onboard" aria-labelledby="ob-title">
   <div class="onboard-inner">
     <div class="orb ob-orb" aria-hidden="true"></div>
     <div id="ob-body">
@@ -636,7 +637,7 @@ body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
     </div>
     <div class="ob-actions" id="ob-actions"></div>
   </div>
-</div>
+</dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 <dialog id="modal"><div id="modal-body"></div></dialog>
 <div id="print-report" aria-hidden="true"></div>
@@ -1806,8 +1807,6 @@ const CORE = (function () {
     "ob.text1": { en: "This app helps you time sessions, record observations, and review your practice over time. Everything stays on this device — no account, no cloud.", my: "" },
     "ob.title2": { en: "Start simply.", my: "" },
     "ob.text2": { en: "Sit comfortably. Attend to the breath sensation near the nostrils. Count each in-and-out cycle from one to eight, then restart. That is the whole first practice.", my: "" },
-    "ob.title3": { en: "Record, do not exaggerate.", my: "" },
-    "ob.text3": { en: "After each sit, log what you directly noticed — nothing more. Traditional and scientific sources are kept separate from personal observations, and the app never certifies attainments.", my: "" },
     "ob.continue": { en: "Continue", my: "" },
     "ob.back": { en: "Back", my: "" },
     "ob.skip": { en: "Skip", my: "" },
@@ -1821,7 +1820,7 @@ const CORE = (function () {
   const I18N_SCREENS = {
     chrome: ["app.tagline", "tab.today", "tab.journal", "tab.progress", "tab.learn", "tab.settings"],
     today: ["today.start", "today.choose"],
-    onboarding: ["ob.title1", "ob.text1", "ob.title2", "ob.text2", "ob.title3", "ob.text3", "ob.continue", "ob.back", "ob.skip", "ob.start30", "ob.shorter", "ob.explore", "hero.promise", "hero.begin", "hero.skipintro"]
+    onboarding: ["ob.title1", "ob.text1", "ob.title2", "ob.text2", "ob.continue", "ob.back", "ob.skip", "ob.start30", "ob.shorter", "ob.explore", "hero.promise", "hero.begin", "hero.skipintro"]
   };
   function tr(key, lang, table) {
     const tbl = table || I18N;
@@ -4191,7 +4190,7 @@ const PROGRESS = (function () {
 
   function svgLine(values, opts) {
     const o = opts || {};
-    const W = 600, H = 130, P = 24;
+    const W = 600, H = 130, P = 68;
     const pts = values.filter(v => CORE.isNum(v.y));
     if (pts.length < 2) return null;
     const yMax = o.yMax || Math.max.apply(null, pts.map(p => p.y)) || 1;
@@ -4210,7 +4209,7 @@ const PROGRESS = (function () {
 
   function svgBars(items, opts) {
     const o = opts || {};
-    const W = 600, H = 140, P = 24;
+    const W = 600, H = 165, P = 50;
     if (!items.length) return null;
     const max = Math.max.apply(null, items.map(i => Math.max(i.v || 0, i.v2 || 0))) || 1;
     const bw = Math.min(34, (W - 2 * P) / items.length * (o.dual ? 0.36 : 0.7));
@@ -4225,7 +4224,7 @@ const PROGRESS = (function () {
       } else {
         bars += '<rect rx="2" x="' + (cx - bw / 2) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" class="b1"/>';
       }
-      if (it.label) bars += '<text x="' + cx + '" y="' + (H - P + 12) + '" text-anchor="middle">' + esc(String(it.label).slice(0, 14)) + "</text>";
+      if (it.label && !(i % Math.ceil(items.length / 6))) bars += '<text x="' + cx + '" y="' + (H - P + (i % 2 ? 34 : 14)) + '" text-anchor="middle">' + esc(String(it.label)) + "</text>";
     });
     const desc = (o.label || "chart") + ": " + items.map(i => i.label + " " + (i.v || 0) + (o.dual ? " and " + (i.v2 || 0) : "")).join(", ");
     return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(desc) + '">' +
@@ -4889,7 +4888,7 @@ const ONBOARD = (function () {
   const { $ } = UI;
   // strings come from the CORE i18n table (English until the owner supplies Burmese)
   const lang = () => STORE.getSetting("language", "en");
-  const STEPS = () => [1, 2, 3].map(i => ({ title: CORE.tr("ob.title" + i, lang()), text: CORE.tr("ob.text" + i, lang()) }));
+  const STEPS = () => [1, 2].map(i => ({ title: CORE.tr("ob.title" + i, lang()), text: CORE.tr("ob.text" + i, lang()) }));
   let step = 0;
   let heroDone = false;   // the first-open hero shows once per arrival, before step 1
 
@@ -4903,13 +4902,15 @@ const ONBOARD = (function () {
     if (!st.show) return;
     step = st.step;
     heroDone = step > 0;                 // resuming mid-intro skips the hero
+    const dlg = $("#onboard");
+    dlg.showModal();
+    dlg.oncancel = e => { e.preventDefault(); finish("skip"); };   // Escape = Skip, and it saves
     render();
-    $("#onboard").hidden = false;
   }
 
   function finish(how) {
     saveState({ done: true, step: 0 });
-    $("#onboard").hidden = true;
+    $("#onboard").close();
     if (how === "start30") { UI.selectPreset("first"); UI.showTab("today"); TIMER.start(); }
     if (how === "shorter") { UI.selectPreset("short"); UI.showTab("today"); window.scrollTo({ top: 0 }); UI.toast("Pick any practice card, then press Start."); }
     if (how === "explore") { APP.loadDemo(); UI.showTab("journal"); } // demo entries are visible in history (Progress rightly excludes them)
@@ -5352,7 +5353,7 @@ const APP = (function () {
     const tag = (e.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select" || tag === "button") return;
     if (!UI.$("#tab-today").classList.contains("active")) return;
-    if (!UI.$("#onboard").hidden) return;
+    if (UI.$("#onboard").open) return;
     e.preventDefault();
     const snap = TIMER.snapshot();
     if (!snap) TIMER.start();
