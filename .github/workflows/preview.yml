@@ -1,0 +1,41 @@
+# Hosted preview of the practice-training candidate (PR #2 branch).
+#
+# Publishes THIS branch verbatim to GitHub Pages on every push, so the preview
+# always reflects the current candidate — never master. Static hosting only:
+# no backend, no build step, no secrets in the repo (the runtime GITHUB_TOKEN
+# below is GitHub's ambient per-run token, not a stored credential). The
+# upload-pages-artifact route serves files byte-for-byte (no Jekyll), which the
+# app needs: the service worker precaches relative paths and Learn fetches the
+# companion .md files verbatim.
+#
+# The deploy is gated on the same Node suite that gates local work.
+name: preview
+on:
+  push:
+    branches: [claude/practice-training-system]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Gate on the core suite
+        run: node tests/run-core-tests.mjs sit-tracker-v2.html
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
