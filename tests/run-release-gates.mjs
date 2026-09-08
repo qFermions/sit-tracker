@@ -312,14 +312,27 @@ await ctxB.setOffline(true);
 const pOff = await ctxB.newPage();
 const offOpened = await pOff.goto(B + "/", { waitUntil: "domcontentloaded" }).then(() => true).catch(() => false);
 await pOff.waitForTimeout(800);
-ok("a NEW page at the root URL opens with the server refusing connections", offOpened && await pOff.locator("#btn-start").count() === 1);
-ok("records are there offline", await count(pOff) === 4);
-await pOff.locator("#tabbtn-journal").click(); await pOff.waitForTimeout(300);
-ok("the journal renders offline", await pOff.locator(".sess-item").count() >= 4);
-const offlineAssets = await app(pOff, async () => { const r = {}; for (const p of ["/manifest.json", "/icons/icon-192.png", "/abhinna-practice-manual.md", "/PRACTICE_SOURCES.md", "/sit-tracker-v2.html"]) { try { r[p] = (await fetch(p)).status; } catch { r[p] = "ERR"; } } return r; });
-ok("runtime assets resolve offline from the worker cache", Object.values(offlineAssets).every(s => s === 200), JSON.stringify(offlineAssets));
-await pOff.locator("#tabbtn-today").click(); await pOff.waitForTimeout(200);
-ok("a sit can be started offline", await pOff.locator("#btn-start:visible").isEnabled());
+const offApp = offOpened && await pOff.locator("#btn-start").count() === 1;
+ok("a NEW page at the root URL opens with the server refusing connections", offApp);
+// every later probe is guarded so a page that failed to open yields clean FAILs, not an exception
+const offEval = async (fn, arg) => { if (!offApp) return null; try { return await pOff.evaluate(fn, arg); } catch (e) { return "threw: " + e.message.split("\n")[0]; } };
+ok("records are there offline", await offEval(() => window.__sitTracker.STORE.sessions().length) === 4);
+if (offApp) { await pOff.locator("#tabbtn-journal").click(); await pOff.waitForTimeout(300); }
+ok("the journal renders offline", offApp && await pOff.locator(".sess-item").count() >= 4);
+// the worker answers ANY failed fetch with the app document at status 200 (its navigation
+// fallback), so a status check cannot tell a cached asset from the fallback; compare bytes instead
+const offlineAssets = {};
+for (const p of ["/manifest.json", "/icons/icon-192.png", "/abhinna-practice-manual.md", "/PRACTICE_SOURCES.md", "/abhinna-6-roadmap.md", "/sit-tracker-v2.html"]) {
+  const want = sha(readFileSync(join(RELEASE, p)));
+  const got = await offEval(async q => {
+    const r = await fetch(q); const buf = await r.arrayBuffer();
+    return [...new Uint8Array(await crypto.subtle.digest("SHA-256", buf))].map(b => b.toString(16).padStart(2, "0")).join("");
+  }, p);
+  offlineAssets[p] = got === want ? "release bytes" : "MISMATCH " + String(got).slice(0, 16);
+}
+ok("runtime assets served offline are the release bytes (not the worker's HTML fallback)", Object.values(offlineAssets).every(v => v === "release bytes"), JSON.stringify(offlineAssets));
+if (offApp) { await pOff.locator("#tabbtn-today").click(); await pOff.waitForTimeout(200); }
+ok("a sit can be started offline", offApp && await pOff.locator("#btn-start:visible").isEnabled());
 await pOff.close();
 // the browser may still *attempt* a worker-script update check on navigation; every attempt was
 // refused, so nothing the page showed can have come from the network
