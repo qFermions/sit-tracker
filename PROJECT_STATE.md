@@ -7,9 +7,11 @@
 
 **Runtime artifact unchanged.** Tested revision for the runtime files: `ec9b564` (PR #2 head;
 `sit-tracker-v2.html` sha256 `1b9b6abdeaf1f160dfb72c8cdc3bb1d9216701d5dd8a5daae0ae39a956a0c4e8`).
-Release tooling and gates: commit `2a3542a` (documentation commits come after it and are not the
-tested implementation). Procedure: `release/README.md`. Deployment state and resume plan:
-`~/sit-tracker-vercel-staging/DEPLOY-STATE.md` (outside the repo; private).
+Release tooling and gates: implementation `2a3542a`, corrected after independent review at
+`3dd6c1e`, test-validity MINORs closed at `ce34d0e` = the final tested implementation
+(documentation commits come after it and are not the tested implementation). Procedure:
+`release/README.md`. Deployment state and resume plan: `~/sit-tracker-vercel-staging/DEPLOY-STATE.md`
+(outside the repo; private).
 
 - `tools/release.mjs` — `pack` (deterministic tar+xz of the seven allowlisted source members →
   seven base64 text parts + a manifest with every full SHA-256), `check` (rebuilds in a temp dir:
@@ -25,24 +27,29 @@ tested implementation). Procedure: `release/README.md`. Deployment state and res
   release, carrying the manifest digest, marked verified — a created deployment is not a passed
   check; a final deployment that exists but is unverified yields "verify-first", never a blind
   duplicate). A fresh pack on 2026-09-08 reproduced the August-28 parts and payload digest exactly.
-- `tests/run-release-gates.mjs` — 58 gates on the ASSEMBLED release directory served as hosting
-  serves it (`/` → app, revalidating SW, unknown paths 404), two isolated origins, synthetic data:
+- `tests/run-release-gates.mjs` — 62 gates on the ASSEMBLED release directory served as hosting
+  serves it (`/` → app, revalidating SW, unknown paths 404 — properties of the test's own
+  hosting-shaped server; the real host is a live gate), two isolated origins, synthetic data:
   served identity (bytes on the wire = release bytes; PROJECT_STATE.md, tests, tools, .git,
   manifest all 404); an installed **v4.3.0 / schema-5 client — what master serves** — with three
   records and a running sit receives the candidate through the app's own update notice
   (cache-first keeps the old app until the user applies; the candidate precached all nine assets
   first; apply → reload into 4.5.0; envelope migrated to schema 6 with every record and the
   device-local API key intact, v6 fields null; stale cache dropped; the sit survives with the same
-  start timestamp and the app offers to continue it); a candidate whose precache 404s never
-  replaces the usable installation (no notice, same controller, records intact — note: the
-  browser leaves a partially filled cache named for the failed worker until a later successful
-  activate deletes it; the active cache is unaffected); export on origin A → import on origin B
+  start timestamp and the app offers to continue it; with the candidate installed and waiting a
+  reload still serves the old app and re-offers the notice); a candidate whose precache 404s
+  never replaces the usable installation (no notice, same controller, records intact; the
+  attempted install is proven by the empty cache it leaves under its own name — `Cache.addAll`
+  is atomic — which the next successful activate deletes); export on origin A → import on origin B
   (contract-field parity, schema-6 stamps, no `aiKey` field or value anywhere in the backup, the
   same file twice adds nothing, invalid JSON and an unrecognised envelope are refused without
   loss, a future-schema backup merges only its new valid record, a future-schema envelope already
   on the device is loaded without destroying records or unknown fields and is not downgraded);
-  under service-worker control a NEW page at the root URL opens offline with records, journal and
-  all runtime assets; reload keeps every record exactly once; no horizontal overflow at 390 and
+  under service-worker control, with the test server refusing every connection, a NEW page at the
+  root URL opens with records, journal and all runtime assets and the server served nothing (the
+  one attempted request — the browser's worker-script update check — was refused; Playwright's
+  `setOffline` alone does not cut a worker's fetches, which the initial review proved); reload
+  keeps every record exactly once; no horizontal overflow at 390 and
   1280 px; every one of the observed requests stayed on the two test origins; zero console
   errors from the candidate (the only 404 was the old v4.3.0 client's `favicon.ico` — it has no
   icon link; the candidate does).
@@ -54,9 +61,40 @@ tested implementation). Procedure: `release/README.md`. Deployment state and res
   `team_q5u0Ro6D8zGh5H19URVl922o`) returned 404 at ~16:51Z, as on 2026-08-28; no mutation was
   retried. LIVE: UNPROVEN. The one part already sent (tp_00) stays **unverified** in
   `receipts.json` and is resent by the resume plan.
-- Independent review: Codex CLI is not installed in this environment (BLOCKED for that bridge); a
-  fresh-context read-only Claude reviewer was dispatched into an isolated worktree at `2a3542a`
-  as substitute evidence — its verdict is recorded in the follow-up documentation commit.
+- Independent review: Codex CLI is not installed in this environment (that bridge: BLOCKED). A
+  fresh-context read-only Claude reviewer (job `aeea85c99119dd630`, isolated worktree, inspected
+  `git archive 2a3542a`, ran pack/check/selftest, the full gate file and its own probes) returned
+  **BLOCKED — 2 MAJOR, 0 BLOCKER**: (1) the tar pinned order/owner/mtime/format but not member
+  mode, so a repack under another umask changed the release identity (reproduced: 664-mode tree
+  → different xz digest; `--mode=0644` restores the committed digest); (2) the offline gates could
+  pass with an empty cache because `setOffline` does not reach worker fetches (reproduced: caches
+  deleted + setOffline → page still loaded with 2 server hits). MINOR: `check --publish` failed
+  with EXDEV across filesystems (safe-fail); the cache-first assertion sat before the candidate
+  was installed; the failed-precache leftover is an empty cache, not partial, and was a note not
+  an assertion; the served-identity section proves the test's server, not the host; trust-model
+  header wanted. Clean: corruption-to-output, data loss/duplication, secrets, resume/receipts.
+  All of the above corrected at `3dd6c1e` (pack from 664- and 600-mode trees reproduces the
+  committed digests; offline section asserts zero served bytes with the server refusing every
+  connection; gates 62/62). **Re-review 1 of 2 on `3dd6c1e`: PASS** — the reviewer repacked
+  from 664- and 600-mode trees (committed digests reproduced), ran the suite (62/62) and a
+  cache-wiped mutant (FAIL, exit 1 — the offline gate can now fail), and confirmed the EXDEV,
+  cache-first and failed-precache fixes. Two MINOR test items remained (the per-asset offline
+  check was status-only because the worker answers any failed fetch with the HTML at 200; an
+  offline page that fails to open threw instead of failing cleanly) — closed at `ce34d0e`: each
+  asset's bytes are now compared against the release digests, and guarded probes give clean
+  FAILs (mutant: 5 FAILs, summary, exit 1; real run 62/62). **Re-review 2 of 2 on `ce34d0e`:
+  PASS** — the reviewer confirmed the diff touches only the offline section, reran the suite
+  (62/62, all six offline assets are release bytes, 0 served) and the mutant (5 clean FAILs,
+  exit 1); still open and non-blocking: this document's staleness (closed here), the pre-existing
+  mixed-version design item (limitation 8), and the live host (unverifiable). Counters: initial
+  review 1/1; re-reviews 2 of 2 used; correction loops 2 of 3 (one attempt each). Review
+  records: `~/sit-tracker-vercel-staging/review-*.md` and the private bundle.
+- Pre-existing app-design finding from the review (not introduced here, not fixed here because it
+  needs an HTML/SW change and a new artifact): an installed old client that opens the root URL
+  under its old worker after a deploy fetches the NEW document into the OLD cache and runs it under
+  the old worker until the update is applied; `start_url` still serves the old document. Records
+  are never lost, but sessions written in that window carry stale `v` stamps and `undefined`
+  instead of `null` for v6 fields (tolerated by validation and CSV). Recorded under limitations.
 
 Real-device limitations unchanged: no phone hardware, no lock-screen behaviour, no Burmese
 approval observed.
@@ -370,6 +408,12 @@ manifest + sw.js + icons; no dependencies, no build.
 6. Burmese slots in `CORE.I18N` are all empty by design — the owner supplies them;
    the language toggle stays hidden until at least one screen is complete.
 7. Print output was content-verified in DOM, not pixel-verified on paper this run.
+8. Mixed-version window (found by the 2026-09-08 review): after a deploy, an installed old
+   client that opens the root URL before applying the update runs the new document under the
+   old worker (the old cache stores it under `/`), while `start_url` still serves the old one.
+   No data loss; records written in that window get stale `v` stamps and `undefined` v6 fields.
+   Candidate fixes for a future version: per-record migration keyed on `v`, and/or precaching
+   `./` (which would require a root rewrite on every host).
 
 ## Family distribution (no deploy)
 
