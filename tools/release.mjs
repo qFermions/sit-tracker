@@ -22,12 +22,17 @@
  * resume-plan lists which parts still need sending: a part is skipped ONLY when its
  *             receipt is for this exact release, marked verified, and carries the
  *             manifest's digest. Unverified receipts are not success.
+ *
+ * Trust model: the committed manifest is the trust anchor (there is no signature). `check`
+ * executes the transported tools/make-icons.mjs to regenerate the icons, so it only ever runs
+ * a generator whose bytes matched the manifest's digest. `pack` records, but does not refuse,
+ * uncommitted changes to the packed members (see manifest.source.dirtyMembers).
  */
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import {
   readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync, readdirSync,
-  statSync, lstatSync, copyFileSync, renameSync
+  statSync, lstatSync, copyFileSync, renameSync, cpSync
 } from "node:fs";
 import { join, dirname, resolve, relative, sep } from "node:path";
 import { tmpdir } from "node:os";
@@ -47,7 +52,9 @@ const GENERATED = ["icons/icon-192.png", "icons/icon-512.png", "icons/icon-maska
 const ROOT_ENTRY = { "/": "/sit-tracker-v2.html" };   // hosting rewrite; a packaging fact, not source bytes
 const PART_BYTES = 13500;
 const B64_LINE = 1000;
-const TAR_ARGS = ["--sort=name", "--owner=0", "--group=0", "--numeric-owner", "--mtime=2026-01-01 00:00Z", "--format=gnu"];
+// Every member attribute tar would otherwise take from the checkout is pinned: order, owner,
+// mtime, format AND mode — a different umask must not change the release identity.
+const TAR_ARGS = ["--sort=name", "--owner=0", "--group=0", "--numeric-owner", "--mtime=2026-01-01 00:00Z", "--mode=0644", "--format=gnu"];
 const XZ_ARGS = ["-9e"];
 
 const sha = b => createHash("sha256").update(b).digest("hex");
@@ -104,6 +111,16 @@ function decodeStrict(text, expectBytes) {
   if (bin.toString("base64") !== joined) throw new Gate("base64", "base64 does not round-trip");
   if (bin.length !== expectBytes) throw new Gate("base64", `decoded ${bin.length} bytes, manifest says ${expectBytes}`);
   return bin;
+}
+// Move a directory; rename() fails with EXDEV when the temp dir and the destination sit on
+// different filesystems (e.g. tmpfs /tmp), so fall back to copy + remove in that one case.
+function moveDir(src, dst) {
+  try { renameSync(src, dst); }
+  catch (e) {
+    if (e.code !== "EXDEV") throw e;
+    cpSync(src, dst, { recursive: true });
+    rmSync(src, { recursive: true, force: true });
+  }
 }
 function generateIcons(generatorPath, workDir) {
   mkdirSync(join(workDir, "icons"), { recursive: true });
@@ -302,7 +319,7 @@ function check(opts = args) {
       const dest = resolve(opts.publish);
       const staging = dest + ".incoming-" + process.pid;
       rmSync(staging, { recursive: true, force: true });
-      renameSync(pub, staging);                      // built elsewhere; nothing partial ever lands at dest
+      moveDir(pub, staging);                         // built elsewhere; nothing partial ever lands at dest
       if (existsSync(dest)) {
         const prev = dest + ".previous";
         rmSync(prev, { recursive: true, force: true });

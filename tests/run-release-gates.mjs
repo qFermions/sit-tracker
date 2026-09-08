@@ -33,7 +33,7 @@ try { ({ chromium } = req("playwright")); } catch { ({ chromium } = req(pwRoot +
 const RELEASE = resolve(process.argv[2] || "dist/release/public");
 const OLD = resolve(process.argv[3] || "");
 if (!OLD) { console.error("usage: node tests/run-release-gates.mjs <releaseDir> <oldClientDir>"); process.exit(2); }
-const PORT_A = 8151, PORT_B = 8152;
+const PORT_A = Number(process.env.RG_PORT_A || 8151), PORT_B = Number(process.env.RG_PORT_B || 8152);
 const A = `http://127.0.0.1:${PORT_A}`, B = `http://127.0.0.1:${PORT_B}`;
 const sha = b => createHash("sha256").update(b).digest("hex");
 let failed = 0, n = 0;
@@ -43,8 +43,13 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // ---- hosting-shaped static servers whose root (and a set of deliberately broken paths) can change
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json",
   ".md": "text/markdown; charset=utf-8", ".png": "image/png" };
+// `down` makes the server refuse every connection: the only honest "network off" for a page
+// under service-worker control, because Playwright's setOffline() does not cut the worker's own
+// fetches. `hits` counts requests that reached the server, so an offline gate can prove zero.
 function serve(port, state) {
   const srv = createServer(async (rq, rs) => {
+    state.hits++;
+    if (state.down) { rq.socket.destroy(); return; }
     let p = decodeURIComponent(new URL(rq.url, "http://x").pathname);
     if (p === "/") p = "/sit-tracker-v2.html";
     if (state.broken.has(p)) { rs.writeHead(404); return rs.end("broken fixture"); }
@@ -54,12 +59,14 @@ function serve(port, state) {
       const data = await readFile(fp);
       rs.writeHead(200, { "content-type": MIME[extname(fp)] || "application/octet-stream", "cache-control": "public, max-age=0, must-revalidate" });
       rs.end(data);
+      state.served++;
     } catch { rs.writeHead(404); rs.end("not found"); }
   });
+  srv.keepAliveTimeout = 1;   // no idle keep-alive sockets can outlive a `down` switch
   return new Promise(r => srv.listen(port, "127.0.0.1", () => r(srv)));
 }
-const stateA = { root: OLD, broken: new Set() };
-const stateB = { root: RELEASE, broken: new Set() };
+const stateA = { root: OLD, broken: new Set(), down: false, hits: 0, served: 0 };
+const stateB = { root: RELEASE, broken: new Set(), down: false, hits: 0, served: 0 };
 const srvA = await serve(PORT_A, stateA);
 const srvB = await serve(PORT_B, stateB);
 
@@ -135,7 +142,10 @@ const SECRET = "SYNTHETIC-KEY-MUST-NEVER-LEAVE-DEVICE";
 
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
 
-console.log("\n=== SERVED IDENTITY (release directory on the wire) ===");
+// This section proves the release DIRECTORY through a hosting-shaped server (the rewrite and the
+// revalidating cache header are this file's serve()); the real host's rewrite and headers are a
+// live gate, verified at the deployed URL, not here.
+console.log("\n=== SERVED IDENTITY (release directory through a hosting-shaped server) ===");
 stateA.root = RELEASE;
 {
   const r = await fetch(A + "/"); const body = Buffer.from(await r.arrayBuffer());
@@ -147,7 +157,7 @@ stateA.root = RELEASE;
     const x = await fetch(A + p); ok(`${p} resolves with the right type`, x.status === 200 && (x.headers.get("content-type") || "").includes(t), x.headers.get("content-type"));
   }
   const bad = await Promise.all(["/PROJECT_STATE.md", "/tools/release.mjs", "/tests/run-core-tests.mjs", "/.git/HEAD", "/release-manifest.json", "/DATA_CONTRACT.md"].map(p => fetch(A + p).then(x => x.status)));
-  ok("private and undeclared paths are not served from the release directory", bad.every(s => s === 404), bad.join(","));
+  ok("private and undeclared paths do not exist in the release directory (a hosting-shaped server 404s them)", bad.every(s => s === 404), bad.join(","));
 }
 stateA.root = OLD;
 
@@ -175,7 +185,7 @@ const startMs = timerBefore ? JSON.parse(timerBefore).core.startMs : null;
 console.log("\n=== UPDATE: the candidate lands on the same origin ===");
 stateA.root = RELEASE;
 await pOld.reload({ waitUntil: "networkidle" }); await pOld.waitForTimeout(600);
-ok("cache-first: the old app keeps serving until the user applies the update", await version(pOld) === "4.3.0");
+ok("before any update check the old app is still what loads", await version(pOld) === "4.3.0");
 // the browser checks for a new worker on navigation; trigger that check explicitly (simulated browser update check)
 await app(pOld, async () => { const r = await navigator.serviceWorker.getRegistration(); if (r) await r.update(); });
 const noticed = await pOld.waitForFunction(() => { const e = document.querySelector("#update-notice"); return e && !e.hidden; }, null, { timeout: 15000 }).then(() => true).catch(() => false);
@@ -183,6 +193,12 @@ ok("the app offers the update through its own notice (no forced reload mid-sit)"
 const newCache = await app(pOld, async () => { const c = await caches.open("sit-tracker-v4.5.0"); return (await c.keys()).length; });
 ok("the candidate precached every runtime asset before being offered", newCache >= 9, newCache + " entries");
 ok("records are untouched while the update waits", await count(pOld) === 3);
+// the property that matters: with the candidate installed AND waiting, a plain reload still serves the old app
+await pOld.reload({ waitUntil: "networkidle" }); await pOld.waitForTimeout(500);
+const waitingState = await app(pOld, async () => { const r = await navigator.serviceWorker.getRegistration(); return { waiting: !!(r && r.waiting), version: window.__sitTracker.CORE.APP_VERSION }; });
+ok("cache-first: the old app keeps serving while the candidate waits (no forced switch on reload)", waitingState.waiting && waitingState.version === "4.3.0", JSON.stringify(waitingState));
+const noticedAgain = await pOld.waitForFunction(() => { const e = document.querySelector("#update-notice"); return e && !e.hidden; }, null, { timeout: 8000 }).then(() => true).catch(() => false);
+ok("the update notice is offered again on the reload (the waiting worker is remembered)", noticedAgain);
 await pOld.locator("#btn-apply-update").click();
 const updated = await pOld.waitForFunction(() => window.__sitTracker && window.__sitTracker.CORE.APP_VERSION === "4.5.0", null, { timeout: 15000 }).then(() => true).catch(() => false);
 await pOld.waitForTimeout(600);
@@ -223,8 +239,11 @@ await pOld.reload({ waitUntil: "networkidle" }); await pOld.waitForTimeout(500);
 ok("the app still opens and keeps its records after the failed update", await version(pOld) === "4.5.0" && await count(pOld) === 3);
 const activeCacheOk = await app(pOld, async () => { const c = await caches.open("sit-tracker-v4.5.0"); return (await c.keys()).length >= 9; });
 ok("the active precache is intact", activeCacheOk);
-const leftover = (await cacheNames(pOld)).filter(c => c.includes("broken"));
-console.log(`  note  caches after the failed install: ${(await cacheNames(pOld)).join(", ")} (a partially-filled cache for the failed worker ${leftover.length ? "remains until a later successful activate deletes it" : "was not left behind"})`);
+// Cache.addAll is atomic, so the failed worker leaves an EMPTY cache under its own name (harmless:
+// a global caches.match finds nothing in it; the next successful activate deletes it). Its presence
+// is the proof that the broken install was actually attempted rather than silently skipped.
+const brokenCaches = await app(pOld, async () => { const o = {}; for (const nm of await caches.keys()) if (nm.includes("broken")) o[nm] = (await (await caches.open(nm)).keys()).length; return o; });
+ok("the broken install was attempted and left only an empty cache behind", Object.keys(brokenCaches).length === 1 && Object.values(brokenCaches)[0] === 0, JSON.stringify(brokenCaches));
 const brokenErrors = errors.splice(errMark).map(e => e.msg);
 console.log(`  note  console during the broken fixture (expected: the 404): ${brokenErrors.length ? brokenErrors.join(" | ").slice(0, 200) : "none"}`);
 stateA.root = RELEASE; stateA.broken = new Set();
@@ -286,11 +305,14 @@ await pB.reload({ waitUntil: "networkidle" }); await pB.waitForTimeout(400);
 console.log("\n=== OFFLINE: reopen at the root URL under service-worker control ===");
 ok("origin B is controlled by the release worker", await controlled(pB));
 await pB.waitForTimeout(500);
+// the server refuses every connection AND the context is offline; the gate then requires that
+// not a single request reached the server — a page served from the network could not pass
+stateB.down = true; const hitsAtOffline = stateB.hits, servedAtOffline = stateB.served;
 await ctxB.setOffline(true);
 const pOff = await ctxB.newPage();
 const offOpened = await pOff.goto(B + "/", { waitUntil: "domcontentloaded" }).then(() => true).catch(() => false);
 await pOff.waitForTimeout(800);
-ok("a NEW page at the root URL opens with the network off", offOpened && await pOff.locator("#btn-start").count() === 1);
+ok("a NEW page at the root URL opens with the server refusing connections", offOpened && await pOff.locator("#btn-start").count() === 1);
 ok("records are there offline", await count(pOff) === 4);
 await pOff.locator("#tabbtn-journal").click(); await pOff.waitForTimeout(300);
 ok("the journal renders offline", await pOff.locator(".sess-item").count() >= 4);
@@ -299,7 +321,11 @@ ok("runtime assets resolve offline from the worker cache", Object.values(offline
 await pOff.locator("#tabbtn-today").click(); await pOff.waitForTimeout(200);
 ok("a sit can be started offline", await pOff.locator("#btn-start:visible").isEnabled());
 await pOff.close();
+// the browser may still *attempt* a worker-script update check on navigation; every attempt was
+// refused, so nothing the page showed can have come from the network
+ok("the server served nothing during the offline journey (every attempt refused; content came from the worker cache)", stateB.served === servedAtOffline, `${stateB.hits - hitsAtOffline} attempt(s) refused, ${stateB.served - servedAtOffline} served`);
 await ctxB.setOffline(false);
+stateB.down = false;
 
 console.log("\n=== PERSISTENCE: reload keeps every record exactly once ===");
 const before = await app(pB, () => window.__sitTracker.STORE.sessions().map(s => s.id).sort());
