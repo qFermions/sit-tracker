@@ -1,9 +1,10 @@
 /* Sit Tracker service worker — versioned cache-first offline support.
    Bump SW_VERSION whenever sit-tracker-v2.html changes so clients pick up the update. */
-const SW_VERSION = "v4.5.0";
+const SW_VERSION = "v4.6.0";
 const CACHE = "sit-tracker-" + SW_VERSION;
+const APP = "./sit-tracker-v2.html";
 const ASSETS = [
-  "./sit-tracker-v2.html",
+  APP,
   "./manifest.json",
   "./abhinna-practice-manual.md",
   "./abhinna-6-roadmap.md",
@@ -35,6 +36,12 @@ self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return; // never intercept external calls (e.g. AI provider)
+  // Every navigation ("/", the start_url, any query) gets THIS worker's own copy of the app
+  // document, so a page can never run a newer or older document than the worker that serves it.
+  if (e.request.mode === "navigate") {
+    e.respondWith(caches.match(APP).then(hit => hit || fetch(e.request)).catch(() => caches.match(APP)));
+    return;
+  }
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(hit =>
       hit ||
@@ -45,6 +52,6 @@ self.addEventListener("fetch", e => {
         }
         return resp;
       })
-    ).catch(() => caches.match("./sit-tracker-v2.html"))
+    ).catch(() => caches.match(APP))
   );
 });

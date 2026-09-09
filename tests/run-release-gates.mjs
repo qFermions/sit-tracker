@@ -14,9 +14,16 @@
  *   layout / privacy     no horizontal overflow at phone and desktop widths; every request stays
  *                        on the two test origins; zero console errors outside the broken fixture
  *
- * Usage: node tests/run-release-gates.mjs <releaseDir> <oldClientDir>
- *   releaseDir   output of `node tools/release.mjs check … --publish <dir>`
- *   oldClientDir the previous release's runtime files (e.g. `git show fcd0e55:<file>` for each)
+ *   mixed-version window an installed PREVIOUS-release worker (start_url-only client, active sit,
+ *                        second tab) meets the new release at "/": reproduced, then the new
+ *                        document requests its own worker, older-stamped records self-heal, every
+ *                        tab lands on the new release, and with the new worker active "/" can no
+ *                        longer pull a newer network document
+ *
+ * Usage: node tests/run-release-gates.mjs <releaseDir> <oldClientDir> [<previousReleaseDir>]
+ *   releaseDir         output of `node tools/release.mjs check … --publish <dir>`
+ *   oldClientDir       a schema-5 client's runtime files (e.g. `git show fcd0e55:<file>` for each)
+ *   previousReleaseDir the previous release's published runtime directory (default dist/release-v4.5.0/public)
  */
 import { createRequire } from "node:module";
 import { createServer } from "node:http";
@@ -126,6 +133,8 @@ async function importFile(page, text) {
 }
 const releaseHtmlSha = sha(readFileSync(join(RELEASE, "sit-tracker-v2.html")));
 const releaseSwSha = sha(readFileSync(join(RELEASE, "sw.js")));
+const verOf = dir => (readFileSync(join(dir, "sit-tracker-v2.html"), "utf8").match(/APP_VERSION = "([^"]+)"/) || [])[1];
+const RELEASE_VER = verOf(RELEASE);   // the candidate under test — never a literal
 
 // synthetic schema-5 records as an installed v4.3.0 client would hold them
 const seed = {
@@ -190,7 +199,7 @@ ok("before any update check the old app is still what loads", await version(pOld
 await app(pOld, async () => { const r = await navigator.serviceWorker.getRegistration(); if (r) await r.update(); });
 const noticed = await pOld.waitForFunction(() => { const e = document.querySelector("#update-notice"); return e && !e.hidden; }, null, { timeout: 15000 }).then(() => true).catch(() => false);
 ok("the app offers the update through its own notice (no forced reload mid-sit)", noticed);
-const newCache = await app(pOld, async () => { const c = await caches.open("sit-tracker-v4.5.0"); return (await c.keys()).length; });
+const newCache = await app(pOld, async v => { const c = await caches.open("sit-tracker-v" + v); return (await c.keys()).length; }, RELEASE_VER);
 ok("the candidate precached every runtime asset before being offered", newCache >= 9, newCache + " entries");
 ok("records are untouched while the update waits", await count(pOld) === 3);
 // the property that matters: with the candidate installed AND waiting, a plain reload still serves the old app
@@ -200,7 +209,7 @@ ok("cache-first: the old app keeps serving while the candidate waits (no forced 
 const noticedAgain = await pOld.waitForFunction(() => { const e = document.querySelector("#update-notice"); return e && !e.hidden; }, null, { timeout: 8000 }).then(() => true).catch(() => false);
 ok("the update notice is offered again on the reload (the waiting worker is remembered)", noticedAgain);
 await pOld.locator("#btn-apply-update").click();
-const updated = await pOld.waitForFunction(() => window.__sitTracker && window.__sitTracker.CORE.APP_VERSION === "4.5.0", null, { timeout: 15000 }).then(() => true).catch(() => false);
+const updated = await pOld.waitForFunction(v => window.__sitTracker && window.__sitTracker.CORE.APP_VERSION === v, RELEASE_VER, { timeout: 15000 }).then(() => true).catch(() => false);
 await pOld.waitForTimeout(600);
 ok("applying the update reloads into the candidate", updated, "version " + await version(pOld).catch(() => "?"));
 phase = "candidate";
@@ -210,7 +219,7 @@ ok("every record survived the update with its data", envAfter.sessions.length ==
 ok("v6 fields are null on migrated records (missing stays missing, never guessed)", envAfter.sessions.every(s => s.practiceMode === null && s.breathSubtle === null && s.pleasantFeeling === null && s.contactWhere === null));
 ok("the API key stayed on the device through the update", envAfter.settings.aiKey === seed.settings.aiKey);
 const names = await cacheNames(pOld);
-ok("the stale cache was dropped and only the candidate's remains", names.length === 1 && names[0] === "sit-tracker-v4.5.0", names.join(","));
+ok("the stale cache was dropped and only the candidate's remains", names.length === 1 && names[0] === "sit-tracker-v" + RELEASE_VER, names.join(","));
 ok("the worker cache holds the candidate document byte-for-byte", await digestVia(pOld, "/sit-tracker-v2.html") === releaseHtmlSha);
 const timerAfter = await app(pOld, () => localStorage.getItem("jhanaTracker.v2.timer"));
 ok("the active sit survived the update", !!timerAfter && JSON.parse(timerAfter).core.startMs === startMs, timerAfter ? "same startMs" : "timer state lost");
@@ -227,17 +236,17 @@ ok("the sit can be reset (synthetic — not a saved record)", await count(pOld) 
 console.log("\n=== FAILED PRECACHE: a broken candidate must not replace a usable installation ===");
 const brokenDir = await mkdtemp(join(tmpdir(), "st-broken-"));
 await cp(RELEASE, brokenDir, { recursive: true });
-await writeFile(join(brokenDir, "sw.js"), readFileSync(join(RELEASE, "sw.js"), "utf8").replace('SW_VERSION = "v4.5.0"', 'SW_VERSION = "v4.5.0-broken-fixture"'));
+await writeFile(join(brokenDir, "sw.js"), readFileSync(join(RELEASE, "sw.js"), "utf8").replace(`SW_VERSION = "v${RELEASE_VER}"`, `SW_VERSION = "v${RELEASE_VER}-broken-fixture"`));
 const errMark = errors.length;
 stateA.root = brokenDir; stateA.broken = new Set(["/abhinna-6-roadmap.md"]);
 await pOld.reload({ waitUntil: "networkidle" }); await pOld.waitForTimeout(400);
 await app(pOld, async () => { const r = await navigator.serviceWorker.getRegistration(); if (r) { try { await r.update(); } catch (e) { } } });
 await pOld.waitForTimeout(3000);
 ok("no update is offered when the precache cannot complete", await app(pOld, () => document.querySelector("#update-notice").hidden));
-ok("the usable worker keeps controlling the page", await app(pOld, () => navigator.serviceWorker.controller && /sw\.js$/.test(navigator.serviceWorker.controller.scriptURL)) && await version(pOld) === "4.5.0");
+ok("the usable worker keeps controlling the page", await app(pOld, () => navigator.serviceWorker.controller && /sw\.js$/.test(navigator.serviceWorker.controller.scriptURL)) && await version(pOld) === RELEASE_VER);
 await pOld.reload({ waitUntil: "networkidle" }); await pOld.waitForTimeout(500);
-ok("the app still opens and keeps its records after the failed update", await version(pOld) === "4.5.0" && await count(pOld) === 3);
-const activeCacheOk = await app(pOld, async () => { const c = await caches.open("sit-tracker-v4.5.0"); return (await c.keys()).length >= 9; });
+ok("the app still opens and keeps its records after the failed update", await version(pOld) === RELEASE_VER && await count(pOld) === 3);
+const activeCacheOk = await app(pOld, async v => { const c = await caches.open("sit-tracker-v" + v); return (await c.keys()).length >= 9; }, RELEASE_VER);
 ok("the active precache is intact", activeCacheOk);
 // Cache.addAll is atomic, so the failed worker leaves an EMPTY cache under its own name (harmless:
 // a global caches.match finds nothing in it; the next successful activate deletes it). Its presence
@@ -251,7 +260,7 @@ await rm(brokenDir, { recursive: true, force: true });
 await pOld.reload({ waitUntil: "networkidle" }); await pOld.waitForTimeout(400);
 await app(pOld, async () => { const r = await navigator.serviceWorker.getRegistration(); if (r) await r.update(); });
 await pOld.waitForTimeout(1500);
-ok("re-checking against the good candidate finds nothing new (identical worker)", await app(pOld, () => document.querySelector("#update-notice").hidden) && (await cacheNames(pOld)).includes("sit-tracker-v4.5.0"));
+ok("re-checking against the good candidate finds nothing new (identical worker)", await app(pOld, () => document.querySelector("#update-notice").hidden) && (await cacheNames(pOld)).includes("sit-tracker-v" + RELEASE_VER));
 
 console.log("\n=== ORIGIN MIGRATION: export on origin A → import on origin B ===");
 await pOld.locator("#tabbtn-settings").click(); await pOld.waitForTimeout(300);
@@ -273,7 +282,7 @@ watch(ctxB, "origin-B");
 const pB = await ctxB.newPage();
 await pB.goto(B + "/", { waitUntil: "networkidle" }); await pB.waitForTimeout(400);
 await walkOnboarding(pB);
-ok("origin B starts empty (saved data does not follow a new origin by itself)", await count(pB) === 0 && await version(pB) === "4.5.0");
+ok("origin B starts empty (saved data does not follow a new origin by itself)", await count(pB) === 0 && await version(pB) === RELEASE_VER);
 await pB.locator("#tabbtn-settings").click(); await pB.waitForTimeout(300);
 const imp1 = await importFile(pB, exported);
 ok("the backup imports on origin B through the real control with a preview", imp1.startsWith("confirmed"), imp1);
@@ -345,6 +354,67 @@ const before = await app(pB, () => window.__sitTracker.STORE.sessions().map(s =>
 await pB.reload({ waitUntil: "networkidle" }); await pB.waitForTimeout(400);
 const after = await app(pB, () => window.__sitTracker.STORE.sessions().map(s => s.id).sort());
 ok("no record is duplicated or lost across a reload", JSON.stringify(before) === JSON.stringify(after) && new Set(after).size === after.length, after.join(","));
+
+console.log("\n=== MIXED-VERSION WINDOW: an installed previous-release worker meets the new release at the root URL ===");
+// The client installed from the start_url and never opened "/". After a deploy, its worker misses
+// "/" and fetches the NEW document from the network — a new document under an old worker.
+const PREV = resolve(process.argv[4] || "dist/release-v4.5.0/public");
+const prevVer = verOf(PREV), newVer = RELEASE_VER;
+stateA.root = PREV; stateA.broken = new Set();
+const ctxM = await browser.newContext({ viewport: { width: 390, height: 844 } });
+watch(ctxM, "mixed");
+const pM = await ctxM.newPage();
+await pM.goto(A + "/sit-tracker-v2.html", { waitUntil: "networkidle" });
+await app(pM, s => localStorage.setItem("jhanaTracker.v2", JSON.stringify(s)), seed);
+await pM.reload({ waitUntil: "networkidle" }); await pM.waitForTimeout(500);
+await walkOnboarding(pM);
+ok(`the previous release (v${prevVer}) is installed from its start_url and controlled`, await controlled(pM) && await version(pM) === prevVer);
+ok("its worker cached only its own version", JSON.stringify(await cacheNames(pM)) === JSON.stringify(["sit-tracker-v" + prevVer]), (await cacheNames(pM)).join(","));
+await app(pM, () => { const d = document.querySelector("#sit-config details"); if (d) d.open = true; });
+await pM.locator("#btn-start").click(); await pM.waitForTimeout(1500);
+const mixedTimer = await app(pM, () => localStorage.getItem("jhanaTracker.v2.timer"));
+ok("a sit is in progress on the installed client", !!mixedTimer && !!JSON.parse(mixedTimer).core);
+const pM2 = await ctxM.newPage(); await pM2.goto(A + "/sit-tracker-v2.html", { waitUntil: "networkidle" }); await pM2.waitForTimeout(400);
+ok("a second tab of the installed app is open on the same origin", await version(pM2) === prevVer);
+stateA.root = RELEASE;
+const pM3 = await ctxM.newPage(); await pM3.goto(A + "/", { waitUntil: "networkidle" }); await pM3.waitForTimeout(600);
+const mixed = await app(pM3, async () => ({ v: window.__sitTracker.CORE.APP_VERSION, caches: await caches.keys(), controlled: !!navigator.serviceWorker.controller }));
+ok(`REPRODUCED: the root URL runs the new document (v${newVer}) under the previous worker`, mixed.v === newVer && mixed.controlled && mixed.caches.includes("sit-tracker-v" + prevVer), JSON.stringify(mixed));
+ok("no record is lost in the window", await count(pM3) === 3);
+ok("the active sit is untouched in the window", await app(pM3, () => localStorage.getItem("jhanaTracker.v2.timer")) === mixedTimer);
+const offeredM = await pM3.waitForFunction(() => { const e = document.querySelector("#update-notice"); return e && !e.hidden; }, null, { timeout: 15000 }).then(() => true).catch(() => false);
+ok("the new document asks for its matching worker itself and offers the update — no forced reload", offeredM && await app(pM3, () => localStorage.getItem("jhanaTracker.v2.timer")) === mixedTimer);
+ok("the previous-version tabs keep working meanwhile", await version(pM2) === prevVer && await count(pM2) === 3);
+// SIMULATED: a record stamped by an older schema written during the window (an older client's write)
+await app(pM2, () => { const e = JSON.parse(localStorage.getItem("jhanaTracker.v2")); e.sessions.push({ id: "window-rec", v: 5, date: "2026-09-05", startTime: "06:00", actualMin: 20, concMin: 5, notes: "written during the window", entrySource: "manual", teacherReview: "none", stability: null, breathClarity: null, timelineSource: null, markers: null, timeline: null, manualOverride: false, hindrances: {}, qualities: [], nimitta: null }); localStorage.setItem("jhanaTracker.v2", JSON.stringify(e)); });
+await pM3.reload({ waitUntil: "networkidle" }); await pM3.waitForTimeout(600);
+const healed = await app(pM3, () => JSON.parse(localStorage.getItem("jhanaTracker.v2")).sessions.find(s => s.id === "window-rec"));
+ok("a record stamped by an older version is upgraded on the next load (simulated older-client write): stamp current, v6 fields null", !!healed && healed.v === 6 && healed.practiceMode === null && healed.breathSubtle === null && healed.pleasantFeeling === null && healed.contactWhere === null, JSON.stringify({ v: healed && healed.v }));
+ok("the healed envelope keeps every record", await count(pM3) === 4);
+await pM3.waitForFunction(() => { const e = document.querySelector("#update-notice"); return e && !e.hidden; }, null, { timeout: 15000 }).catch(() => {});
+await pM3.locator("#btn-apply-update").click();
+const allNew = await Promise.all([pM, pM2, pM3].map(p => p.waitForFunction(v => window.__sitTracker && window.__sitTracker.CORE.APP_VERSION === v, newVer, { timeout: 15000 }).then(() => true).catch(() => false)));
+await pM.waitForTimeout(700);
+ok("applying the update brings every open tab onto the new release", allNew.every(Boolean), allNew.join(","));
+const namesM = await cacheNames(pM);
+ok("only the new worker's cache remains", namesM.length === 1 && namesM[0] === "sit-tracker-v" + newVer, namesM.join(","));
+ok("records survived the transition", await count(pM) === 4 && await count(pM3) === 4);
+ok("the sit that was in progress survived and is offered back", await app(pM, () => localStorage.getItem("jhanaTracker.v2.timer")) === mixedTimer && await app(pM, () => !!window.__sitTracker.TIMER.state() || !document.querySelector("#resume-banner").hidden));
+// FORWARD CLOSURE: with the new worker active, a navigation to "/" can no longer pull a newer
+// document from the network — the worker serves its own copy until the update is applied.
+const futureDir = await mkdtemp(join(tmpdir(), "st-future-"));
+await cp(RELEASE, futureDir, { recursive: true });
+await writeFile(join(futureDir, "sit-tracker-v2.html"), readFileSync(join(RELEASE, "sit-tracker-v2.html"), "utf8") + "\n<!--future-fixture-->\n");
+await writeFile(join(futureDir, "sw.js"), readFileSync(join(RELEASE, "sw.js"), "utf8").replace(`SW_VERSION = "v${newVer}"`, 'SW_VERSION = "v9.9.9-future-fixture"'));
+stateA.root = futureDir;
+const pM4 = await ctxM.newPage(); await pM4.goto(A + "/", { waitUntil: "networkidle" }); await pM4.waitForTimeout(600);
+const servedOwn = await app(pM4, () => ({ v: window.__sitTracker.CORE.APP_VERSION, future: document.documentElement.outerHTML.includes("future-fixture") }));
+ok("with the fix active, the root URL is served from the worker's own copy, not the newer network document", servedOwn.v === newVer && !servedOwn.future, JSON.stringify(servedOwn));
+const offeredF = await pM4.waitForFunction(() => { const e = document.querySelector("#update-notice"); return e && !e.hidden; }, null, { timeout: 15000 }).then(() => true).catch(() => false);
+ok("the newer release is still offered through the notice (the normal path)", offeredF);
+stateA.root = RELEASE;
+await rm(futureDir, { recursive: true, force: true });
+await ctxM.close();
 
 console.log("\n=== LAYOUT: no horizontal overflow at phone and desktop widths (release directory) ===");
 for (const w of [390, 1280]) {
