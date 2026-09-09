@@ -383,7 +383,7 @@ ok(`REPRODUCED: the root URL runs the new document (v${newVer}) under the previo
 ok("no record is lost in the window", await count(pM3) === 3);
 ok("the active sit is untouched in the window", await app(pM3, () => localStorage.getItem("jhanaTracker.v2.timer")) === mixedTimer);
 const offeredM = await pM3.waitForFunction(() => { const e = document.querySelector("#update-notice"); return e && !e.hidden; }, null, { timeout: 15000 }).then(() => true).catch(() => false);
-ok("the new document asks for its matching worker itself and offers the update — no forced reload", offeredM && await app(pM3, () => localStorage.getItem("jhanaTracker.v2.timer")) === mixedTimer);
+ok("the new document's own registration check finds its matching worker and offers the update — no forced reload", offeredM && await app(pM3, () => localStorage.getItem("jhanaTracker.v2.timer")) === mixedTimer);
 ok("the previous-version tabs keep working meanwhile", await version(pM2) === prevVer && await count(pM2) === 3);
 // SIMULATED: a record stamped by an older schema written during the window (an older client's write)
 await app(pM2, () => { const e = JSON.parse(localStorage.getItem("jhanaTracker.v2")); e.sessions.push({ id: "window-rec", v: 5, date: "2026-09-05", startTime: "06:00", actualMin: 20, concMin: 5, notes: "written during the window", entrySource: "manual", teacherReview: "none", stability: null, breathClarity: null, timelineSource: null, markers: null, timeline: null, manualOverride: false, hindrances: {}, qualities: [], nimitta: null }); localStorage.setItem("jhanaTracker.v2", JSON.stringify(e)); });
@@ -400,21 +400,39 @@ const namesM = await cacheNames(pM);
 ok("only the new worker's cache remains", namesM.length === 1 && namesM[0] === "sit-tracker-v" + newVer, namesM.join(","));
 ok("records survived the transition", await count(pM) === 4 && await count(pM3) === 4);
 ok("the sit that was in progress survived and is offered back", await app(pM, () => localStorage.getItem("jhanaTracker.v2.timer")) === mixedTimer && await app(pM, () => !!window.__sitTracker.TIMER.state() || !document.querySelector("#resume-banner").hidden));
-// FORWARD CLOSURE: with the new worker active, a navigation to "/" can no longer pull a newer
-// document from the network — the worker serves its own copy until the update is applied.
+await ctxM.close();
+// FORWARD CLOSURE: a FRESH client installs the new worker from its start_url and never visits "/";
+// then a newer release lands on the network and the client opens "/" for the first time. The
+// worker must answer with its own copy. (The marker sits inside <body>, where a served document
+// would carry it; "/" was never cached by this client, so a worker that fell through to the
+// network would run the newer document and this gate would fail.)
 const futureDir = await mkdtemp(join(tmpdir(), "st-future-"));
 await cp(RELEASE, futureDir, { recursive: true });
-await writeFile(join(futureDir, "sit-tracker-v2.html"), readFileSync(join(RELEASE, "sit-tracker-v2.html"), "utf8") + "\n<!--future-fixture-->\n");
+await writeFile(join(futureDir, "sit-tracker-v2.html"), readFileSync(join(RELEASE, "sit-tracker-v2.html"), "utf8").replace("</body>", "<!--future-fixture--></body>"));
 await writeFile(join(futureDir, "sw.js"), readFileSync(join(RELEASE, "sw.js"), "utf8").replace(`SW_VERSION = "v${newVer}"`, 'SW_VERSION = "v9.9.9-future-fixture"'));
-stateA.root = futureDir;
-const pM4 = await ctxM.newPage(); await pM4.goto(A + "/", { waitUntil: "networkidle" }); await pM4.waitForTimeout(600);
-const servedOwn = await app(pM4, () => ({ v: window.__sitTracker.CORE.APP_VERSION, future: document.documentElement.outerHTML.includes("future-fixture") }));
-ok("with the fix active, the root URL is served from the worker's own copy, not the newer network document", servedOwn.v === newVer && !servedOwn.future, JSON.stringify(servedOwn));
-const offeredF = await pM4.waitForFunction(() => { const e = document.querySelector("#update-notice"); return e && !e.hidden; }, null, { timeout: 15000 }).then(() => true).catch(() => false);
-ok("the newer release is still offered through the notice (the normal path)", offeredF);
 stateA.root = RELEASE;
+const ctxF = await browser.newContext({ viewport: { width: 390, height: 844 } });
+watch(ctxF, "closure");
+const pF = await ctxF.newPage();
+await pF.goto(A + "/sit-tracker-v2.html", { waitUntil: "networkidle" }); await walkOnboarding(pF);
+ok("a fresh client installs the new worker from its start_url only", await controlled(pF) && await version(pF) === newVer);
+stateA.root = futureDir;
+const pF2 = await ctxF.newPage(); await pF2.goto(A + "/", { waitUntil: "networkidle" }); await pF2.waitForTimeout(600);
+const servedOwn = await app(pF2, () => ({ v: window.__sitTracker.CORE.APP_VERSION, future: document.body.innerHTML.includes("future-fixture") }));
+ok("first visit to the root URL with a newer document on the network: the worker serves its OWN copy", servedOwn.v === newVer && !servedOwn.future, JSON.stringify(servedOwn));
+const offeredF = await pF2.waitForFunction(() => { const e = document.querySelector("#update-notice"); return e && !e.hidden; }, null, { timeout: 15000 }).then(() => true).catch(() => false);
+ok("the newer release is still offered through the notice (the normal path)", offeredF);
+// navigations that are NOT the app keep their own answer under the new worker
+stateA.root = RELEASE;
+const rMd = await pF2.goto(A + "/PRACTICE_SOURCES.md", { waitUntil: "load" });
+const mdType = await app(pF2, () => document.contentType);
+ok("a companion document opened directly is still that document, not the app", !!rMd && rMd.status() === 200 && /markdown|plain/.test(mdType), rMd ? rMd.status() + " " + mdType : "no response");
+const errMark404 = errors.length;
+const r404 = await pF2.goto(A + "/does-not-exist", { waitUntil: "load" });
+ok("an unknown path is still a real 404 under the worker", !!r404 && r404.status() === 404, String(r404 && r404.status()));
+errors.splice(errMark404);   // the 404 above is the gate's own deliberate request, not an app error
 await rm(futureDir, { recursive: true, force: true });
-await ctxM.close();
+await ctxF.close();
 
 console.log("\n=== LAYOUT: no horizontal overflow at phone and desktop widths (release directory) ===");
 for (const w of [390, 1280]) {

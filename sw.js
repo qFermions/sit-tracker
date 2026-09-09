@@ -36,11 +36,16 @@ self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return; // never intercept external calls (e.g. AI provider)
-  // Every navigation ("/", the start_url, any query) gets THIS worker's own copy of the app
-  // document, so a page can never run a newer or older document than the worker that serves it.
+  // A navigation to the app itself — the scope root ("/") or the document by name, with any query —
+  // gets THIS worker's own copy, so a page can never run a newer or older document than the worker
+  // that serves it. Every other navigation (a companion .md opened directly, an icon, an unknown
+  // path) keeps its normal cache-first answer and its real 404.
   if (e.request.mode === "navigate") {
-    e.respondWith(caches.match(APP).then(hit => hit || fetch(e.request)).catch(() => caches.match(APP)));
-    return;
+    const p = url.pathname, root = new URL("./", location.href).pathname;
+    if (p === root || p.endsWith("/sit-tracker-v2.html")) {
+      e.respondWith(caches.match(APP).then(hit => hit || fetch(e.request)).catch(() => caches.match(APP)));
+      return;
+    }
   }
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(hit =>
