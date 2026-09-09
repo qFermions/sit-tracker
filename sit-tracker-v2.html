@@ -3,240 +3,219 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
 <title>Sit Tracker — ဈာန်</title>
-<meta name="theme-color" content="#0a0e15">
+<meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f4ee" media="(prefers-color-scheme: light)">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sit Tracker">
 <style>
-/* ==================================================================
-   IDENTITY SYSTEM — one token layer, documented in ARCHITECTURE.md.
-   Type: system stack, zero embedded bytes; hierarchy from brave sizes
-   + weight + tracking, not from a webfont. Numerals always tabular.
-   Color: midnight base · moonlit accent · restrained gold · teal ok.
-   Depth: three elevation levels + one glass recipe (dialogs, toast).
-   Gradients: exactly three recipes (page wash, card sheen, CTA).
-   Motion: 120/220/480ms, decel ease; transform+opacity only; press =
-   scale .97; nothing loops while idle; reduced-motion kills all.
-   ================================================================== */
+/* NIGHT PRACTICE — one token layer, named for purpose. Dark is the home
+   appearance; light is re-picked, not inverted. Contrast + rationale:
+   APPLE_DESIGN_SYSTEM.md. Architecture: ARCHITECTURE.md. */
 :root{
-  /* color */
-  --bg:#0a0e15; --bg2:#121926; --bg3:#1a2333; --line:#253044; --line-hi:#33415c;
-  --fg:#e9eef6; --fg-dim:#9fadc0; --fg-faint:#76849b;
-  --accent:#8ec3ea; --accent-deep:#3f6f96; --accent-ink:#0a1520; --gold:#d4b078;
-  --ok:#86c996; --warn:#ddb076; --err:#e08b8b;
-  /* type scale (display sizes are meant to be brave) */
-  --fs-hero:clamp(2.7rem,9vw,4.2rem);
-  --fs-display:clamp(1.9rem,5.5vw,2.75rem);
-  --fs-timer:clamp(3.4rem,15vw,6rem);
-  --fs-xl:1.55rem; --fs-lg:1.22rem; --fs-md:1rem; --fs-sm:.875rem; --fs-xs:.76rem;
-  --track-tight:-.025em; --track-caps:.09em;
-  /* rhythm · radius */
+  color-scheme:dark light;
+  --background:#0b0b0d; --surface:#151517; --surface-elevated:#1f1f23;
+  --separator:#28282d; --separator-strong:#3b3b42;
+  --label-primary:#f2ede4; --label-secondary:#b2aa9d; --label-tertiary:#8e877b;
+  --accent:#e2a75c; --on-accent:#1b1205; --accent-muted:#8a6a3c; --tradition:#d6b47c;
+  --success:#8ccf9a; --warning:#e0b56a; --destructive:#ee9188; --danger-edge:#5a2f2f;
+  --glass:rgba(17,17,19,.82); --tint:rgba(226,167,92,.12);
+  --fs-hero:clamp(2.4rem,8vw,3.6rem); --fs-display:clamp(1.8rem,5.5vw,2.6rem); --fs-timer:clamp(2.2rem,14vw,5.25rem);
+  --fs-xl:1.5rem; --fs-lg:1.1875rem; --fs-md:1.0625rem; --fs-sm:.9375rem; --fs-xs:.8125rem;
+  --track-tight:-.02em; --track-caps:.08em;
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:40px;
   --r-lg:22px; --r:14px; --r-sm:10px; --r-pill:999px;
-  /* elevation + glass */
-  --elev-1:0 1px 0 rgba(255,255,255,.04) inset, 0 2px 10px rgba(0,0,0,.35);
-  --elev-2:0 1px 0 rgba(255,255,255,.05) inset, 0 12px 32px rgba(0,0,0,.45);
-  --elev-3:0 1px 0 rgba(255,255,255,.06) inset, 0 28px 80px rgba(0,0,0,.62);
-  --glass-bg:rgba(16,23,35,.78);
-  /* gradient recipes (the only three) */
-  --grad-cta:linear-gradient(135deg,#a6d4f4 0%,#6497c8 100%);
-  --grad-card:linear-gradient(180deg,#17202e 0%,#121926 100%);
-  --grad-wash:radial-gradient(120% 90% at 50% -10%, #141c2a 0%, #0a0e15 58%);
-  /* motion vocabulary */
+  --edge:1px solid var(--separator);
+  --elev:0 12px 32px rgba(0,0,0,.45);
+  --grad-orb:radial-gradient(circle at 42% 36%,rgba(226,180,110,.15),rgba(214,180,124,.08) 45%,rgba(11,11,13,0) 72%);
   --dur-1:120ms; --dur-2:220ms; --dur-3:480ms;
   --ease-out:cubic-bezier(.16,1,.3,1);
-  --glow:rgba(142,195,234,.16); --gold-glow:rgba(212,176,120,.12);
-  --indigo:#55679e; --teal:#63b3ab;
+  --tr:var(--dur-2) var(--ease-out);
 }
+@media(prefers-color-scheme:light){:root{
+  --background:#f7f4ee; --surface:#fffdf9; --surface-elevated:#efeae1;
+  --separator:#e2ddd3; --separator-strong:#c6bfb1;
+  --label-primary:#1c1913; --label-secondary:#585247; --label-tertiary:#6a635a;
+  --accent:#9a5b0f; --on-accent:#fff; --accent-muted:#b58643; --tradition:#7a5a1f;
+  --success:#1f6b42; --warning:#8a5a12; --destructive:#a52c2c; --danger-edge:#e3b4b4;
+  --glass:rgba(255,253,249,.86); --tint:rgba(154,91,15,.10);
+  --elev:0 12px 32px rgba(40,30,10,.14);
+  --grad-orb:radial-gradient(circle at 42% 36%,rgba(154,91,15,.16),rgba(122,90,31,.09) 45%,rgba(247,244,238,0) 72%);
+}}
+@media(prefers-contrast:more){:root{--label-secondary:#d2cbbf;--label-tertiary:#b4ada2;--separator:#45454d;--separator-strong:#64646e}}
+@media(prefers-contrast:more) and (prefers-color-scheme:light){:root{--label-secondary:#2f2a22;--label-tertiary:#45403a;--separator:#a59f93;--separator-strong:#7d766a;--accent:#6e4008}}
 *{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none !important}
-html{-webkit-text-size-adjust:100%}
-body{background:var(--grad-wash) fixed, var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:var(--fs-md);line-height:1.55;min-height:100vh;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
-body.zen .hide-zen{display:none !important}
-h1{font-size:var(--fs-lg);font-weight:800;letter-spacing:var(--track-tight)}
-h2{font-size:var(--fs-lg);font-weight:700;letter-spacing:var(--track-tight);margin-bottom:var(--sp-3)}
-h3{font-size:var(--fs-md);font-weight:650;margin:var(--sp-4) 0 var(--sp-2);color:var(--fg)}
+body{overflow-wrap:anywhere;background:var(--background);color:var(--label-primary);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Myanmar","Myanmar Text",sans-serif;font-size:var(--fs-md);line-height:1.5;min-height:100dvh;padding-inline:env(safe-area-inset-left) env(safe-area-inset-right)}
+body.zen .hide-zen,body.running .hide-zen,body.zen .markers-bar,body.zen #marker-log,body.zen #btn-reset,body.zen .timer-sub{display:none !important}
+body.running main,body.zen main{padding-top:calc(var(--sp-4) + env(safe-area-inset-top))}
+h1{font-size:var(--fs-xl);font-weight:700;letter-spacing:var(--track-tight);overflow-wrap:normal}
+h2{font-size:var(--fs-lg);font-weight:600;letter-spacing:var(--track-tight);margin-bottom:var(--sp-3)}
+h3{font-size:var(--fs-md);font-weight:600;margin:var(--sp-4) 0 var(--sp-2)}
 p{margin-bottom:var(--sp-2)}
 a{color:var(--accent)}
-small,.dim{color:var(--fg-dim);font-size:var(--fs-sm)}
-.faint{color:var(--fg-faint);font-size:var(--fs-xs)}
-.label-caps{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-dim)}
+small,.dim{color:var(--label-secondary);font-size:var(--fs-sm)}
+.faint{color:var(--label-tertiary);font-size:var(--fs-xs)}
+.label-caps,.section-title{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--label-secondary)}
+.section-title{margin:var(--sp-5) 0 var(--sp-3)}
 header.app{display:flex;align-items:baseline;gap:var(--sp-3);padding:calc(var(--sp-4) + env(safe-area-inset-top)) var(--sp-4) 0;max-width:860px;margin:0 auto}
-header.app .mm{color:var(--gold);font-size:var(--fs-sm)}
-nav.tabs{display:flex;gap:4px;overflow-x:auto;width:fit-content;max-width:calc(100% - 2*var(--sp-4));margin:var(--sp-3) auto 0;padding:4px;background:rgba(18,25,38,.6);border:1px solid var(--line);border-radius:var(--r-pill);scrollbar-width:none}
-@media(max-width:420px){nav.tabs button{padding:var(--sp-2) var(--sp-3)}}
-nav.tabs::-webkit-scrollbar{display:none}
-nav.tabs button{flex:0 0 auto;background:none;border:none;border-radius:var(--r-pill);color:var(--fg-dim);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);font-weight:600;cursor:pointer;white-space:nowrap;min-height:38px;transition:color var(--dur-2) var(--ease-out),background var(--dur-2) var(--ease-out)}
-nav.tabs button[aria-selected="true"]{color:var(--fg);background:var(--bg3);box-shadow:var(--elev-1)}
-nav.tabs button:hover{color:var(--fg)}
-main{max-width:860px;margin:0 auto;padding:var(--sp-4);padding-bottom:calc(var(--sp-6) + env(safe-area-inset-bottom))}
+header.app .mm{color:var(--tradition);font-size:var(--fs-sm)}
+nav.tabs{display:flex;flex-wrap:wrap;position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--glass);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:var(--edge);padding:2px var(--sp-1) calc(2px + env(safe-area-inset-bottom))}
+nav.tabs button,.markers-bar button{overflow-wrap:normal}
+nav.tabs button{flex:1;min-width:max-content;line-height:1.15;background:none;border:none;border-radius:var(--r-sm);color:var(--label-secondary);padding:var(--sp-1);font-size:clamp(12px,.8125rem,23px);font-weight:600;cursor:pointer;min-height:44px;transition:color var(--tr),background var(--tr)}
+nav.tabs button[aria-selected="true"]{color:var(--accent);background:var(--tint)}
+nav.tabs button:hover{color:var(--label-primary)}
+main{max-width:860px;margin:0 auto;padding:var(--sp-4);padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+@media(min-width:768px){nav.tabs{position:static;justify-content:center;gap:4px;width:fit-content;max-width:100%;margin:var(--sp-3) auto 0;padding:4px;background:var(--surface);border:var(--edge);border-radius:var(--r-pill);-webkit-backdrop-filter:none;backdrop-filter:none}nav.tabs button{flex:0 0 auto;padding:var(--sp-2) var(--sp-4);font-size:clamp(14px,.9375rem,28px);border-radius:var(--r-pill)}main{padding-bottom:var(--sp-6)}}
 section[role="tabpanel"]{display:none}
-section[role="tabpanel"].active{display:block}
-.card{background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-5);margin-bottom:var(--sp-4);box-shadow:var(--elev-1)}
-.card.sub{background:var(--bg3)}
+section[role="tabpanel"].active{display:block;animation:tabIn var(--tr)}
+@keyframes tabIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.card,.stat,.preset-card{background:var(--surface);border:var(--edge);border-radius:var(--r)}
+.card{padding:var(--sp-4) var(--sp-4) var(--sp-3);margin-bottom:var(--sp-4)}
+.card.sub{background:var(--surface-elevated)}
 .row{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center}
 .row.between{justify-content:space-between}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
 .grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--sp-3)}
 @media(max-width:480px){.grid2{grid-template-columns:1fr}}
-button,.btn{font:inherit;cursor:pointer;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--bg3);color:var(--fg);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);font-weight:600;min-height:44px;transition:transform var(--dur-1) var(--ease-out),border-color var(--dur-2) var(--ease-out),background var(--dur-2) var(--ease-out),box-shadow var(--dur-2) var(--ease-out)}
-button:hover{border-color:var(--line-hi)}
+button,.btn{font:inherit;cursor:pointer;border-radius:var(--r-sm);border:var(--edge);background:var(--surface-elevated);color:var(--label-primary);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-sm);font-weight:600;min-height:44px;transition:transform var(--dur-1) var(--ease-out),border-color var(--tr),background var(--tr)}
+button:hover{border-color:var(--separator-strong)}
 button:active{transform:scale(.97)}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-button.primary{background:var(--grad-cta);border-color:transparent;color:var(--accent-ink);font-weight:700;box-shadow:0 4px 18px rgba(100,151,200,.28)}
-button.primary:hover{box-shadow:0 6px 24px rgba(142,195,234,.4);border-color:transparent}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);border-color:transparent;color:var(--on-accent);font-weight:700}
+button.primary:hover{border-color:transparent;filter:brightness(1.06)}
 button.big{font-size:var(--fs-md);padding:var(--sp-3) var(--sp-6);min-height:56px;border-radius:var(--r)}
-button.danger{border-color:#5a2f2f;color:var(--err)}
-button.ghost{background:none;border-color:transparent;color:var(--fg-dim);box-shadow:none}
-button.ghost:hover{color:var(--fg)}
-button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+button.danger{border-color:var(--danger-edge);color:var(--destructive)}
+button.ghost{background:none;border-color:transparent;color:var(--label-secondary)}
+button.ghost:hover{color:var(--label-primary)}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 button.chip{min-height:44px;padding:var(--sp-1) var(--sp-3);border-radius:var(--r-pill)}
-button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
-input[type=text],input[type=number],input[type=password],input[type=date],input[type=time],input[type=url],select,textarea{font:inherit;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-sm);color:var(--fg);padding:var(--sp-2) var(--sp-3);min-height:44px;max-width:100%}
+button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
+input[type=text],input[type=number],input[type=password],input[type=date],input[type=time],input[type=url],select,textarea{font:inherit;background:var(--background);border:var(--edge);border-radius:var(--r-sm);color:var(--label-primary);padding:var(--sp-2) var(--sp-3);min-height:44px;max-width:100%}
 input[type=number]{width:90px}
 textarea{width:100%;min-height:110px;resize:vertical}
-label{font-size:var(--fs-sm);color:var(--fg-dim)}
-.field{display:flex;flex-direction:column;gap:var(--sp-1);margin-bottom:var(--sp-3)}
-fieldset{border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-3)}
-legend{font-size:var(--fs-sm);color:var(--fg-dim);padding:0 var(--sp-2)}
-input[type=range]{width:100%;accent-color:var(--accent);min-height:40px}
+label{font-size:var(--fs-sm);color:var(--label-secondary)}
+.field{min-width:0;display:flex;flex-direction:column;gap:var(--sp-1);margin-bottom:var(--sp-3)}
+fieldset{border:var(--edge);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-3)}
+legend{font-size:var(--fs-sm);color:var(--label-secondary);padding:0 var(--sp-2)}
+input[type=range]{width:100%;accent-color:var(--accent);min-height:44px}
 input[type=checkbox],input[type=radio]{width:18px;height:18px;accent-color:var(--accent)}
-.check{display:flex;align-items:center;gap:var(--sp-2);min-height:44px;font-size:var(--fs-sm);color:var(--fg)}
-/* timer */
-.timer-wrap{text-align:center;padding:var(--sp-5) var(--sp-3)}
-.timer-big{font-size:var(--fs-timer);font-variant-numeric:tabular-nums;font-weight:300;letter-spacing:.03em;line-height:1.1}
-.timer-sub{color:var(--fg-dim);font-variant-numeric:tabular-nums;margin-top:var(--sp-1)}
-.timer-phase{color:var(--gold);font-size:var(--fs-sm);min-height:1.4em;margin-bottom:var(--sp-2)}
-.markers-bar{display:flex;flex-wrap:wrap;gap:var(--sp-2);justify-content:center;margin-top:var(--sp-4)}
-.markers-bar button{font-size:var(--fs-xs);min-height:44px;flex:1 1 30%}
-.instructions{border-left:2px solid var(--gold);padding-left:var(--sp-3);font-size:var(--fs-sm);color:var(--fg-dim)}
-/* stat cards */
-.stat{background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-4);min-height:96px;display:flex;flex-direction:column;box-shadow:var(--elev-1)}
-.stat .v{font-size:var(--fs-display);font-weight:750;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;line-height:1.05}
-.stat .l{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-dim);margin-top:var(--sp-1)}
-.stat .n{font-size:var(--fs-xs);color:var(--fg-faint);margin-top:2px}
-/* charts */
-.chart{margin:var(--sp-4) 0}
-.chart svg{width:100%;height:auto;display:block}
-.chart .cap{font-size:var(--fs-xs);color:var(--fg-dim);margin-top:var(--sp-1)}
-.empty{color:var(--fg-dim);font-size:var(--fs-sm);background:rgba(26,35,51,.4);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-5);text-align:center}
-/* history */
-.sess-item{display:flex;gap:var(--sp-4);align-items:flex-start;width:100%;text-align:left;background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-4);margin-bottom:var(--sp-3);box-shadow:var(--elev-1);transition:transform var(--dur-1) var(--ease-out),border-color var(--dur-2) var(--ease-out)}
-.sess-item:hover{border-color:var(--line-hi);transform:translateY(-1px)}
-.si-min{font-size:var(--fs-xl);font-weight:750;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;min-width:58px;line-height:1.25}
-.si-body{display:flex;flex-direction:column;gap:2px;min-width:0;font-weight:400}
-.si-top{line-height:1.5}
-.si-sub{font-size:var(--fs-sm);color:var(--fg-dim)}
-.si-note{font-size:var(--fs-xs);color:var(--fg-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-/* learn: editorial measure */
-#tab-learn .card p,#tab-learn .card li,#tab-learn .card td{max-width:64ch}
-#tab-learn details summary{font-weight:600}
-.badge{display:inline-block;font-size:var(--fs-xs);border:1px solid var(--line);border-radius:var(--r-pill);padding:1px 9px;color:var(--fg-dim);margin-left:var(--sp-1)}
-.badge.gold{color:var(--gold);border-color:var(--gold)}
-table.kv{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
-table.kv td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-table.kv td:first-child{color:var(--fg-dim);width:44%}
-/* modal — glass recipe */
-dialog{background:var(--glass-bg);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);color:var(--fg);border:1px solid var(--line-hi);border-radius:var(--r-lg);padding:var(--sp-5);margin:auto;max-width:min(560px,92vw);max-height:85vh;overflow:auto;box-shadow:var(--elev-3)}
-dialog[open]{animation:dialogIn var(--dur-2) var(--ease-out)}
-@keyframes dialogIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
-dialog::backdrop{background:rgba(4,7,12,.65)}
-/* toast — glass pill */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--glass-bg);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--line-hi);border-radius:var(--r-pill);padding:var(--sp-2) var(--sp-5);font-size:var(--fs-sm);font-weight:600;opacity:0;pointer-events:none;transition:opacity var(--dur-2) var(--ease-out),transform var(--dur-2) var(--ease-out);z-index:50;max-width:90vw;box-shadow:var(--elev-2)}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.notice{border:1px solid var(--accent-dim);background:rgba(61,106,138,.12);border-radius:var(--r-sm);padding:var(--sp-3);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
-.notice.warn{border-color:var(--warn);background:rgba(217,168,106,.08)}
-.honesty{font-size:var(--fs-xs);color:var(--fg-faint);border-top:1px solid var(--line);padding-top:var(--sp-2);margin-top:var(--sp-3)}
-/* map */
-.level{border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-3);background:var(--bg2)}
-.level.current{border-color:var(--gold)}
-.level h3{margin-top:0}
-details{margin:var(--sp-2) 0}
-details summary{cursor:pointer;color:var(--fg-dim);font-size:var(--fs-sm);min-height:44px;display:flex;align-items:center}
-details[open] summary{color:var(--fg)}
-/* draft table */
-.draft-field{display:grid;grid-template-columns:130px 1fr auto;gap:var(--sp-2);align-items:center;padding:var(--sp-1) 0;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
-.draft-field .ev{grid-column:2/4;color:var(--fg-faint);font-size:var(--fs-xs);font-style:italic}
-.conf-high{color:var(--ok)}.conf-medium{color:var(--warn)}.conf-low{color:var(--err)}
-.diff-old{color:var(--err);text-decoration:line-through}
-.diff-new{color:var(--ok)}
-.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-@media(max-width:400px){main{padding:var(--sp-3)}.card{padding:var(--sp-3)}}
-/* ============ surface layer (built on the tokens above) ============ */
-section[role="tabpanel"].active{animation:tabIn var(--dur-2) var(--ease-out)}
-@keyframes tabIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-.section-title{font-size:var(--fs-xs);color:var(--fg-dim);font-weight:650;letter-spacing:var(--track-caps);text-transform:uppercase;margin:var(--sp-5) 0 var(--sp-3)}
-.beta-chip{margin-left:auto;background:none;border:1px solid var(--line);color:var(--fg-faint);font-size:var(--fs-xs);font-weight:600;border-radius:var(--r-pill);min-height:28px;padding:2px 12px;cursor:pointer;transition:color var(--dur-2) var(--ease-out),border-color var(--dur-2) var(--ease-out)}
-.beta-chip:hover{color:var(--gold);border-color:var(--gold)}
-/* today status strip */
-.status-strip{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;margin-bottom:var(--sp-4);font-size:var(--fs-sm);color:var(--fg-dim)}
-.status-strip .pill{border:1px solid var(--line);border-radius:var(--r-pill);padding:5px 14px;background:rgba(18,25,38,.7);display:inline-flex;align-items:center;gap:7px;font-weight:600}
-.status-strip .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block}
-.status-strip .pill.today-done{border-color:var(--teal);color:var(--fg)}
-/* today stat tiles */
-.today-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3);margin-bottom:var(--sp-3)}
-.tstat{background:var(--grad-card);border:1px solid var(--line);border-radius:var(--r);padding:var(--sp-3) var(--sp-4);box-shadow:var(--elev-1);min-width:0}
-.tstat .v{font-size:var(--fs-display);font-weight:750;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;line-height:1.05;white-space:nowrap}
-.tstat .v .unit{font-size:.48em;font-weight:650;color:var(--fg-dim);margin-left:1px}
-.tstat .l{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--fg-dim);margin-top:2px}
-.tstat .n{font-size:var(--fs-xs);color:var(--fg-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tstat.done{border-color:rgba(99,179,171,.45)}
-.tstat.done .v{color:var(--teal)}
-@media(max-width:480px){.today-stats{gap:var(--sp-2)}.tstat{padding:var(--sp-3)}}
-/* hero timer card + oversized primary action */
-#timer-card{border-radius:var(--r-lg);box-shadow:var(--elev-2)}
+.check{display:flex;align-items:center;gap:var(--sp-2);min-height:44px;font-size:var(--fs-sm);color:var(--label-primary)}
+/* the sit: an open stage, not a box */
+#timer-card{background:none;border:0;padding:var(--sp-2) 0 var(--sp-3);text-align:center;margin-bottom:var(--sp-3)}
+.timer-big{position:relative;z-index:1;font-size:var(--fs-timer);font-variant-numeric:tabular-nums;font-weight:400;letter-spacing:.02em;line-height:1.1;white-space:nowrap}
+.timer-sub{color:var(--label-secondary);font-variant-numeric:tabular-nums;margin-top:var(--sp-1)}
+.timer-phase{color:var(--tradition);font-size:var(--fs-sm);min-height:1.4em;margin-bottom:var(--sp-2)}
 #btn-start{min-width:min(340px,100%);font-size:var(--fs-lg)}
-/* timer stage: orb + arc (the sit itself stays quiet — no new motion here) */
-.timer-stage{position:relative;width:min(320px,74vw);height:min(320px,74vw);margin:0 auto;display:flex;align-items:center;justify-content:center}
-.orb{position:absolute;inset:8%;border-radius:50%;background:radial-gradient(circle at 42% 36%, rgba(142,195,234,.18), rgba(85,103,158,.11) 45%, rgba(10,14,21,0) 72%);filter:blur(2px);transform:scale(.97)}
-body.running .orb{animation:orbBreathe 8s ease-in-out infinite}
+.timer-stage{position:relative;width:min(300px,72vw);height:min(300px,72vw);margin:0 auto;display:flex;align-items:center;justify-content:center}
+.orb{position:absolute;inset:8%;border-radius:50%;background:var(--grad-orb);filter:blur(2px);scale:.97;transition:scale var(--dur-3) var(--ease-out),opacity var(--dur-3) var(--ease-out)}
+/* The orb settles WITH you during the countdown, then holds still for the sit
+   itself: the practice object is the breath at the nostrils, not the screen. */
+body.settling .orb{animation:orbBreathe 8s ease-in-out infinite}
+body.running:not(.settling) .orb{opacity:.55;animation:none}
 body.timer-paused .orb{opacity:.5;animation:none}
-@keyframes orbBreathe{0%,100%{transform:scale(.94);opacity:.75}50%{transform:scale(1.05);opacity:1}}
+@keyframes orbBreathe{0%,100%{scale:.94;opacity:.75}50%{scale:1.05;opacity:1}}
 .arc{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
 .arc circle{fill:none;stroke-width:3}
-.arc-track{stroke:rgba(142,195,234,.10)}
+.arc-track{stroke:var(--separator)}
 .arc-fill{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:703.7;stroke-dashoffset:703.7;transition:stroke-dashoffset .3s linear}
-body.timer-paused .arc-fill{stroke:var(--fg-faint)}
-.timer-big{position:relative;z-index:1}
-/* preset cards */
+body.timer-paused .arc-fill{stroke:var(--label-tertiary)}
+.markers-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:var(--sp-2);margin-top:var(--sp-4)}
+.markers-bar button{font-size:var(--fs-xs);min-height:44px;background:var(--surface)}
+.instructions{border-left:2px solid var(--tradition);padding-left:var(--sp-3);font-size:var(--fs-sm);color:var(--label-secondary)}
+.today-line{font-size:var(--fs-lg);margin:var(--sp-2) 0 var(--sp-1)}
+.today-line strong{font-weight:600}
+.today-links a{display:inline-flex;align-items:center;min-height:44px;margin-right:var(--sp-4)}
+/* stats + charts */
+.stat{padding:var(--sp-4);min-height:96px;display:flex;flex-direction:column}
+.stat .v{font-size:var(--fs-display);font-weight:700;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;line-height:1.05}
+.stat .l{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);color:var(--label-secondary);margin-top:var(--sp-1)}
+.stat .n{font-size:var(--fs-xs);color:var(--label-tertiary);margin-top:2px}
+.chart{margin:var(--sp-4) 0}
+.chart svg{width:100%;height:auto;display:block}.chart text{font-size:19px;fill:var(--label-tertiary)}.ax{stroke:var(--separator)}.ln{stroke:var(--accent);fill:none}.dt,.b1{fill:var(--accent)}.b2{fill:var(--tradition)}
+.chart .cap{font-size:var(--fs-xs);color:var(--label-secondary);margin-top:var(--sp-1)}
+.empty{color:var(--label-secondary);font-size:var(--fs-sm);border:1px dashed var(--separator-strong);border-radius:var(--r);padding:var(--sp-5);text-align:center}
+/* journal: a list, not a stack of boxes */
+.sess-item{display:flex;gap:var(--sp-4);align-items:flex-start;width:100%;text-align:left;padding:var(--sp-3) var(--sp-1);background:none;border:0;border-bottom:var(--edge);border-radius:0;transition:background var(--tr)}
+.sess-item:hover{background:var(--surface-elevated)}
+.si-min{font-size:var(--fs-xl);font-weight:600;letter-spacing:var(--track-tight);font-variant-numeric:tabular-nums;min-width:58px;line-height:1.25}
+.si-body{display:flex;flex-direction:column;gap:2px;min-width:0;font-weight:400}
+.si-top{line-height:1.5}
+.si-sub{font-size:var(--fs-sm);color:var(--label-secondary)}
+.si-note{font-size:var(--fs-xs);color:var(--label-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+/* learn: editorial measure */
+#tab-learn p,#tab-learn li,#tab-learn td,#tab-learn .notice,#tab-learn .honesty{max-width:68ch}
+#tab-learn .card{background:none;border:0;border-bottom:var(--edge);border-radius:0;padding-inline:0;margin-bottom:var(--sp-3)}
+.stat{border:0}
+#tab-learn details summary{font-weight:600}
+.badge{display:inline-block;font-size:var(--fs-xs);border:var(--edge);border-radius:var(--r-pill);padding:1px 9px;color:var(--label-secondary);margin-left:var(--sp-1)}
+.badge.gold{color:var(--tradition);border-color:var(--tradition)}
+table.kv{table-layout:fixed;width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+table.kv td{padding:5px 8px;border-bottom:var(--edge);vertical-align:top}
+table.kv td:first-child{color:var(--label-secondary);width:44%}
+/* settings: grouped lists with quiet section headers */
+#tab-settings .card h2{font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase;color:var(--label-secondary)}
+/* overlays: translucent, with an opaque fallback below */
+dialog{background:var(--glass);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:var(--label-primary);border:1px solid var(--separator-strong);border-radius:var(--r-lg);padding:var(--sp-5);margin:auto;max-width:min(560px,92vw);max-height:85dvh;overflow:auto;box-shadow:var(--elev)}
+dialog[open]{animation:dialogIn var(--tr)}
+@keyframes dialogIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+#toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(8px);background:var(--glass);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--separator-strong);border-radius:var(--r-pill);padding:var(--sp-2) var(--sp-5);font-size:var(--fs-sm);font-weight:600;opacity:0;pointer-events:none;transition:opacity var(--tr),transform var(--tr);z-index:50;max-width:90vw;box-shadow:var(--elev)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.notice{border:var(--edge);border-left:3px solid var(--accent-muted);background:var(--surface);border-radius:var(--r-sm);padding:var(--sp-3);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
+.notice.warn{border-left-color:var(--warning)}
+.honesty{font-size:var(--fs-xs);color:var(--label-tertiary);border-top:var(--edge);padding-top:var(--sp-2);margin-top:var(--sp-3)}
+.level{border:var(--edge);border-radius:var(--r-sm);padding:var(--sp-3);margin-bottom:var(--sp-3);background:var(--surface)}
+.level.current{border-color:var(--tradition)}
+.level h3{margin-top:0}
+details{margin:var(--sp-2) 0}
+details summary{cursor:pointer;color:var(--label-secondary);font-size:var(--fs-sm);min-height:44px;display:list-item;list-style-position:inside;padding:11px 0}
+details[open] summary{color:var(--label-primary)}
+.draft-field{display:grid;grid-template-columns:130px 1fr auto;gap:var(--sp-2);align-items:center;padding:var(--sp-1) 0;border-bottom:var(--edge);font-size:var(--fs-sm)}
+.draft-field .ev{grid-column:2/4;color:var(--label-tertiary);font-size:var(--fs-xs);font-style:italic}
+.conf-high{color:var(--success)}.conf-medium{color:var(--warning)}.conf-low{color:var(--destructive)}
+.m0{margin:0}.mt0{margin-top:0}.mt2{margin-top:var(--sp-2)}.mt4{margin-top:var(--sp-4)}.fss{font-size:var(--fs-sm)}.mt3{margin-top:var(--sp-3)}.end{justify-content:flex-end}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(prefers-reduced-transparency:reduce){dialog,#toast,nav.tabs{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--surface-elevated)}}
+@media(max-width:400px){main{padding-inline:var(--sp-3)}.card{padding-inline:var(--sp-3)}}
+/* presets */
 .preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:var(--sp-3)}
-.preset-card{text-align:left;display:flex;flex-direction:column;gap:4px;padding:var(--sp-4);border-radius:var(--r);border:1px solid var(--line);background:var(--grad-card);min-height:128px;cursor:pointer;box-shadow:var(--elev-1);transition:transform var(--dur-1) var(--ease-out),border-color var(--dur-2) var(--ease-out),box-shadow var(--dur-2) var(--ease-out)}
-.preset-card:hover{border-color:var(--line-hi);transform:translateY(-2px);box-shadow:var(--elev-2)}
+.preset-card{text-align:left;display:flex;flex-direction:column;gap:4px;padding:var(--sp-4);min-height:128px;cursor:pointer;transition:border-color var(--tr),background var(--tr)}
+.preset-card:hover{border-color:var(--separator-strong)}
 .preset-card:active{transform:scale(.98)}
-.preset-card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent), 0 8px 24px var(--glow)}
-.preset-card .p-min{font-size:var(--fs-display);font-weight:750;letter-spacing:var(--track-tight);color:var(--fg);line-height:1.05;font-variant-numeric:tabular-nums}
-.preset-card .p-name{font-size:var(--fs-sm);color:var(--fg);font-weight:650}
-.preset-card .p-why{font-size:var(--fs-xs);color:var(--fg-dim);line-height:1.4}
-.preset-card .p-commit{font-size:var(--fs-xs);color:var(--fg-faint);margin-top:auto;padding-top:var(--sp-2)}
-.preset-card.recommended{border-color:rgba(212,176,120,.55);background:linear-gradient(180deg,#1d2331 0%, var(--bg2) 100%);box-shadow:0 0 0 1px rgba(212,176,120,.18), 0 8px 24px var(--gold-glow)}
-.preset-card.recommended .p-tag{color:var(--gold);font-size:var(--fs-xs);font-weight:650;letter-spacing:var(--track-caps);text-transform:uppercase}
-/* quick-log chips */
-.qrow{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:1px solid var(--line)}
-.qrow .ql{min-width:130px;font-size:var(--fs-sm);color:var(--fg-dim)}
+.preset-card .p-min{font-size:var(--fs-display);font-weight:700;letter-spacing:var(--track-tight);color:var(--label-primary);line-height:1.05;font-variant-numeric:tabular-nums}
+.preset-card .p-name{font-size:var(--fs-sm);color:var(--label-primary);font-weight:600}
+.preset-card .p-why{font-size:var(--fs-xs);color:var(--label-secondary);line-height:1.4}
+.preset-card .p-commit{font-size:var(--fs-xs);color:var(--label-tertiary);margin-top:auto;padding-top:var(--sp-2)}
+.preset-card.recommended{border-color:var(--tradition)}
+.preset-card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:var(--tint)}
+.preset-card.recommended .p-tag{color:var(--tradition);font-size:var(--fs-xs);font-weight:600;letter-spacing:var(--track-caps);text-transform:uppercase}
+.qrow{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:var(--edge)}
+.qrow .ql{min-width:130px;font-size:var(--fs-sm);color:var(--label-secondary)}
 /* onboarding + first-open hero */
-.onboard{position:fixed;inset:0;z-index:60;background:radial-gradient(110% 100% at 50% 0%, #16202f 0%, #090d13 70%);display:flex;align-items:center;justify-content:center;padding:var(--sp-4);overflow-y:auto}
+.onboard{position:fixed;inset:0;z-index:60;background:var(--background);align-items:center;justify-content:center;padding:var(--sp-4);overflow-y:auto;max-width:none;max-height:none;width:100%;height:100%;border:0;border-radius:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.onboard[open]{display:flex}
 .onboard-inner{max-width:440px;width:100%;text-align:center;position:relative;padding:var(--sp-5) var(--sp-4)}
-.ob-orb{position:absolute;left:50%;top:-40px;width:190px;height:190px;inset:auto;transform:translateX(-50%);opacity:.85;animation:orbBreathe 8s ease-in-out 3}
-.onboard h2{font-size:var(--fs-xl);font-weight:750;letter-spacing:var(--track-tight);line-height:1.2}
+.ob-orb{position:absolute;inset:auto;left:50%;top:-40px;width:190px;height:190px;transform:translateX(-50%);opacity:.85;animation:orbBreathe 8s ease-in-out 3}
+.onboard h2{font-size:var(--fs-xl);font-weight:700;letter-spacing:var(--track-tight);line-height:1.2}
 #ob-body{position:relative;z-index:1;margin-top:130px}
-.ob-text{color:var(--fg-dim);margin:var(--sp-3) 0 var(--sp-5);line-height:1.7}
+.ob-text{color:var(--label-secondary);margin:var(--sp-3) 0 var(--sp-5);line-height:1.7}
 .ob-step-dots{letter-spacing:8px;color:var(--accent);font-size:10px;margin-bottom:var(--sp-3)}
 .ob-actions{display:flex;flex-direction:column;gap:var(--sp-2);position:relative;z-index:1}
 .ob-actions button{width:100%}
-/* hero mode: the product's above-the-fold */
 .onboard-inner.hero .ob-orb{width:min(270px,64vw);height:min(270px,64vw);top:-56px;filter:blur(1px)}
 .onboard-inner.hero #ob-body{margin-top:min(180px,42vw)}
-.ob-hero-name{font-size:var(--fs-hero);font-weight:800;letter-spacing:var(--track-tight);line-height:1.04;color:var(--fg)}
-.ob-hero-mm{display:block;color:var(--gold);font-size:var(--fs-md);font-weight:600;letter-spacing:.16em;margin-top:var(--sp-2)}
-.onboard-inner.hero .ob-text{font-size:var(--fs-lg);line-height:1.6;max-width:26ch;margin-left:auto;margin-right:auto}
+.ob-hero-name{font-size:var(--fs-hero);font-weight:700;letter-spacing:var(--track-tight);line-height:1.04;color:var(--label-primary)}
+.ob-hero-mm{display:block;color:var(--tradition);font-size:var(--fs-md);font-weight:600;letter-spacing:.16em;margin-top:var(--sp-2)}
+.onboard-inner.hero .ob-text{font-size:var(--fs-lg);line-height:1.6;max-width:26ch;margin-inline:auto}
 .onboard-inner.hero .ob-actions{max-width:320px;margin:0 auto}
-@media(prefers-reduced-motion:reduce){.orb,.ob-orb{animation:none !important}}
 /* teacher report: hidden on screen, the only thing visible in print */
 #print-report{display:none}
 @media print{
@@ -254,7 +233,6 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
 <body>
 <header class="app hide-zen">
   <h1>Sit Tracker</h1><span class="mm">ဈာန် · <span data-i18n="app.tagline">breath first</span></span>
-  <button id="beta-chip" class="beta-chip" title="Send feedback">Private family beta</button>
 </header>
 <nav class="tabs hide-zen" role="tablist" aria-label="Sections">
   <button role="tab" id="tabbtn-today" aria-selected="true" aria-controls="tab-today" data-i18n="tab.today">Today</button>
@@ -272,13 +250,6 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     <button id="btn-dismiss-update" class="ghost">Later</button>
   </span>
 </div>
-<div id="backup-reminder" class="notice hide-zen" hidden>
-  <span id="backup-reminder-text"></span>
-  <span class="row" style="display:inline-flex;gap:8px;margin-left:8px">
-    <button id="btn-backup-now">Export backup</button>
-    <button id="btn-backup-snooze" class="ghost">Remind me in a week</button>
-  </span>
-</div>
 <div id="timer-live" class="sr-only" role="status" aria-live="polite"></div>
 
 <!-- ============ TODAY ============ -->
@@ -287,10 +258,9 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     Demo data is active. Statistics, streaks, exports, and reports ignore it.
     <button id="btn-remove-demo" class="ghost" style="margin-left:8px">Remove demo data</button>
   </div>
-  <div id="today-status" class="hide-zen"></div>
   <div id="resume-banner" class="notice" hidden>
     <strong>A sit was in progress.</strong> <span id="resume-detail"></span>
-    <div class="row" style="margin-top:8px">
+    <div class="row mt2">
       <button id="btn-resume-timer" class="primary">Continue sit</button>
       <button id="btn-discard-timer">Discard</button>
     </div>
@@ -304,7 +274,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
         <circle class="arc-track" cx="120" cy="120" r="112"/>
         <circle class="arc-fill" id="arc-fill" cx="120" cy="120" r="112"/>
       </svg>
-      <div class="timer-big" id="timer-display" role="timer" aria-live="off">30:00</div>
+      <div class="timer-big" id="timer-display" role="timer" aria-label="Time remaining" aria-live="off">30:00</div>
     </div>
     <div class="timer-sub" id="timer-sub">planned 30 min</div>
     <div class="row" style="justify-content:center;margin-top:var(--sp-4)">
@@ -322,14 +292,22 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <button data-marker="agitated">Agitated</button>
       <button data-marker="notable">Notable</button>
     </div>
-    <div class="faint" id="marker-log" style="margin-top:var(--sp-2)" aria-live="polite"></div>
+    <div class="faint mt2" id="marker-log" aria-live="polite"></div>
+  </div>
+  <div id="today-status" class="hide-zen"></div>
+  <div id="backup-reminder" class="notice hide-zen" hidden>
+    <span id="backup-reminder-text"></span>
+    <span class="row" style="display:inline-flex;gap:8px;margin-left:8px">
+      <button id="btn-backup-now">Export backup</button>
+      <button id="btn-backup-snooze" class="ghost">Remind me in a week</button>
+    </span>
   </div>
 
   <div class="hide-zen" id="sit-config">
     <h2 class="section-title" data-i18n="today.choose">Choose a practice</h2>
     <div class="preset-grid" id="preset-grid" role="group" aria-label="Practice presets"></div>
 
-    <details class="card sub" style="margin-top:var(--sp-3)">
+    <details class="card sub mt3">
       <summary>Options — focus point, bells, screen</summary>
       <h3>Meditation focus</h3>
       <div class="row">
@@ -345,7 +323,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <small>Changing the focus point is not automatically progress. The current practice is the nostril rim / upper lip.</small>
       <h3>Bells & screen</h3>
       <div class="grid2">
-        <label class="check"><input type="checkbox" id="opt-prep"> Settling countdown <select id="opt-prep-sec" aria-label="Settling seconds"><option value="10">10 s</option><option value="20" selected>20 s</option><option value="30">30 s</option><option value="60">60 s</option></select></label>
+        <label class="check"><input type="checkbox" id="opt-prep" checked> Settling countdown <select id="opt-prep-sec" aria-label="Settling seconds"><option value="10">10 s</option><option value="20" selected>20 s</option><option value="30">30 s</option><option value="60">60 s</option></select></label>
         <label class="check"><input type="checkbox" id="opt-final" checked> Final bell</label>
         <label class="check"><input type="checkbox" id="opt-interval"> Interval bell every <select id="opt-interval-min" aria-label="Interval bell minutes"><option value="5">5</option><option value="10" selected>10</option><option value="15">15</option></select> min</label>
         <label class="check"><input type="checkbox" id="opt-wakelock" checked> Keep screen awake (if supported)</label>
@@ -354,10 +332,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     </details>
   </div>
 
-  <div class="card hide-zen instructions">
-    <strong style="color:var(--fg)">How to practice</strong> <span class="badge">practice guidance</span><br>
-    Sit comfortably. Notice the breath where it touches near the nostrils. Count each in-and-out cycle from one to eight, then restart. When attention wanders, return without commentary. If the breath becomes faint, wait rather than forcing it.
-  </div>
+  <div class="card hide-zen instructions" id="practice-instructions"></div>
 </section>
 
 <!-- ============ JOURNAL (after-sit log + write + history) ============ -->
@@ -369,7 +344,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     <p class="dim">Describe the sit in your own words — the app turns it into a <strong>draft entry</strong> you check before anything is saved. Unmentioned things stay blank; nothing is guessed.</p>
     <div class="notice" id="ai-engine-notice"></div>
     <textarea id="journal-text" aria-label="Journal text" placeholder="Example: I sat for 30 minutes. The first seven minutes were scattered. I think I had about 16 minutes of real concentration…"></textarea>
-    <div class="row" style="margin-top:var(--sp-2)">
+    <div class="row mt2">
       <button id="btn-parse" class="primary">Create draft</button>
       <button id="btn-journal-clear" class="ghost">Clear</button>
     </div>
@@ -378,13 +353,13 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
 
   <div class="card">
     <div class="row between">
-      <h2 style="margin:0">History</h2>
+      <h2 class="m0">History</h2>
       <span class="row">
         <button id="btn-teacher-report">Teacher report</button>
         <button id="btn-manual-entry">+ Manual entry</button>
       </span>
     </div>
-    <div class="row" style="margin-top:var(--sp-3)">
+    <div class="row mt3">
       <input type="text" id="hist-search" placeholder="Search notes / journal…" aria-label="Search sessions" style="flex:1;min-width:140px">
       <select id="hist-filter-object" aria-label="Filter by object"><option value="">Any object</option></select>
       <select id="hist-filter-hindrance" aria-label="Filter by hindrance"><option value="">Any hindrance</option></select>
@@ -392,7 +367,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <select id="hist-filter-source" aria-label="Filter by entry source"><option value="">Any source</option><option value="timer">Timer</option><option value="manual">Manual</option><option value="ai">AI draft</option><option value="imported">Imported</option></select>
       <select id="hist-filter-review" aria-label="Filter by teacher review"><option value="">Any review state</option><option value="none">Not reviewed</option><option value="flagged">Flagged for teacher</option><option value="discussed">Discussed</option><option value="reviewed">Teacher reviewed</option></select>
     </div>
-    <div id="history-list" style="margin-top:var(--sp-3)"></div>
+    <div id="history-list" class="mt3"></div>
   </div>
 </section>
 
@@ -405,7 +380,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     <button class="chip" data-range="year">This year</button>
     <button class="chip" data-range="all">All</button>
   </div>
-  <div id="progress-container" style="margin-top:var(--sp-3)"></div>
+  <div id="progress-container" class="mt3"></div>
 </section>
 
 <!-- ============ LEARN ============ -->
@@ -415,16 +390,17 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     <p class="dim">The deeper material lives here, separate from everyday practice. Labels tell you what kind of statement you are reading:</p>
     <p>
       <span class="badge">practice guidance</span> how to practice ·
-      <span class="badge gold">traditional claim</span> what the classical texts assert ·
+      <span class="badge gold">traditional claim</span> what texts and teachers assert ·
       <span class="badge">scientific finding</span> what studies have measured ·
+      <span class="badge">source text</span> unaltered documents ·
       <span class="badge">personal record</span> what you yourself reported
     </p>
     <p class="dim" style="margin-bottom:0">The app records observations. The texts make the claims. The cushion settles the question.</p>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0">The practice, step by step <span class="badge">practice guidance</span></h3>
-    <p class="dim">Everything below is the same instruction the Today screen already gives you — spelled out.</p>
+    <h3 class="mt0">Start here — your current practice <span class="badge">practice guidance</span></h3>
+    <p class="dim">Everything below is the same instruction the Today screen already gives you — spelled out. What this trains: keeping attention with one chosen sensation, noticing when it leaves, and returning — the groundwork every tradition below builds on. Nothing is forced: not the breath, not stillness, not results.</p>
     <details>
       <summary>The daily sit script</summary>
       <ol class="dim" style="line-height:1.7">
@@ -441,17 +417,17 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <summary>Tuning energy on every sit</summary>
       <p class="dim">The canon's master dial (SN 51.20): energy <strong>not too slack, not too tense; not constricted inward</strong> (drifting toward dullness), <strong>not scattered outward</strong> (drifting toward distraction). Check it once when you sit down and once mid-sit.</p>
     </details>
-    <details>
-      <summary>If a light or image appears</summary>
-      <p class="dim"><span class="badge">practice guidance</span> The instruction from every source is the same: <strong>ignore it and stay with the breath.</strong> Chasing it, staring at it, or getting excited are the classic ways it dissolves. Record what you noticed afterwards in the Journal — the app stores it as a neutral observation.</p>
-      <p class="dim"><span class="badge gold">traditional claim</span> The texts describe such lights maturing gradually and eventually merging with the breath; they treat this as a long, teacher-guided stage, usually under retreat conditions.</p>
-    </details>
+    <p class="faint" style="margin-bottom:0">If a light appears, if the breath fades, if a pleasant feeling arises — see Troubleshooting below: the traditions answer differently, and the differences are kept.</p>
   </div>
+
+  <div id="learn-sources"></div>
+  <div id="learn-jhana"></div>
+  <div id="learn-troubleshoot"></div>
 
   <div id="map-container"></div>
 
   <div class="card">
-    <h3 style="margin-top:0">The wider map <span class="badge gold">traditional claim</span></h3>
+    <h3 class="mt0">The wider map <span class="badge gold">traditional claim</span></h3>
     <p class="dim">Where this practice sits in the classical curriculum (Visuddhimagga; Pa-Auk lineage). Optional reading — none of it is needed for today's sit.</p>
     <details>
       <summary>What breath meditation reaches, and what it doesn't</summary>
@@ -459,7 +435,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     </details>
     <details>
       <summary>The classical stage ladder, honestly labeled</summary>
-      <table class="kv" style="margin-top:8px">
+      <table class="kv mt2">
         <tr><td>Foundation & daily sitting</td><td><span class="badge">scientific finding</span> attention training at this level is well documented in modern practitioners</td></tr>
         <tr><td>Access concentration & absorption</td><td><span class="badge">scientific finding</span> absorption states have been recorded in meditators under fMRI · <span class="badge gold">traditional claim</span> the detailed stage maps · best done with a teacher — intensive practice can destabilize</td></tr>
         <tr><td>Kasina expansion, 8 attainments</td><td><span class="badge gold">traditional claim</span> full-time practitioner territory in every source</td></tr>
@@ -474,13 +450,14 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0">Source library</h3>
-    <p class="dim">The two reference documents live beside this app. Summaries above come from them; nothing here is required for daily practice.</p>
+    <h3 class="mt0">Source library <span class="badge">source text</span></h3>
+    <p class="dim">These documents live beside the app and are shown unaltered (the "source text" label applies to the app's own companion files, displayed byte-for-byte). Nothing here is required for daily practice.</p>
     <div class="row">
+      <button id="btn-doc-sources">Read the source ledger</button>
       <button id="btn-doc-manual">Read the practice manual</button>
       <button id="btn-doc-roadmap">Read the roadmap</button>
     </div>
-    <p class="faint" style="margin-top:8px">Primary texts referenced: Visuddhimagga (Ñāṇamoli trans.) · Pa-Auk Sayadaw, “Knowing and Seeing” · SN 51.20 · MN 118 · DN 2 — links inside the documents.</p>
+    <p class="faint mt2">The source ledger (PRACTICE_SOURCES.md) records every teacher and text behind the cards above — URLs, access dates, and how each was verified. Also referenced: Visuddhimagga (Ñāṇamoli trans.) · SN 51.20 · MN 118 · AN 5.28 · DN 2.</p>
   </div>
 </section>
 
@@ -494,15 +471,15 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
       <button id="btn-export-csv">Export CSV (sessions)</button>
       <label class="btn" style="display:inline-flex;align-items:center">Import JSON… <input type="file" id="import-file" accept=".json,application/json" class="sr-only"></label>
     </div>
-    <p class="faint" id="storage-info" style="margin-top:var(--sp-2)"></p>
-    <div id="storage-health" style="margin-top:var(--sp-2)"></div>
+    <p class="faint mt2" id="storage-info"></p>
+    <div id="storage-health" class="mt2"></div>
   </div>
 
   <div class="card">
     <h2>AI provider (optional)</h2>
-    <p class="dim">By default the Journal uses a <strong>local, deterministic parser</strong> — nothing leaves the device. If you configure a provider, journal text is sent to that endpoint when you press “Create draft”. The key is stored only in this browser's localStorage, in plain text.</p>
+    <p class="dim">By default the Journal uses a <strong>local, deterministic parser</strong> — nothing leaves the device. If you configure a provider, journal text is sent to that endpoint when you press “Create draft”. The key is stored only in this browser's localStorage, in plain text. What that provider stores, logs, or trains on is governed by their terms, not by this app — check them before sending practice notes you would not want retained.</p>
     <label class="check"><input type="checkbox" id="ai-enabled"> Use external provider when configured</label>
-    <div class="grid2" style="margin-top:var(--sp-2)">
+    <div class="grid2 mt2">
       <div class="field"><label for="ai-endpoint">Endpoint URL</label><input type="url" id="ai-endpoint" placeholder="https://api.anthropic.com/v1/messages"></div>
       <div class="field"><label for="ai-model">Model</label><input type="text" id="ai-model" placeholder="claude-haiku-4-5"></div>
       <div class="field" style="grid-column:1/-1"><label for="ai-key">API key (stored locally, never committed)</label><input type="password" id="ai-key" autocomplete="off"></div>
@@ -583,7 +560,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
   </div>
 
   <div class="card">
-    <h2 style="color:var(--err)">Danger zone</h2>
+    <h2 style="color:var(--destructive)">Danger zone</h2>
     <p class="dim">Deletes the tracker envelope from this browser. Legacy v1 keys (<code>janSits</code>, <code>janGates</code>) are never touched. Export first.</p>
     <button id="btn-wipe" class="danger">Delete all tracker data…</button>
   </div>
@@ -592,7 +569,7 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
 </section>
 </main>
 
-<div id="onboard" class="onboard" hidden role="dialog" aria-modal="true" aria-labelledby="ob-title">
+<dialog id="onboard" class="onboard" aria-labelledby="ob-title">
   <div class="onboard-inner">
     <div class="orb ob-orb" aria-hidden="true"></div>
     <div id="ob-body">
@@ -602,9 +579,9 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
     </div>
     <div class="ob-actions" id="ob-actions"></div>
   </div>
-</div>
+</dialog>
 <div id="toast" role="status" aria-live="polite"></div>
-<dialog id="modal" aria-label="Dialog"><div id="modal-body"></div></dialog>
+<dialog id="modal"><div id="modal-body"></div></dialog>
 <div id="print-report" aria-hidden="true"></div>
 
 <script>
@@ -612,9 +589,14 @@ body.timer-paused .arc-fill{stroke:var(--fg-faint)}
 /*CORE-START*/
 /* Pure logic. No DOM, no localStorage, no fetch side-effects. Extractable and runnable under Node. */
 const CORE = (function () {
-  const SCHEMA_VERSION = 5;
-  const APP_VERSION = "4.3.0";
+  const SCHEMA_VERSION = 6;
+  const APP_VERSION = "4.6.0";
   const OBJECTS = ["nostril", "upperlip", "abdomen", "wholebody", "custom"];
+  // v6 post-sit self-reports — all nullable; null = not reported, never "no".
+  const CONTACT_WHERE = ["nostril", "upperlip", "both", "elsewhere", "unclear"];
+  const CONTACT_WHERE_LABELS = { nostril: "nostril rim", upperlip: "upper lip", both: "both / the area", elsewhere: "elsewhere", unclear: "hard to say" };
+  const TRI_REPORTS = ["yes", "no", "notsure"];
+  const TRI_LABELS = { yes: "yes", no: "no", notsure: "not sure" };
   const HINDRANCES = ["sensualDesire", "illWill", "sloth", "restlessness", "doubt"];
   const HINDRANCE_LABELS = {
     sensualDesire: "Sensual desire", illWill: "Ill will / aversion", sloth: "Sloth & torpor",
@@ -689,6 +671,8 @@ const CORE = (function () {
       energyBefore: null, energyAfter: null, calmBefore: null, calmAfter: null,
       afterStateReport: null,
       stability: null, breathClarity: null,
+      practiceMode: null,                                  // v6: which saved practice the sit used (null = unknown/none)
+      contactWhere: null, breathSubtle: null, pleasantFeeling: null,   // v6 reflections, self-reported
       hindrances: {}, dominantHindrance: null,
       qualities: [],
       nimitta: null,
@@ -747,6 +731,14 @@ const CORE = (function () {
       const v = s[scale];
       if (v !== null && v !== undefined && (!isNum(v) || v < 1 || v > 5)) errors.push("invalid " + scale + " (1-5)");
     }
+    // v6 reflections: strict enums so no free-text can smuggle in state claims
+    if (s.contactWhere !== null && s.contactWhere !== undefined && CONTACT_WHERE.indexOf(s.contactWhere) < 0) errors.push("invalid contactWhere");
+    for (const f of ["breathSubtle", "pleasantFeeling"]) {
+      const v = s[f];
+      if (v !== null && v !== undefined && TRI_REPORTS.indexOf(v) < 0) errors.push("invalid " + f);
+    }
+    // practiceMode: any non-empty string or null (forward-compatible with future modes)
+    if (s.practiceMode !== null && s.practiceMode !== undefined && (typeof s.practiceMode !== "string" || !s.practiceMode.trim())) errors.push("invalid practiceMode");
     if (s.afterStateReport !== null && s.afterStateReport !== undefined && AFTER_STATES.indexOf(s.afterStateReport) < 0) errors.push("invalid afterStateReport");
     return { ok: errors.length === 0, errors };
   }
@@ -1061,17 +1053,61 @@ const CORE = (function () {
 
   // Canned questions surfaced in Progress; every answer is computed here,
   // instantly and locally. The AI layer may rephrase an answer, never compute one.
+  // v6 practice-training questions — same honesty contract (range, n, strength;
+  // observational wording; denominators are always answered-question counts).
+  function insightObjectUse(sessions) {
+    const withObj = sessions.filter(s => isDateStr(s.date) && s.object).slice().sort(byDateTime);
+    const recent = withObj.slice(-30);
+    if (recent.length < 5) return notEnough("focus-point use", recent.length, "this needs at least 5 sessions with a recorded focus point; there are " + recent.length + ".");
+    const counts = {};
+    for (const s of recent) counts[s.object] = (counts[s.object] || 0) + 1;
+    const parts = Object.keys(counts).sort((a, b) => counts[b] - counts[a]).map(k => (OBJECTS.indexOf(k) >= 0 ? k : "custom") + " in " + counts[k]);
+    return {
+      text: "Of your last " + recent.length + " sessions with a recorded focus point: " + parts.join(", ") + ". Descriptive only — sessions without a recorded focus point are not counted.",
+      range: rangeOf(recent), n: recent.length, metric: "focus-point distribution", strength: strengthLabel(recent.length)
+    };
+  }
+  function insightSubtleBreath(sessions) {
+    const answered = sessions.filter(s => isDateStr(s.date) && TRI_REPORTS.indexOf(s.breathSubtle) >= 0).slice().sort(byDateTime);
+    if (answered.length < 5) return notEnough("subtle-breath reports", answered.length, "this needs at least 5 sessions where the subtle-breath question was answered; there are " + answered.length + ".");
+    const recent = answered.slice(-10);
+    const yes = recent.filter(s => s.breathSubtle === "yes").length;
+    const notsure = recent.filter(s => s.breathSubtle === "notsure").length;
+    return {
+      text: "In " + yes + " of your last " + recent.length + " answered sits you marked the breath as becoming subtle" +
+        (notsure ? " (a further " + notsure + " marked not sure)" : "") + ". A self-reported observation, not a measure of concentration.",
+      range: rangeOf(recent), n: recent.length, metric: "subtle-breath reports", strength: strengthLabel(recent.length)
+    };
+  }
+  function insightSteadyNotes(sessions) {
+    const rated = sessions.filter(s => isDateStr(s.date) && isNum(s.ratio) && (s.notes || "").trim()).slice().sort(byDateTime);
+    if (rated.length < 6) return notEnough("notes after steadier sits", rated.length, "this needs at least 6 sessions with both a contact estimate and a note; there are " + rated.length + ".");
+    const excerpt = t => { const n = t.trim(); return n.length > 70 ? n.slice(0, 67).trimEnd() + "…" : n; };
+    const top = rated.slice().sort((a, b) => b.ratio - a.ratio).slice(0, Math.max(2, Math.floor(rated.length / 3))).sort(byDateTime);
+    const lines = top.slice(-4).map(s => s.date + " (" + Math.round(s.ratio * 100) + "%): “" + excerpt(s.notes) + "”");
+    return {
+      text: "Your own notes after the sits with the highest self-reported contact ratio — " + lines.join(" · ") + " — your words, replayed without interpretation.",
+      range: rangeOf(rated), n: rated.length, metric: "notes after high-ratio sits", strength: strengthLabel(rated.length)
+    };
+  }
+
   const INSIGHT_QUESTIONS = [
     { id: "scattered", q: "What usually precedes my most scattered sessions?" },
     { id: "hindrance", q: "Which hindrance shows up most often?" },
     { id: "timeofday", q: "When in the day do I sit most steadily?" },
-    { id: "settling", q: "Is my settling time changing?" }
+    { id: "settling", q: "Is my settling time changing?" },
+    { id: "object", q: "Which focus point am I actually using?" },
+    { id: "subtle", q: "How often has the breath become subtle lately?" },
+    { id: "steadynotes", q: "What did I write after my highest-contact sits?" }
   ];
   function answerQuestion(id, sessions) {
     if (id === "scattered") return insightScatteredPrecursors(sessions);
     if (id === "hindrance") return insightTopHindrance(sessions);
     if (id === "timeofday") return insightTimeOfDay(sessions);
     if (id === "settling") return insightSettlingTrend(sessions);
+    if (id === "object") return insightObjectUse(sessions);
+    if (id === "subtle") return insightSubtleBreath(sessions);
+    if (id === "steadynotes") return insightSteadyNotes(sessions);
     return null;
   }
 
@@ -1146,7 +1182,8 @@ const CORE = (function () {
   const CSV_COLUMNS = ["id", "date", "startTime", "endTime", "plannedMin", "actualMin", "concMin", "ratio",
     "confidence", "settleMin", "longestSteadyMin", "wanderings", "returns", "object", "objectCustom", "posture", "phase",
     "energyBefore", "energyAfter", "calmBefore", "calmAfter", "afterStateReport", "dominantHindrance", "hindrances",
-    "qualities", "nimittaCategory", "entrySource", "teacherReview", "createdAt", "updatedAt", "notes"];
+    "qualities", "nimittaCategory", "practiceMode", "contactWhere", "breathSubtle", "pleasantFeeling",
+    "entrySource", "teacherReview", "createdAt", "updatedAt", "notes"];
 
   function csvEscape(v) {
     if (v === null || v === undefined) return "";
@@ -1200,7 +1237,8 @@ const CORE = (function () {
   // Envelope: {schemaVersion, sessions, settings, map, savedAt}
   // v1 = legacy loose keys (janSits / janGates), v2 = envelope without entrySource/teacherReview/afterStateReport,
   // v3 = + those fields, v4 = + stability/breathClarity + envelope feedback[],
-  // v5 = current (+ timelineSource provenance; pre-v5 timelines were hand-entered).
+  // v5 = + timelineSource provenance (pre-v5 timelines were hand-entered),
+  // v6 = current (+ practiceMode, contactWhere, breathSubtle, pleasantFeeling — all null on older records).
   function migrate(rawEnvelope, legacy, nowIso, todayStr) {
     const notes = [];
     let env = rawEnvelope;
@@ -1230,7 +1268,10 @@ const CORE = (function () {
       }
     }
     const fromVersion = env.schemaVersion || 2;
-    if (fromVersion < SCHEMA_VERSION) {
+    // Records stamped by an older client (a mixed-version window) are upgraded even when the
+    // envelope itself is current: missing fields become null, never guessed.
+    const stale = (env.sessions || []).filter(s => s && isNum(s.v) && s.v < SCHEMA_VERSION).length;
+    if (fromVersion < SCHEMA_VERSION || stale) {
       env.sessions = (env.sessions || []).map(s => {
         const up = Object.assign({}, s);
         // v2 → v3
@@ -1244,10 +1285,15 @@ const CORE = (function () {
         if (up.breathClarity === undefined) up.breathClarity = null;
         // v4 → v5: timeline provenance — every pre-v5 timeline was hand-entered
         if (up.timelineSource === undefined) up.timelineSource = (Array.isArray(up.timeline) && up.timeline.length ? "manual" : null);
+        // v5 → v6: practice-mode stamp + reflection self-reports — unreported stays null
+        if (up.practiceMode === undefined) up.practiceMode = null;
+        if (up.contactWhere === undefined) up.contactWhere = null;
+        if (up.breathSubtle === undefined) up.breathSubtle = null;
+        if (up.pleasantFeeling === undefined) up.pleasantFeeling = null;
         up.v = SCHEMA_VERSION;
         return up;
       });
-      notes.push("Upgraded envelope schema v" + fromVersion + " → v" + SCHEMA_VERSION + ".");
+      notes.push(fromVersion < SCHEMA_VERSION ? "Upgraded envelope schema v" + fromVersion + " → v" + SCHEMA_VERSION + "." : "Upgraded " + stale + " record(s) written by an older version to schema v" + SCHEMA_VERSION + ".");
       env.schemaVersion = SCHEMA_VERSION;
     }
     if (!env.settings || typeof env.settings !== "object") env.settings = {};
@@ -1706,8 +1752,6 @@ const CORE = (function () {
     "ob.text1": { en: "This app helps you time sessions, record observations, and review your practice over time. Everything stays on this device — no account, no cloud.", my: "" },
     "ob.title2": { en: "Start simply.", my: "" },
     "ob.text2": { en: "Sit comfortably. Attend to the breath sensation near the nostrils. Count each in-and-out cycle from one to eight, then restart. That is the whole first practice.", my: "" },
-    "ob.title3": { en: "Record, do not exaggerate.", my: "" },
-    "ob.text3": { en: "After each sit, log what you directly noticed — nothing more. Traditional and scientific sources are kept separate from personal observations, and the app never certifies attainments.", my: "" },
     "ob.continue": { en: "Continue", my: "" },
     "ob.back": { en: "Back", my: "" },
     "ob.skip": { en: "Skip", my: "" },
@@ -1721,7 +1765,7 @@ const CORE = (function () {
   const I18N_SCREENS = {
     chrome: ["app.tagline", "tab.today", "tab.journal", "tab.progress", "tab.learn", "tab.settings"],
     today: ["today.start", "today.choose"],
-    onboarding: ["ob.title1", "ob.text1", "ob.title2", "ob.text2", "ob.title3", "ob.text3", "ob.continue", "ob.back", "ob.skip", "ob.start30", "ob.shorter", "ob.explore", "hero.promise", "hero.begin", "hero.skipintro"]
+    onboarding: ["ob.title1", "ob.text1", "ob.title2", "ob.text2", "ob.continue", "ob.back", "ob.skip", "ob.start30", "ob.shorter", "ob.explore", "hero.promise", "hero.begin", "hero.skipintro"]
   };
   function tr(key, lang, table) {
     const tbl = table || I18N;
@@ -1797,7 +1841,7 @@ const CORE = (function () {
       "2. Open sit-tracker-v2.html in any browser. Double-click works.",
       "3. Want it on your phone like an app? Serve the folder on your wifi (python -m http.server 8080), open it from your phone's browser, then 'Add to Home Screen'.",
       "",
-      "Whatever you record stays on your device. Export is one tap and the file is yours.",
+      "Whatever you record stays on your device unless you turn on an AI provider in Settings. Export is one tap and the file is yours.",
       "",
       "— sent from Sit Tracker v" + appVersion
     ].join("\n");
@@ -1808,11 +1852,11 @@ const CORE = (function () {
   // exports, share cards, or the teacher report (tested).
   const GUIDE = [
     ["Start a sit", "Pick a practice card and press Start sit. Pause, finish early, or reset from the same screen — nothing is saved until the sit ends."],
-    ["After the sit", "A short form opens. Everything on it is optional and self-reported: estimated minutes of contact, a few one-tap impressions, a note. The app records what you noticed — it never grades it."],
+    ["After the sit", "The finished sit saves itself. A short form opens to add what you noticed — estimated contact minutes, a few one-tap impressions, a note. All of it optional and self-reported; closing the form loses nothing. The app records what you noticed — it never grades it."],
     ["Your history", "Journal keeps every entry — tap one to view, edit, or share it. Progress shows totals and charts computed only from what you recorded."],
     ["Share a card", "From a session or from Progress, “Share a card” makes an image you save and send yourself. The app posts nothing."],
     ["Teacher report", "Journal → Teacher report prints a plain summary for a human teacher. Pick the range, print to PDF, send it yourself."],
-    ["Your data", "Everything stays on this phone; nothing is uploaded anywhere. Settings → Export saves a backup file that is yours to keep, and Import brings it back."],
+    ["Your data", "Everything stays on this phone. Nothing is uploaded unless you turn on an external AI provider in Settings — then, and only then, the journal text you press “Create draft” on is sent to the endpoint you chose. Settings → Export saves a backup file that is yours to keep, and Import brings it back."],
     ["On your phone", "Settings → “Install on your phone” adds it to the home screen. After one open online, it works offline."]
   ];
 
@@ -1908,6 +1952,119 @@ const CORE = (function () {
     }
     return out;
   }
+
+  // ---------- practice modes (the one method being trained; durable data, not code) ----------
+  // Wording paraphrases the sources in PRACTICE_SOURCES.md. The location
+  // instruction follows the commentarial tradition and the modern teachers the
+  // owner trains with (Pa-Auk, Brasington) — MN 118 itself names no spot, and
+  // the Learn tab says so. One real mode by design: continuity over novelty.
+  const PRACTICE_MODES = [{
+    id: "nostril_breath",
+    name: "Nostril breath",
+    object: "nostril",                       // default focus point when starting from this mode
+    objects: ["nostril", "upperlip"],        // focus points that count as practicing this mode
+    status: "current",
+    objectLine: "Feel the natural in-and-out breath where its touch is clearest — nostril rim or upper lip.",
+    instruction: "Stay with the actual breath sensation rather than thoughts about the breath. Let the breath be as it is — never controlled, never held.",
+    prepCue: "Sit erect, settle, and count in-and-out cycles one to eight, restarting, until the mind stays.",
+    returnCue: "When attention wanders, notice it and return — without commentary.",
+    subtleCue: "If the breath becomes faint, do not breathe harder to find it. Wait at the spot; knowing you are still breathing is enough.",
+    sourceIds: ["mn118", "paauk", "brasington"]
+  }];
+  function practiceModeById(id) { return PRACTICE_MODES.find(m => m.id === id) || null; }
+  // The active mode: settings choice if valid, else the one marked current.
+  function currentPracticeMode(settings) {
+    const chosen = practiceModeById(settings && settings.currentPracticeMode);
+    return chosen || PRACTICE_MODES.find(m => m.status === "current") || PRACTICE_MODES[0];
+  }
+  // Which saved practice does a sit with this focus point belong to?
+  // Outside the active mode → null (unknown, never guessed).
+  function practiceModeForSit(object, settings) {
+    const mode = currentPracticeMode(settings);
+    return mode && (mode.objects || [mode.object]).indexOf(object) >= 0 ? mode.id : null;
+  }
+  // Quiet continuity for Today: the owner's own last recorded sit, replayed
+  // without judgement — a date, a duration, and their own words. Nothing else.
+  function continuityLine(sessions, todayStr) {
+    const real = realSessions(sessions).filter(s => isDateStr(s.date) && isNum(s.actualMin));
+    if (!real.length) return null;
+    const last = real.slice().sort(byDateTime)[real.length - 1];
+    const note = (last.notes || "").trim();
+    let daysAgo = null;
+    if (last.date <= todayStr) { let d = 0, c = last.date; while (c < todayStr && d < 3650) { c = addDays(c, 1); d++; } daysAgo = d; }
+    return {
+      date: last.date, minutes: Math.round(last.actualMin), daysAgo,
+      noteExcerpt: note ? (note.length > 90 ? note.slice(0, 87).trimEnd() + "…" : note) : null
+    };
+  }
+
+  // ---------- Learn: source map, jhāna module, troubleshooting ----------
+  // Structured so tests can hold every learner-visible claim to a source and a
+  // label. Bodies are attributed summaries (not verbatim quotes — see the
+  // verification note in PRACTICE_SOURCES.md). Four traditions, kept distinct
+  // on purpose: related practices, not one doctrine.
+  const PRACTICE_SOURCE_MAP = [
+    {
+      id: "mn118", title: "What MN 118 itself says", badge: "traditional claim",
+      source: "Ānāpānasati Sutta (MN 118), tr. Ṭhānissaro Bhikkhu · Bhikkhu Sujato; similes AN 5.28 / DN 2 (tr. Ṭhānissaro)",
+      body: "Sixteen steps of breath-mindfulness — knowing long and short breaths, then training with rapture, pleasure, and mind — and no spot on the body is named. The nostril-area anchor is a later specification (the Vibhaṅga's gloss of parimukhaṁ, carried by the commentaries); translators render parimukhaṁ as 'to the fore' or 'in front', and the reading is contested. One canonical step trains sensitivity to the entire body, and the canon's jhāna similes describe rapture and pleasure filling the whole body."
+    },
+    {
+      id: "paauk", title: "The Pa-Auk approach", badge: "traditional claim",
+      source: "Pa-Auk Tawya Sayadaw — Mindfulness of Breathing; Knowing and Seeing",
+      body: "A modern Burmese system built on the Visuddhimagga. Attention rests at the touching point around the nostrils and upper lip, wherever contact is clearest. The breath is never controlled and never followed in or out (the gatekeeper watches the gate, not the traveller); counting settles the mind at the start. When the breath turns subtle: wait at the spot — knowing you are still breathing is enough. A light (nimitta) that eventually stabilizes is later taken as the object toward deep absorption — a stage this tradition itself places under a teacher."
+    },
+    {
+      id: "brasington", title: "Leigh Brasington's approach", badge: "traditional claim",
+      source: "Leigh Brasington — leighb.com instructions; Right Concentration (2015)",
+      body: "Breath at the nostrils builds access concentration: notice wandering, return, until thoughts thin to wisps — and the breath may turn very subtle, which he reads as a sign of access, not a problem. Attention then deliberately shifts to a pleasant bodily sensation, staying with its pleasantness until it grows into what he calls first jhāna. Lights are ignored in this method — never the object — and he openly describes these states as lighter than the commentarial tradition's absorption."
+    },
+    {
+      id: "thaiforest", title: "The Thai Forest approach (Ajaan Lee / Ṭhānissaro)", badge: "traditional claim",
+      source: "Ajaan Lee — Keeping the Breath in Mind, Method 2, tr. Ṭhānissaro Bhikkhu; With Each & Every Breath",
+      body: "The nose tip is only one of several possible resting spots (mid-head, palate, throat, breastbone, navel). The breath may be gently adjusted until comfortable — never forced — which is a real difference from the natural-breath-only schools. Awareness then widens until breath energy is felt through the whole body; jhāna here keeps the body present throughout, echoing the canon's pervasion similes rather than narrowing to a point or a light."
+    }
+  ];
+  const JHANA_MODULE = {
+    title: "Jhāna, honestly", badge: "traditional claim",
+    source: "MN 118 · AN 5.28 similes · the three teaching systems above",
+    body: "In the early texts jhāna is deep meditative collectedness, described through factors such as directed attention, rapture, pleasure, and unification — and through similes of the whole body suffused with ease. The teachers here disagree in good faith about its depth and doorway: Pa-Auk trains toward full absorption on a stabilized nimitta; Brasington teaches lighter sutta-style states entered through pleasantness; the Thai Forest way keeps the whole body in awareness throughout. Same word, different referents — worth knowing before comparing notes across books.",
+    boundary: "The app records your practice. It does not decide what meditative state you attained — nothing you enter here is ever treated as evidence of jhāna."
+  };
+  const TROUBLESHOOTING = [
+    {
+      id: "wandering", q: "The mind keeps wandering", badge: "practice guidance",
+      source: "all four sources", body: "Noticing the wandering and returning IS the practice at this stage — every source treats it as training, not failure. Pa-Auk: return calmly; count until the mind settles. Brasington: return without self-recrimination; thoughts thinning to wisps is the progress marker. Ajaan Lee: give the mind more to do — get interested in how the breath actually feels."
+    },
+    {
+      id: "dull", q: "Sleepy or dull", badge: "practice guidance",
+      source: "Brasington", body: "Brasington's verified advice here is posture: sit upright and alert, not too comfortable. Beyond that, the sources verified for this app say little that is specific about dullness — so nothing more is attributed. A dull sit recorded honestly is still a sit, and recurring dullness is worth raising with a teacher."
+    },
+    {
+      id: "forcing", q: "Forcing or micromanaging the breath", badge: "practice guidance",
+      source: "Pa-Auk · Brasington · Ajaan Lee", body: "Here the schools split, so know whose rule you are practicing. Pa-Auk and Brasington: never control the breath — observe it as it is. Ajaan Lee: gentle adjustment toward comfort is allowed, never force. The current practice in this app follows the natural-breath rule; if you notice yourself steering the breath, relax and let it breathe itself."
+    },
+    {
+      id: "faint", q: "The breath became faint or seems to stop", badge: "practice guidance",
+      source: "Pa-Auk · Brasington · Thai Forest", body: "A real divergence, preserved: Pa-Auk — stay waiting at the touching point, don't hunt for the breath; knowing you are still breathing is enough. Brasington — a very subtle breath is a sign of access concentration; his method then moves attention to a pleasant sensation anyway. Thai Forest — let the breath grow completely still if it wants to; stillness is allowed, never manufactured. No source teaches holding or restricting the breath — never do that, and if you notice suppression, relax and let it breathe."
+    },
+    {
+      id: "tense", q: "Attention itself got tight or effortful", badge: "practice guidance",
+      source: "SN 51.20 (the canonical energy dial)", body: "The canon's master instruction: energy not too slack, not too tense; not constricted inward (sliding toward dullness), not scattered outward (sliding toward distraction). Check the dial once when you sit down and once mid-sit, then let it be."
+    },
+    {
+      id: "pleasant", q: "A pleasant feeling appeared", badge: "practice guidance",
+      source: "MN 118 · the three systems", body: "MN 118 itself trains sensitivity to rapture and pleasure, so this is expected territory, and the schools use it differently: Pa-Auk — the breath stays the object; pleasure is not switched to, and the jhāna factors are discerned only after absorption. Brasington — this is the pivot of his method: attention moves to the pleasantness itself. Ajaan Lee — let it spread with the breath through the body. Afterwards, record what you noticed; the app files it as your report and nothing more."
+    },
+    {
+      id: "lights", q: "A light or image appeared", badge: "practice guidance",
+      source: "Pa-Auk · Brasington", body: "The traditions genuinely differ here. Pa-Auk: ignore early, unstable lights and stay with the breath; only a stable sign is eventually taken up, under a teacher. Brasington: ignore lights entirely — in his method they are never the object. Neither treats a light as an attainment. Record it neutrally in the Journal; discuss repeated or destabilizing experiences with a qualified teacher."
+    },
+    {
+      id: "striving", q: "Striving and expecting", badge: "practice guidance",
+      source: "Brasington · Pa-Auk · Ajaan Lee", body: "Brasington: the pleasantness his method settles into grows by itself — trying harder blocks it. Pa-Auk: patience is the repeated watchword, especially around the subtle breath. Ajaan Lee: the method itself gives effort a job — evaluating whether the breath is comfortable. The record you keep in this app is for honesty, not achievement — there is nothing here to win."
+    }
+  ];
 
   // ---------- practice presets (decision friction ↓, no gamification) ----------
   const PRESETS = [
@@ -2128,7 +2285,25 @@ const CORE = (function () {
     // --- canned questions (answered locally; every answer carries range/n/metric/strength)
     t("daysBetween", daysBetween("2026-07-01", "2026-07-10") === 9);
     t("answerQuestion unknown id", answerQuestion("astrology", []) === null);
-    t("questions list has 4 entries", INSIGHT_QUESTIONS.length === 4 && INSIGHT_QUESTIONS.every(q => q.id && q.q.indexOf("?") > 0));
+    t("questions list has 7 entries", INSIGHT_QUESTIONS.length === 7 && INSIGHT_QUESTIONS.every(q => q.id && q.q.indexOf("?") > 0));
+    // v6 questions: focus point, subtle breath, steady-sit notes
+    const objSess = [mk("2026-07-01", { object: "nostril" }), mk("2026-07-02", { object: "nostril" }), mk("2026-07-03", { object: "nostril" }), mk("2026-07-04", { object: "nostril" }), mk("2026-07-05", { object: "abdomen" }), mk("2026-07-06", { object: "abdomen" })];
+    const aObj = answerQuestion("object", objSess);
+    t("object question counts distribution", aObj.text.indexOf("nostril in 4") > 0 && aObj.text.indexOf("abdomen in 2") > 0 && aObj.n === 6);
+    t("object question honest below sample floor", answerQuestion("object", objSess.slice(0, 3)).strength === "insufficient");
+    const subSess = [
+      mk("2026-07-01", { breathSubtle: "yes" }), mk("2026-07-02", { breathSubtle: "no" }), mk("2026-07-03", { breathSubtle: "yes" }),
+      mk("2026-07-04", { breathSubtle: "notsure" }), mk("2026-07-05", { breathSubtle: "yes" }), mk("2026-07-06", {})  // unanswered — excluded
+    ];
+    const aSub = answerQuestion("subtle", subSess);
+    t("subtle question uses answered denominator", aSub.text.indexOf("In 3 of your last 5 answered sits") === 0 && aSub.n === 5);
+    t("subtle question is observational", /self-reported/.test(aSub.text) && !/concentration (improved|increased|deepened)|prov(es|ing)/i.test(aSub.text));
+    t("subtle question honest below sample floor", answerQuestion("subtle", subSess.slice(0, 4)).strength === "insufficient");
+    const noteSess = [10, 20, 30, 40, 80, 90].map((r, i) => mk("2026-07-0" + (i + 1), { concMin: r * 30 / 100, notes: "note ratio " + r }));
+    const aNotes = answerQuestion("steadynotes", noteSess);
+    t("steady-notes replays own words with dates", aNotes.text.indexOf("note ratio 90") > 0 && aNotes.text.indexOf("2026-07-06") > 0);
+    t("steady-notes never interprets", /without interpretation/.test(aNotes.text) && !/because|proves|caused/i.test(aNotes.text));
+    t("steady-notes honest below sample floor", answerQuestion("steadynotes", noteSess.slice(0, 4)).strength === "insufficient");
     for (const q of INSIGHT_QUESTIONS) {
       const a = answerQuestion(q.id, []);
       t("question '" + q.id + "' honest on empty", a && a.strength === "insufficient" && a.text.indexOf("Not enough data") === 0);
@@ -2440,7 +2615,7 @@ const CORE = (function () {
     // --- how-to-use guide: exists, operational-only, excluded from outbound surfaces
     const gAll = GUIDE.map(s => s[0] + " " + s[1]).join(" ");
     t("guide covers the operating topics", ["Start sit", "self-reported", "Export", "home screen", "Teacher report", "Share a card"].every(k => gAll.indexOf(k) >= 0));
-    t("guide states data locality", gAll.indexOf("stays on this phone") >= 0 && gAll.indexOf("nothing is uploaded") >= 0);
+    t("guide states data locality with its one real exception", gAll.indexOf("stays on this phone") >= 0 && /unless you turn on an external AI provider/.test(gAll));
     t("guide never teaches or promises", !/jh[āa]na|attain|enlighten|nimitta|breath|posture|reduc|improv|achiev|anxiety|stress|streak|every ?day|don'?t break/i.test(gAll));
     t("guide dismissal survives persistence round-trip", migrate({ schemaVersion: SCHEMA_VERSION, sessions: [], settings: { guideSeen: true }, map: null, feedback: [] }, null, NOW, TODAY).env.settings.guideSeen === true);
     const gEnv = migrate({ schemaVersion: SCHEMA_VERSION, sessions: [mk(TODAY, { notes: "real note" })], settings: { guideSeen: true }, map: null, feedback: [] }, null, NOW, TODAY).env;
@@ -2488,6 +2663,69 @@ const CORE = (function () {
     // --- descriptive consistency metric
     t("daysSatLast30 counts distinct days", summaryMetrics([mk(TODAY), mk(TODAY), mk(addDays(TODAY, -1)), mk(addDays(TODAY, -40))], TODAY).daysSatLast30 === 2);
     t("daysSatLast30 empty", summaryMetrics([], TODAY).daysSatLast30 === 0);
+
+    // --- schema v6: reflection fields + practice-mode stamp
+    t("v6: new fields default null", good.contactWhere === null && good.breathSubtle === null && good.pleasantFeeling === null && good.practiceMode === null);
+    t("v6: valid reflections accepted", validateSession(normalizeSession({ date: TODAY, actualMin: 30, contactWhere: "upperlip", breathSubtle: "yes", pleasantFeeling: "notsure", practiceMode: "nostril_breath" }, NOW, TODAY)).ok);
+    t("v6: bad contactWhere rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, contactWhere: "third eye" }, NOW, TODAY)).ok);
+    t("v6: bad breathSubtle rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, breathSubtle: "definitely" }, NOW, TODAY)).ok);
+    t("v6: state-claim as reflection value rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, pleasantFeeling: "jhana" }, NOW, TODAY)).ok);
+    t("v6: empty practiceMode rejected", !validateSession(normalizeSession({ date: TODAY, actualMin: 30, practiceMode: "  " }, NOW, TODAY)).ok);
+    t("v6: unknown future practiceMode tolerated", validateSession(normalizeSession({ date: TODAY, actualMin: 30, practiceMode: "future_mode" }, NOW, TODAY)).ok);
+    const v5env = { schemaVersion: 5, sessions: [{ id: "v5s", date: "2026-08-01", actualMin: 30, concMin: 11, stability: 4, timelineSource: null }], settings: {} };
+    const mig6 = migrate(v5env, null, NOW, TODAY);
+    t("v5→v6 reflections become null", mig6.env.sessions[0].contactWhere === null && mig6.env.sessions[0].breathSubtle === null && mig6.env.sessions[0].pleasantFeeling === null);
+    t("v5→v6 practiceMode becomes null (unknown, not guessed)", mig6.env.sessions[0].practiceMode === null);
+    t("v5→v6 bumps version and keeps data", mig6.env.schemaVersion === SCHEMA_VERSION && mig6.env.sessions[0].concMin === 11 && mig6.env.sessions[0].stability === 4);
+    t("v6 csv has the new columns", ["practiceMode", "contactWhere", "breathSubtle", "pleasantFeeling"].every(c => CSV_COLUMNS.indexOf(c) >= 0));
+    const v6rt = parseImport(JSON.stringify({ schemaVersion: SCHEMA_VERSION, sessions: [normalizeSession({ id: "v6rt", date: "2026-08-10", actualMin: 30, practiceMode: "nostril_breath", contactWhere: "nostril", breathSubtle: "yes", pleasantFeeling: "notsure" }, NOW, TODAY)] }), [], NOW);
+    t("v6 fields survive export→import round-trip", v6rt.ok && v6rt.fresh.length === 1 && v6rt.fresh[0].practiceMode === "nostril_breath" && v6rt.fresh[0].contactWhere === "nostril" && v6rt.fresh[0].breathSubtle === "yes" && v6rt.fresh[0].pleasantFeeling === "notsure");
+    t("v6 fields absent on import stay null", parseImport(JSON.stringify({ schemaVersion: 5, sessions: [{ id: "v5imp", date: "2026-08-09", actualMin: 20 }] }), [], NOW).fresh[0].breathSubtle === null);
+
+    // --- practice modes
+    t("modes: exactly one current mode", PRACTICE_MODES.filter(m => m.status === "current").length === 1);
+    t("modes: nostril_breath is current with nostril object", currentPracticeMode({}).id === "nostril_breath" && currentPracticeMode({}).object === "nostril");
+    t("modes: unknown setting falls back to current", currentPracticeMode({ currentPracticeMode: "zen_l7" }).id === "nostril_breath");
+    t("modes: lookup miss is null", practiceModeById("nope") === null);
+    t("modes: every mode has usable cues", PRACTICE_MODES.every(m => m.objectLine.length > 20 && m.instruction.length > 20 && m.returnCue.length > 10 && m.subtleCue.length > 10 && m.sourceIds.length > 0));
+    const modeCorpus = JSON.stringify(PRACTICE_MODES);
+    t("modes: wording never certifies or promises states", !/jh[āa]na|attain|nimitta|access concentration|enlighten|guarantee/i.test(modeCorpus));
+    t("modes: wording never instructs breath-holding", !/hold (the |your )?breath|stop breathing|restrict/i.test(modeCorpus));
+    t("modes: nostril sit belongs to the mode", practiceModeForSit("nostril", {}) === "nostril_breath");
+    t("modes: upper-lip sit belongs to the mode", practiceModeForSit("upperlip", {}) === "nostril_breath");
+    t("modes: abdomen sit is not stamped", practiceModeForSit("abdomen", {}) === null);
+    t("modes: custom sit is not stamped", practiceModeForSit("custom", {}) === null);
+
+    // --- continuity line (Today): replay, never interpretation
+    t("continuity: empty log gives null", continuityLine([], TODAY) === null);
+    const contSess = [
+      mk("2026-07-07", { actualMin: 30, notes: "steady near the end" }),
+      mk("2026-07-08", { actualMin: 25, notes: "x".repeat(120) }),
+      Object.assign(mk(TODAY, { actualMin: 60 }), { _test: true, notes: "[TEST DATA] fake" })
+    ];
+    const cont = continuityLine(contSess, TODAY);
+    t("continuity: uses last real sit, not test data", cont.date === "2026-07-08" && cont.minutes === 25);
+    t("continuity: computes days ago", cont.daysAgo === 1);
+    t("continuity: long notes truncated with ellipsis", cont.noteExcerpt.length <= 90 && cont.noteExcerpt.endsWith("…"));
+    t("continuity: empty note stays null", continuityLine([mk(TODAY, { actualMin: 10, notes: "" })], TODAY).noteExcerpt === null);
+
+    // --- Learn content: sourced, labeled, distinct traditions, no certification
+    const srcMap = PRACTICE_SOURCE_MAP;
+    t("learn: the four traditions, distinct ids", srcMap.map(m => m.id).join(",") === "mn118,paauk,brasington,thaiforest");
+    t("learn: every card carries a source", srcMap.every(m => m.source.length > 12) && TROUBLESHOOTING.every(c => c.source.length > 3) && JHANA_MODULE.source.length > 5);
+    t("learn: every card carries a content label", srcMap.every(m => m.badge) && TROUBLESHOOTING.every(c => c.badge) && !!JHANA_MODULE.badge);
+    t("learn: bodies substantive and distinct", srcMap.every(m => m.body.length > 120) && new Set(srcMap.map(m => m.body)).size === 4);
+    t("learn: mn118 card states what the text does NOT specify", /no spot on the body is named/i.test(srcMap[0].body) && /later specification/i.test(srcMap[0].body));
+    t("learn: tradition signatures kept distinct", /never controlled/.test(srcMap[1].body) && /pleasant/.test(srcMap[2].body) && /adjust/i.test(srcMap[3].body) && /whole body/i.test(srcMap[3].body));
+    const learnCorpus = JSON.stringify(srcMap) + JSON.stringify(JHANA_MODULE) + JSON.stringify(TROUBLESHOOTING);
+    t("learn: never certifies or predicts states", !/(you (have )?reached|you (have )?entered|you are ready for|your concentration level|this was (the )?first jh|your spiritual progress|sessions until)/i.test(learnCorpus));
+    t("learn: jhāna boundary sentence present", /records your practice/.test(JHANA_MODULE.boundary) && /does not decide what meditative state/.test(JHANA_MODULE.boundary));
+    const faintCard = TROUBLESHOOTING.find(c => c.id === "faint");
+    t("learn: subtle-breath divergence preserved per teacher", /Pa-Auk/.test(faintCard.body) && /Brasington/.test(faintCard.body) && /Thai Forest/.test(faintCard.body));
+    t("learn: lights card carries no fake consensus", !/every source|all sources agree|instruction from every/i.test(TROUBLESHOOTING.find(c => c.id === "lights").body));
+    t("learn: never instructs holding or restricting breath", !/hold (the |your )?breath|restrict (the |your )?breath|deliberately stop breathing/i.test(learnCorpus));
+    t("learn: no burmese in new content (owner-supplied only, none supplied)", !/[က-႟]/.test(learnCorpus));
+    t("learn: safety line present on faint breath", /No source teaches holding or restricting the breath/i.test(faintCard.body));
 
     // --- presets
     t("presets: four fixed options", PRESETS.length === 4);
@@ -2553,27 +2791,27 @@ const CORE = (function () {
 
   return {
     SCHEMA_VERSION, OBJECTS, HINDRANCES, HINDRANCE_LABELS, INTENSITIES, QUALITIES, QUALITY_LABELS,
-    NIMITTA_CATEGORIES, NIMITTA_LABELS, ENTRY_SOURCES, REVIEW_STATES, REVIEW_LABELS, CONFIDENCES,
-    AFTER_STATES, SEGMENT_KINDS, SEGMENT_LABELS, SEGMENT_WEIGHTS, MARKER_KINDS, MAP_EVIDENCE, CSV_COLUMNS,
-    clamp, round1, round2, isNum, isDateStr, isTimeStr, addDays, uid, fmtMin, fmtClock,
-    blankSession, normalizeSession, validateSession, computeRatio,
-    validateTimeline, deriveFromTimeline, timelineFromMarkers,
+    NIMITTA_CATEGORIES, NIMITTA_LABELS, REVIEW_STATES, REVIEW_LABELS, CONFIDENCES,
+    AFTER_STATES, SEGMENT_KINDS, SEGMENT_LABELS, MAP_EVIDENCE, clamp, round1, isNum, addDays, fmtMin, fmtClock,
+    normalizeSession, validateSession, computeRatio,
+    deriveFromTimeline, timelineFromMarkers,
     timerSnapshot, startTimerState, pauseTimerState, resumeTimerState, dueBells,
-    computeStreaks, filterRange, summaryMetrics, timeOfDayBucket, insights, strengthLabel,
-    daysBetween, INSIGHT_QUESTIONS, answerQuestion, insightScatteredPrecursors, insightTopHindrance, insightTimeOfDay, insightSettlingTrend,
-    toCSV, sessionFingerprint, parseImport, migrate,
+    filterRange, summaryMetrics, timeOfDayBucket, insights, INSIGHT_QUESTIONS, answerQuestion, toCSV, sessionFingerprint, parseImport, migrate,
     backupStatus, makeTestSessions, isTestSession, realSessions, makeDemoSessions,
     PRESETS, presetById, onboardingState, formatFeedback, APP_VERSION,
-    parseJournal, validateDraft, draftToSession, parseStartTime, isNegated,
-    buildProviderRequest, extractProviderText, parseProviderResponse, PROVIDER_INSTRUCTION,
-    providerErrorSummary, MOCK_PROVIDER_RESPONSES,
+    CONTACT_WHERE, CONTACT_WHERE_LABELS, TRI_REPORTS, TRI_LABELS,
+    practiceModeById, currentPracticeMode, practiceModeForSit, continuityLine,
+    PRACTICE_SOURCE_MAP, JHANA_MODULE, TROUBLESHOOTING,
+    parseJournal, validateDraft, draftToSession, buildProviderRequest, extractProviderText, parseProviderResponse, providerErrorSummary, MOCK_PROVIDER_RESPONSES,
     nextReviewStateOnFlag, unusualExperienceSummary,
-    I18N, I18N_SCREENS, tr, fullyTranslatedScreens,
+    tr, fullyTranslatedScreens,
     shareCardData, shareCardLines, inviteText, GUIDE,
     runSelfTests
   };
 })();
 /*CORE-END*/
+// field wrapper (29x)
+const FL = '<div class="field"><label for="';
 
 /* ================= STORE — persistence behind an adapter ================= */
 const STORE = (function () {
@@ -2812,6 +3050,14 @@ const TIMER = (function () {
       })
     };
     lastElapsed = 0;
+    // Remember this configuration so the next open starts pre-armed (design note:
+    // configuration is something you do rarely, not per sit).
+    STORE.setSetting("sitConfig", {
+      min: cfg.plannedMin, prepSec: cfg.prepSec,
+      intervalMin: cfg.bellsEverySec ? cfg.bellsEverySec / 60 : 0,
+      finalBell: cfg.finalBell, wantWakeLock: cfg.wantWakeLock,
+      object: cfg.object, objectCustom: cfg.objectCustom
+    });
     persist(true);
     acquireWakeLock();
     loop();
@@ -2890,14 +3136,26 @@ const TIMER = (function () {
       markers: markers.length ? markers : null,
       wanderings: markers.filter(m => m.kind === "wandering").length || null,
       returns: markers.filter(m => m.kind === "returned").length || null,
+      practiceMode: CORE.practiceModeForSit(ctx.object, { currentPracticeMode: STORE.getSetting("currentPracticeMode", null) }),
       entrySource: "timer"
     };
     st = null; STORE.clearTimer();
     UI.setZen(false);
     UI.renderTimer();
-    REVIEW.openFor(pending);
-    UI.announce("Sit complete after " + CORE.fmtClock(actualSec) + ". Review is open.");
-    UI.toast("Sit complete — take 30 seconds to record what happened.");
+    // The completed sit is a fact: save it immediately, then open the review as
+    // an enrichment of the saved entry. Closing the review loses nothing.
+    const saved = STORE.addSession(pending);
+    if (saved.ok) {
+      TODAY.renderStatus(); HISTORY.render(); PROGRESS.render();
+      REVIEW.openAfterSit(saved.session.id);
+      UI.announce("Sit complete after " + CORE.fmtClock(actualSec) + ". The sit is saved; the review is open.");
+      UI.toast("Sit saved — add what you noticed, or just close.");
+    } else {
+      // should not happen for a timer sit; fall back to the unsaved review path
+      REVIEW.openFor(pending);
+      UI.announce("Sit complete after " + CORE.fmtClock(actualSec) + ". Review is open.");
+      UI.toast("Sit complete — take 30 seconds to record what happened.");
+    }
   }
 
   function addMarker(kind) {
@@ -3058,7 +3316,14 @@ const UI = (function () {
   }
   function modal(html) {
     const dlg = $("#modal");
-    $("#modal-body").innerHTML = html;
+    if (dlg.open) dlg.close();           // never showModal() on an open dialog
+    const body = $("#modal-body");
+    body.innerHTML = html;
+    // Name the dialog from its own heading — one shared aria-label would announce
+    // every one of the 14 modals as "Dialog".
+    const h = body.querySelector("h2,h3");
+    if (h) { h.id = "modal-h"; dlg.setAttribute("aria-labelledby", "modal-h"); dlg.removeAttribute("aria-label"); }
+    else { dlg.removeAttribute("aria-labelledby"); dlg.setAttribute("aria-label", (body.textContent || "").trim().slice(0, 60) || "Message"); }
     dlg.showModal();
     return dlg;
   }
@@ -3067,7 +3332,7 @@ const UI = (function () {
     return new Promise(resolve => {
       const dlg = modal(
         "<p>" + esc(message) + "</p>" +
-        '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
+        '<div class="row mt3 end">' +
         '<button id="cm-cancel">Cancel</button>' +
         '<button id="cm-ok" class="danger">' + esc(actionLabel || "Confirm") + "</button></div>"
       );
@@ -3127,9 +3392,9 @@ const UI = (function () {
     const stale = $("#custom-row");
     if (stale) stale.remove(); // renderPresets runs repeatedly
     grid.insertAdjacentHTML("afterend",
-      '<div class="row" id="custom-row"' + (presetSel === "custom" ? "" : " hidden") + ' style="margin-top:var(--sp-2)">' +
+      '<div class="row mt2" id="custom-row"' + (presetSel === "custom" ? "" : " hidden") + '>' +
       '<label class="row" style="gap:6px">Custom length ' +
-      '<input type="number" id="custom-min" min="1" max="480" step="1" inputmode="numeric" aria-label="Custom duration in minutes" style="width:90px"> min</label></div>');
+      '<input type="number" id="custom-min" min="1" max="480" step="1" inputmode="numeric" aria-label="Custom duration in minutes"> min</label></div>');
     $$(".preset-card", grid).forEach(card => card.onclick = () => {
       const id = card.dataset.preset;
       if (id === "__review") { showTab("journal"); return; }
@@ -3155,6 +3420,7 @@ const UI = (function () {
     $("#markers-bar").hidden = !running;
     $("#sit-config").style.display = running ? "none" : "";
     document.body.classList.toggle("running", running && st.core.phase === "running");
+    if (!running) document.body.classList.remove("settling");
     document.body.classList.toggle("timer-paused", running && st.core.phase === "paused");
     if (!running) {
       const min = selectedMinutes();
@@ -3186,15 +3452,16 @@ const UI = (function () {
       $("#arc-fill").style.strokeDashoffset = ARC_C * (1 - progress);
     }
     document.body.classList.toggle("running", snap.mode === "running" || snap.mode === "prep");
+    document.body.classList.toggle("settling", snap.mode === "prep");
     document.body.classList.toggle("timer-paused", snap.mode === "paused");
     $("#btn-pause").textContent = snap.mode === "paused" ? "Resume" : "Pause";
   }
 
   function paintMarkerLog(st) {
+    // Confirm the tap; keep no score (see APPLE_HIG_AUDIT.md P-2). The full marker
+    // list is already in the post-sit review and the session detail.
     const ms = (st.ctx.markers || []);
-    $("#marker-log").textContent = ms.length
-      ? ms.slice(-4).map(m => m.kind + " @ " + CORE.fmtMin(m.atMin)).join(" · ") + (ms.length > 4 ? " · +" + (ms.length - 4) + " more" : "")
-      : "";
+    $("#marker-log").textContent = ms.length ? "noted · " + ms[ms.length - 1].kind : "";
   }
 
   function setZen(on) {
@@ -3211,6 +3478,7 @@ const REVIEW = (function () {
   const { $, esc } = UI;
   let pending = null;      // partial session being reviewed (unsaved) or edited
   let editingId = null;
+  let justCompleted = false;   // review opened right after a timer sit (already saved)
 
   // If the sit captured markers and no timeline was entered, pre-fill a
   // suggested timeline (provenance "markers"); any hand edit flips it to "manual".
@@ -3224,6 +3492,7 @@ const REVIEW = (function () {
   function openFor(partial) {
     pending = Object.assign({}, partial);
     editingId = null;
+    justCompleted = false;
     suggestTimeline();
     render();
     UI.showTab("journal");
@@ -3237,26 +3506,32 @@ const REVIEW = (function () {
     if (!s) return;
     pending = JSON.parse(JSON.stringify(s));
     editingId = id;
+    justCompleted = false;
     suggestTimeline();
     render();
     UI.showTab("journal");
     window.scrollTo({ top: 0 });
   }
+  // Right after a timer sit: the entry is already saved; the form only enriches it.
+  function openAfterSit(id) {
+    edit(id);
+    if (editingId === id) { justCompleted = true; render(); }
+  }
   function close() {
-    pending = null; editingId = null;
+    pending = null; editingId = null; justCompleted = false;
     render();
   }
 
   function hindranceRows() {
     return CORE.HINDRANCES.map(h => {
       const cur = (pending.hindrances || {})[h] || "";
-      return '<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:4px 0">' +
-        '<span style="font-size:var(--fs-sm)">' + esc(CORE.HINDRANCE_LABELS[h]) + "</span>" +
+      return '<div class="row" style="justify-content:space-between;border-bottom:var(--edge);padding:4px 0">' +
+        '<span class="fss">' + esc(CORE.HINDRANCE_LABELS[h]) + "</span>" +
         '<span class="row" role="group" aria-label="' + esc(CORE.HINDRANCE_LABELS[h]) + ' intensity">' +
         ["", "mild", "moderate", "strong"].map(lvl =>
           '<button class="chip rv-hindrance" data-h="' + h + '" data-lvl="' + lvl + '" aria-pressed="' + ((cur || "") === lvl ? "true" : "false") + '">' + (lvl || "none") + "</button>"
         ).join("") +
-        '<label class="check" style="min-height:auto"><input type="radio" name="rv-dominant" class="rv-dominant" value="' + h + '"' + (pending.dominantHindrance === h ? " checked" : "") + " aria-label=\"dominant\"> dom.</label>" +
+        '<label class="check"><input type="radio" name="rv-dominant" class="rv-dominant" value="' + h + '"' + (pending.dominantHindrance === h ? " checked" : "") + " aria-label=\"dominant\"> dom.</label>" +
         "</span></div>";
     }).join("");
   }
@@ -3264,6 +3539,11 @@ const REVIEW = (function () {
   function quickRow(label, field, opts, cur) {
     return '<div class="qrow"><span class="ql">' + label + '</span><span class="row" role="group" aria-label="' + label + '">' +
       opts.map(([v, txt]) => '<button class="chip rv-quick" data-f="' + field + '" data-v="' + v + '" aria-pressed="' + (String(cur) === v ? "true" : "false") + '">' + txt + "</button>").join("") +
+      "</span></div>";
+  }
+  function quickRowStr(label, field, opts, cur) {
+    return '<div class="qrow"><span class="ql">' + label + '</span><span class="row" role="group" aria-label="' + label + '">' +
+      opts.map(([v, txt]) => '<button class="chip rv-quickstr" data-f="' + field + '" data-v="' + v + '" aria-pressed="' + (cur === v ? "true" : "false") + '">' + txt + "</button>").join("") +
       "</span></div>";
   }
   function quickHindranceRow(label, hKey, p) {
@@ -3291,6 +3571,13 @@ const REVIEW = (function () {
   function render() {
     const box = $("#review-container");
     if (!pending) { box.innerHTML = ""; return; }
+    // preserve what a rebuild would otherwise destroy
+    const wasOpen = UI.$$("#review-card details").map(d => d.open);
+    const ae = document.activeElement, ad = (ae && ae.dataset) || {};
+    const hadFocus = !ae ? null : ae.id ? "#" + CSS.escape(ae.id)
+      : ad.h ? '[data-h="' + ad.h + '"][data-lvl="' + (ad.lvl || "") + '"]'
+      : ad.marker ? '[data-marker="' + ad.marker + '"]' : null;
+    const selStart = ae && "selectionStart" in ae ? ae.selectionStart : null;
     const p = pending;
     const actual = CORE.isNum(p.actualMin) ? p.actualMin : 0;
     const conc = CORE.isNum(p.concMin) ? p.concMin : null;
@@ -3300,13 +3587,15 @@ const REVIEW = (function () {
 
     box.innerHTML =
       '<div class="card" id="review-card">' +
-      '<div class="row between"><h2 style="margin:0">' + (editingId ? "Edit entry" : "After the sit") + '</h2>' +
-      '<button id="rv-close" class="ghost">Close without saving</button></div>' +
-      '<p class="dim">' + (editingId ? "Editing a saved entry." : "Takes about 30 seconds. The one number that matters: your honest estimate of minutes in genuine contact with the breath — self-reported, no wrong answer.") + "</p>" +
+      '<div class="row between"><h2 class="m0">' + (editingId && !justCompleted ? "Edit entry" : "After the sit") + '</h2>' +
+      '<button id="rv-close" class="ghost">' + (justCompleted ? "Close — sit is saved" : "Close without saving") + '</button></div>' +
+      '<p class="dim">' + (justCompleted
+        ? "The sit itself is already saved. Takes about 30 seconds: your honest estimate of minutes in genuine contact with the breath — self-reported, no wrong answer. Close anytime; nothing is lost."
+        : (editingId ? "Editing a saved entry." : "Takes about 30 seconds. The one number that matters: your honest estimate of minutes in genuine contact with the breath — self-reported, no wrong answer.")) + "</p>" +
       '<div class="grid3">' +
-      '<div class="field"><label for="rv-date">Date</label><input type="date" id="rv-date" value="' + esc(p.date || "") + '"></div>' +
-      '<div class="field"><label for="rv-start">Start time</label><input type="time" id="rv-start" value="' + esc(p.startTime || "") + '"></div>' +
-      '<div class="field"><label for="rv-actual">Actual duration (min)</label><input type="number" id="rv-actual" min="0.5" step="0.5" inputmode="decimal" value="' + actual + '"></div>' +
+      FL+'rv-date">Date</label><input type="date" id="rv-date" value="' + esc(p.date || "") + '"></div>' +
+      FL+'rv-start">Start time</label><input type="time" id="rv-start" value="' + esc(p.startTime || "") + '"></div>' +
+      FL+'rv-actual">Actual duration (min)</label><input type="number" id="rv-actual" min="0.5" step="0.5" inputmode="decimal" value="' + actual + '"></div>' +
       "</div>" +
 
       '<h3>Estimated minutes of genuine breath contact <span class="badge">self-reported</span></h3>' +
@@ -3318,95 +3607,101 @@ const REVIEW = (function () {
       "</div>" +
       '<div class="row between"><span class="dim" id="rv-ratio">' + (ratio === null ? "no estimate given yet" : "concentration ratio: " + Math.round(ratio * 100) + "%") + "</span>" +
       '<button id="rv-conc-clear" class="ghost">clear (not reported)</button></div>' +
-      '<div class="row" role="group" aria-label="Estimate confidence" style="margin-top:8px"><span class="dim">confidence:</span>' +
+      '<div class="row mt2" role="group" aria-label="Estimate confidence"><span class="dim">confidence:</span>' +
       CORE.CONFIDENCES.map(c => '<button class="chip rv-conf" data-c="' + c + '" aria-pressed="' + (p.confidence === c ? "true" : "false") + '">' + c + "</button>").join("") +
       "</div>" +
 
       '<h3>Quick impressions <span class="badge">optional · one tap each</span></h3>' +
       quickRow("Attention", "stability", [["1", "mostly scattered"], ["3", "came and went"], ["5", "mostly steady"]], p.stability) +
       quickRow("Breath clarity", "breathClarity", [["1", "faint"], ["3", "variable"], ["5", "clear"]], p.breathClarity) +
+      quickRowStr("Breath clearest at", "contactWhere", CORE.CONTACT_WHERE.map(w => [w, CORE.CONTACT_WHERE_LABELS[w]]), p.contactWhere) +
+      quickRowStr("Breath became subtle", "breathSubtle", CORE.TRI_REPORTS.map(v => [v, CORE.TRI_LABELS[v]]), p.breathSubtle) +
+      quickRowStr("Pleasant bodily feeling", "pleasantFeeling", CORE.TRI_REPORTS.map(v => [v, CORE.TRI_LABELS[v]]), p.pleasantFeeling) +
       quickHindranceRow("Restlessness", "restlessness", p) +
       quickHindranceRow("Drowsiness", "sloth", p) +
       '<div class="field" style="margin-top:10px"><label for="rv-quicknote">What did you notice? (optional)</label>' +
       '<textarea id="rv-quicknote" style="min-height:64px" placeholder="one or two honest sentences">' + esc(p.notes || "") + "</textarea></div>" +
 
-      '<div id="rv-errors" style="color:var(--err);font-size:var(--fs-sm);margin-top:8px" aria-live="polite"></div>' +
-      '<div class="row" style="margin-top:12px">' +
+      '<div id="rv-errors" style="color:var(--destructive);font-size:var(--fs-sm);margin-top:8px" aria-live="polite"></div>' +
+      '<div class="row mt3">' +
       '<button id="rv-save" class="primary big">' + (editingId ? "Save changes" : "Save session") + "</button>" +
       (editingId ? '<button id="rv-delete" class="danger">Delete…</button>' : "") +
       "</div>" +
 
-      '<details style="margin-top:16px"><summary>Attention details (settling, wandering, longest stretch)</summary>' +
-      '<div class="grid3" style="margin-top:8px">' +
-      '<div class="field"><label for="rv-settle">Minutes to first settle</label><input type="number" id="rv-settle" min="0" step="0.5" inputmode="decimal" value="' + (p.settleMin ?? "") + '" placeholder="not reported"></div>' +
-      '<div class="field"><label for="rv-longest">Longest steady stretch (min)</label><input type="number" id="rv-longest" min="0" step="0.5" inputmode="decimal" value="' + (p.longestSteadyMin ?? "") + '" placeholder="not reported"></div>' +
-      '<div class="field"><label for="rv-wander">Major wandering episodes</label><input type="number" id="rv-wander" min="0" step="1" inputmode="numeric" value="' + (p.wanderings ?? "") + '" placeholder="not reported"></div>' +
-      '<div class="field"><label for="rv-returns">Attention returns</label><input type="number" id="rv-returns" min="0" step="1" inputmode="numeric" value="' + (p.returns ?? "") + '" placeholder="not reported"></div>' +
+      '<details class="mt4"><summary>Attention details (settling, wandering, longest stretch)</summary>' +
+      '<div class="grid3 mt2">' +
+      FL+'rv-settle">Minutes to first settle</label><input type="number" id="rv-settle" min="0" step="0.5" inputmode="decimal" value="' + (p.settleMin ?? "") + '" placeholder="not reported"></div>' +
+      FL+'rv-longest">Longest steady stretch (min)</label><input type="number" id="rv-longest" min="0" step="0.5" inputmode="decimal" value="' + (p.longestSteadyMin ?? "") + '" placeholder="not reported"></div>' +
+      FL+'rv-wander">Major wandering episodes</label><input type="number" id="rv-wander" min="0" step="1" inputmode="numeric" value="' + (p.wanderings ?? "") + '" placeholder="not reported"></div>' +
+      FL+'rv-returns">Attention returns</label><input type="number" id="rv-returns" min="0" step="1" inputmode="numeric" value="' + (p.returns ?? "") + '" placeholder="not reported"></div>' +
       "</div>" +
       (p.markers && p.markers.length ? '<p class="faint">markers from the sit: ' + esc(p.markers.map(m => m.kind + "@" + m.atMin + "′").join(", ")) + "</p>" : "") +
       "</details>" +
 
       '<details' + (p.timelineSource === "markers" ? " open" : "") + '><summary>Session timeline (optional — derives the estimate from segments)</summary>' +
-      (p.timelineSource === "markers" ? '<p class="notice" style="margin-top:8px">Suggested from your in-sit markers — a convention, not a measurement. Edit or remove segments freely; editing marks the timeline as yours.</p>' : "") +
-      '<div id="rv-timeline" style="margin-top:8px">' + timelineRows() + "</div>" +
+      (p.timelineSource === "markers" ? '<p class="notice mt2">Suggested from your in-sit markers — a convention, not a measurement. Edit or remove segments freely; editing marks the timeline as yours.</p>' : "") +
+      '<div id="rv-timeline" class="mt2">' + timelineRows() + "</div>" +
       '<div class="row"><button id="rv-tl-add">+ Add segment</button>' +
       (derived ? '<span class="dim">timeline-derived estimate: <strong>' + derived.concMin + "′</strong> (longest steady " + derived.longestSteadyMin + "′)</span><button id=\"rv-tl-use\">Use derived values</button>" : "") +
       "</div>" +
-      (mismatch ? '<p class="notice warn" style="margin-top:8px">Your manual estimate (' + conc + '′) differs from the timeline-derived value (' + derived.concMin + "′). Both are kept — the manual value is what gets saved.</p>" : "") +
+      (mismatch ? '<p class="notice warn mt2">Your manual estimate (' + conc + '′) differs from the timeline-derived value (' + derived.concMin + "′). Both are kept — the manual value is what gets saved.</p>" : "") +
       '<p class="faint">Segment weights: continuous 100% · mostly steady 75% · intermittent 35% · wandering/dull/agitated/uncertain 0%. A convention, not a measurement.</p>' +
       "</details>" +
 
-      '<details><summary>Hindrances (none required)</summary><div style="margin-top:8px">' + hindranceRows() +
+      '<details><summary>Hindrances (none required)</summary><div class="mt2">' + hindranceRows() +
       '<button id="rv-dom-clear" class="ghost" style="margin-top:6px">clear dominant</button></div></details>' +
 
-      '<details><summary>Reported qualities</summary><div class="grid3" style="margin-top:8px">' +
+      '<details><summary>Reported qualities</summary><div class="grid3 mt2">' +
       CORE.QUALITIES.map(q => '<label class="check"><input type="checkbox" class="rv-quality" value="' + q + '"' + ((p.qualities || []).indexOf(q) >= 0 ? " checked" : "") + "> " + esc(CORE.QUALITY_LABELS[q]) + "</label>").join("") +
       '</div><p class="faint">These are reports of experience, not evidence of attainment.</p></details>' +
 
-      '<details><summary>Light / image report</summary><div style="margin-top:8px">' +
-      '<div class="field"><label for="rv-nim-cat">Report</label><select id="rv-nim-cat">' +
+      '<details><summary>Light / image report</summary><div class="mt2">' +
+      FL+'rv-nim-cat">Report</label><select id="rv-nim-cat">' +
       '<option value="">not reported</option>' +
       CORE.NIMITTA_CATEGORIES.map(c => '<option value="' + c + '"' + (p.nimitta && p.nimitta.category === c ? " selected" : "") + ">" + esc(CORE.NIMITTA_LABELS[c]) + "</option>").join("") +
       "</select></div>" +
       '<div class="grid3" id="rv-nim-details"' + (p.nimitta && p.nimitta.category && p.nimitta.category !== "none" ? "" : " hidden") + ">" +
-      '<div class="field"><label for="rv-nim-dur">Approx. duration</label><input type="text" id="rv-nim-dur" value="' + esc(p.nimitta && p.nimitta.duration || "") + '" placeholder="e.g. a few seconds"></div>' +
-      '<div class="field"><label for="rv-nim-color">Color</label><input type="text" id="rv-nim-color" value="' + esc(p.nimitta && p.nimitta.color || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-bright">Brightness</label><input type="text" id="rv-nim-bright" value="' + esc(p.nimitta && p.nimitta.brightness || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-stab">Stability</label><input type="text" id="rv-nim-stab" value="' + esc(p.nimitta && p.nimitta.stability || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-effort">Did effort change it?</label><input type="text" id="rv-nim-effort" value="' + esc(p.nimitta && p.nimitta.effortChanged || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-moved">Remained when attention moved?</label><input type="text" id="rv-nim-moved" value="' + esc(p.nimitta && p.nimitta.persisted || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-emotion">Emotional response</label><input type="text" id="rv-nim-emotion" value="' + esc(p.nimitta && p.nimitta.emotion || "") + '"></div>' +
-      '<div class="field"><label for="rv-nim-timing">Occurred</label><select id="rv-nim-timing">' +
+      FL+'rv-nim-dur">Approx. duration</label><input type="text" id="rv-nim-dur" value="' + esc(p.nimitta && p.nimitta.duration || "") + '" placeholder="e.g. a few seconds"></div>' +
+      FL+'rv-nim-color">Color</label><input type="text" id="rv-nim-color" value="' + esc(p.nimitta && p.nimitta.color || "") + '"></div>' +
+      FL+'rv-nim-bright">Brightness</label><input type="text" id="rv-nim-bright" value="' + esc(p.nimitta && p.nimitta.brightness || "") + '"></div>' +
+      FL+'rv-nim-stab">Stability</label><input type="text" id="rv-nim-stab" value="' + esc(p.nimitta && p.nimitta.stability || "") + '"></div>' +
+      FL+'rv-nim-effort">Did effort change it?</label><input type="text" id="rv-nim-effort" value="' + esc(p.nimitta && p.nimitta.effortChanged || "") + '"></div>' +
+      FL+'rv-nim-moved">Remained when attention moved?</label><input type="text" id="rv-nim-moved" value="' + esc(p.nimitta && p.nimitta.persisted || "") + '"></div>' +
+      FL+'rv-nim-emotion">Emotional response</label><input type="text" id="rv-nim-emotion" value="' + esc(p.nimitta && p.nimitta.emotion || "") + '"></div>' +
+      FL+'rv-nim-timing">Occurred</label><select id="rv-nim-timing">' +
       ["", "before strong collectedness", "during strong collectedness", "after strong collectedness", "unrelated / unclear"].map(o => '<option value="' + o + '"' + ((p.nimitta && p.nimitta.timing) === o ? " selected" : "") + ">" + (o || "—") + "</option>").join("") +
       "</select></div>" +
       "</div>" +
       '<p class="faint">Recorded neutrally as a reported experience. Consider discussing repeated or destabilizing experiences with a qualified teacher.</p></div></details>' +
 
-      '<details><summary>Body, energy, context</summary><div class="grid3" style="margin-top:8px">' +
-      '<div class="field"><label for="rv-object">Object</label><select id="rv-object"><option value="">—</option>' +
+      '<details><summary>Body, energy, context</summary><div class="grid3 mt2">' +
+      FL+'rv-object">Object</label><select id="rv-object"><option value="">—</option>' +
       CORE.OBJECTS.map(o => '<option value="' + o + '"' + (p.object === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
-      '<div class="field"><label for="rv-posture">Posture</label><select id="rv-posture"><option value="">—</option>' +
+      FL+'rv-posture">Posture</label><select id="rv-posture"><option value="">—</option>' +
       ["cross-legged", "seiza/bench", "chair", "standing", "lying"].map(o => '<option value="' + o + '"' + (p.posture === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
-      '<div class="field"><label for="rv-phase">Practice phase</label><select id="rv-phase">' +
+      FL+'rv-phase">Practice phase</label><select id="rv-phase">' +
       ["foundation", "consistency", "stability", "collectedness", "jhana-investigation", "advanced"].map(o => '<option value="' + o + '"' + ((p.phase || "foundation") === o ? " selected" : "") + ">" + o + "</option>").join("") + "</select></div>" +
       ["energyBefore", "energyAfter", "calmBefore", "calmAfter"].map(f =>
-        '<div class="field"><label for="rv-' + f + '">' + f.replace(/([A-Z])/g, " $1").toLowerCase() + ' (1–5)</label><input type="number" id="rv-' + f + '" min="1" max="5" step="1" inputmode="numeric" value="' + (p[f] ?? "") + '" placeholder="—"></div>'
+        FL+'rv-' + f + '">' + f.replace(/([A-Z])/g, " $1").toLowerCase() + ' (1–5)</label><input type="number" id="rv-' + f + '" min="1" max="5" step="1" inputmode="numeric" value="' + (p[f] ?? "") + '" placeholder="—"></div>'
       ).join("") +
-      '<div class="field"><label for="rv-afterstate">Overall after-state</label><select id="rv-afterstate"><option value="">not reported</option>' +
+      FL+'rv-afterstate">Overall after-state</label><select id="rv-afterstate"><option value="">not reported</option>' +
       CORE.AFTER_STATES.map(a => '<option value="' + a + '"' + (p.afterStateReport === a ? " selected" : "") + ">" + a + "</option>").join("") + "</select></div>" +
       "</div></details>" +
 
-      '<details><summary>Teacher review & original text</summary><div style="margin-top:8px">' +
-      (p.journalText ? '<div class="field"><label>Original journal text (kept verbatim)</label><div class="card sub" style="font-size:var(--fs-sm)">' + esc(p.journalText) + "</div></div>" : "") +
+      '<details><summary>Teacher review & original text</summary><div class="mt2">' +
+      (p.journalText ? '<div class="field"><label>Original journal text (kept verbatim)</label><div class="card sub fss">' + esc(p.journalText) + "</div></div>" : "") +
       '<div class="grid2">' +
-      '<div class="field"><label for="rv-review">Teacher review state</label><select id="rv-review">' +
+      FL+'rv-review">Teacher review state</label><select id="rv-review">' +
       CORE.REVIEW_STATES.map(r => '<option value="' + r + '"' + ((p.teacherReview || "none") === r ? " selected" : "") + ">" + esc(CORE.REVIEW_LABELS[r]) + "</option>").join("") +
       "</select></div>" +
-      '<div class="field"><label for="rv-teachernotes">Private teacher notes</label><input type="text" id="rv-teachernotes" value="' + esc(p.teacherNotes || "") + '"></div>' +
+      FL+'rv-teachernotes">Private teacher notes</label><input type="text" id="rv-teachernotes" value="' + esc(p.teacherNotes || "") + '"></div>' +
       "</div></div></details>" +
       "</div>";
 
     wire();
+    UI.$$("#review-card details").forEach((d, i) => { if (wasOpen[i]) d.open = true; });
+    const back = hadFocus && box.querySelector(hadFocus);
+    if (back) { back.focus(); if (selStart !== null && "setSelectionRange" in back) { try { back.setSelectionRange(selStart, selStart); } catch (e) {} } }
   }
 
   function readForm() {
@@ -3475,6 +3770,12 @@ const REVIEW = (function () {
       readForm();
       const f = b.dataset.f, v = parseInt(b.dataset.v, 10);
       pending[f] = pending[f] === v ? null : v;   // tap again to clear
+      render();
+    });
+    UI.$$(".rv-quickstr").forEach(b => b.onclick = () => {
+      readForm();
+      const f = b.dataset.f, v = b.dataset.v;
+      pending[f] = pending[f] === v ? null : v;   // tap again to clear (back to not-reported)
       render();
     });
     UI.$$(".rv-quickh").forEach(b => b.onclick = () => {
@@ -3547,7 +3848,7 @@ const REVIEW = (function () {
       if (editingId) res = STORE.updateSession(editingId, candidate);
       else res = STORE.addSession(candidate);
       if (!res.ok) { $("#rv-errors").textContent = res.errors.join("; "); return; }
-      UI.toast(editingId ? "Session updated." : "Session saved.");
+      UI.toast(justCompleted ? "Observations added." : (editingId ? "Session updated." : "Session saved."));
       close();
       HISTORY.render();
       PROGRESS.render();
@@ -3565,7 +3866,7 @@ const REVIEW = (function () {
     };
   }
 
-  return { openFor, openManual, edit, render, close, hasPending: () => !!pending };
+  return { openFor, openManual, edit, openAfterSit, render, close, hasPending: () => !!pending };
 })();
 
 /* ================= HISTORY ================= */
@@ -3609,12 +3910,12 @@ const HISTORY = (function () {
     list.innerHTML = shown.slice(0, 200).map(s => {
       const r = s.ratio !== null ? Math.round(s.ratio * 100) + "%" : "—";
       const badges =
-        (CORE.isTestSession(s) ? '<span class="badge" style="color:var(--warn);border-color:var(--warn)">' + (s._demo ? "demo" : "test") + "</span>" : "") +
+        (CORE.isTestSession(s) ? '<span class="badge" style="color:var(--warning);border-color:var(--warning)">' + (s._demo ? "demo" : "test") + "</span>" : "") +
         (s.object ? '<span class="badge">' + esc(s.object) + "</span>" : "") +
         (s.entrySource ? '<span class="badge">' + esc(s.entrySource) + "</span>" : "") +
         (s.nimitta && s.nimitta.category !== "none" ? '<span class="badge gold">light report</span>' : "") +
         ((s.teacherReview || "none") !== "none" ? '<span class="badge">' + esc(CORE.REVIEW_LABELS[s.teacherReview]) + "</span>" : "");
-      return '<button class="sess-item" data-id="' + esc(s.id) + '" aria-label="Open session ' + esc(s.date) + '">' +
+      return '<button class="sess-item" data-id="' + esc(s.id) + '">' +
         '<span class="si-min">' + (CORE.isNum(s.actualMin) ? Math.round(s.actualMin) + "′" : "—") + "</span>" +
         '<span class="si-body">' +
         '<span class="si-top"><strong>' + esc(s.date) + "</strong>" + (s.startTime ? '<span class="dim"> · ' + esc(s.startTime) + "</span>" : "") + badges + "</span>" +
@@ -3638,6 +3939,10 @@ const HISTORY = (function () {
     push("Longest steady stretch", s.longestSteadyMin !== null ? s.longestSteadyMin + " min" : null);
     push("Wandering / returns", (s.wanderings ?? "—") + " / " + (s.returns ?? "—"));
     push("Object / posture / phase", [s.object, s.posture, s.phase].map(x => x || "—").join(" · "));
+    push("Practice", s.practiceMode ? esc((CORE.practiceModeById(s.practiceMode) || { name: s.practiceMode }).name) : null);
+    push("Breath clearest at", s.contactWhere ? esc(CORE.CONTACT_WHERE_LABELS[s.contactWhere] || s.contactWhere) : null);
+    push("Breath became subtle", s.breathSubtle ? esc(CORE.TRI_LABELS[s.breathSubtle] || s.breathSubtle) : null);
+    push("Pleasant bodily feeling", s.pleasantFeeling ? esc(CORE.TRI_LABELS[s.pleasantFeeling] || s.pleasantFeeling) : null);
     push("Hindrances", Object.keys(s.hindrances || {}).filter(k => s.hindrances[k]).map(k => esc(CORE.HINDRANCE_LABELS[k]) + " (" + s.hindrances[k] + (s.dominantHindrance === k ? ", dominant" : "") + ")").join("<br>") || null);
     push("Qualities", (s.qualities || []).map(q => esc(CORE.QUALITY_LABELS[q])).join(", ") || null);
     push("Light / image report", s.nimitta ? esc(CORE.NIMITTA_LABELS[s.nimitta.category] || s.nimitta.category) : null);
@@ -3659,7 +3964,7 @@ const HISTORY = (function () {
     const dlg = UI.modal(
       "<h2>Session " + esc(s.date) + "</h2>" +
       '<table class="kv">' + rows.join("") + "</table>" +
-      '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
+      '<div class="row mt3 end">' +
       '<button id="sd-close">Close</button>' +
       (CORE.isTestSession(s) ? "" : '<button id="sd-share">Share…</button>') +
       '<button id="sd-flag">' + ((s.teacherReview || "none") === "none" ? "Flag for teacher…" : "Teacher note…") + "</button>" +
@@ -3693,9 +3998,9 @@ const HISTORY = (function () {
       '<p class="dim">' + (cur === "none"
         ? "Marks this session to bring up with your teacher. It appears in the flagged appendix of the printable report."
         : "This session is already " + esc(CORE.REVIEW_LABELS[cur].toLowerCase()) + " — the note is updated without changing that.") + "</p>" +
-      '<div class="field"><label for="fl-note">Private note (what to ask or mention)</label>' +
+      FL+'fl-note">Private note (what to ask or mention)</label>' +
       '<textarea id="fl-note" style="min-height:70px">' + esc(s.teacherNotes || "") + "</textarea></div>" +
-      '<div class="row" style="justify-content:flex-end"><button id="fl-cancel">Cancel</button>' +
+      '<div class="row end"><button id="fl-cancel">Cancel</button>' +
       '<button id="fl-save" class="primary">' + (cur === "none" ? "Flag session" : "Save note") + "</button></div>"
     );
     UI.$("#fl-cancel").onclick = () => dlg.close();
@@ -3774,10 +4079,10 @@ const HISTORY = (function () {
       '<button class="chip" id="tr-30" aria-pressed="true">Last 30 days</button>' +
       '<button class="chip" id="tr-90" aria-pressed="false">Last 90 days</button>' +
       '<button class="chip" id="tr-custom" aria-pressed="false">Custom…</button></div>' +
-      '<div class="grid3" id="tr-range" hidden style="margin-top:8px">' +
-      '<div class="field"><label for="tr-from">From</label><input type="date" id="tr-from" value="' + CORE.addDays(today, -29) + '"></div>' +
-      '<div class="field"><label for="tr-to">To</label><input type="date" id="tr-to" value="' + today + '"></div></div>' +
-      '<label class="check" style="margin-top:8px"><input type="checkbox" id="tr-notes" checked> Include the notes column</label>' +
+      '<div class="grid3 mt2" id="tr-range" hidden>' +
+      FL+'tr-from">From</label><input type="date" id="tr-from" value="' + CORE.addDays(today, -29) + '"></div>' +
+      FL+'tr-to">To</label><input type="date" id="tr-to" value="' + today + '"></div></div>' +
+      '<label class="check mt2"><input type="checkbox" id="tr-notes" checked> Include the notes column</label>' +
       '<div class="row" style="justify-content:flex-end;margin-top:8px"><button id="tr-cancel">Cancel</button>' +
       '<button id="tr-print" class="primary">Print report</button></div>'
     );
@@ -3830,24 +4135,27 @@ const PROGRESS = (function () {
 
   function svgLine(values, opts) {
     const o = opts || {};
-    const W = 600, H = 130, P = 24;
+    const W = 600, H = 130, P = 68, Q = 20;
     const pts = values.filter(v => CORE.isNum(v.y));
     if (pts.length < 2) return null;
-    const yMax = o.yMax || Math.max.apply(null, pts.map(p => p.y)) || 1;
+    const dMax = Math.max.apply(null, pts.map(p => p.y));
+    const yMax = o.yMax || dMax || 1;
     const x = i => P + (W - 2 * P) * (pts.length === 1 ? 0.5 : i / (pts.length - 1));
-    const y = v => H - P - (H - 2 * P) * (v / (yMax || 1));
+    const y = v => H - Q - (H - 2 * Q) * (v / (yMax || 1));
     const poly = pts.map((p, i) => x(i).toFixed(1) + "," + y(p.y).toFixed(1)).join(" ");
-    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.label || "line chart") + '">' +
-      '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="#253044"/>' +
-      '<text x="' + (P - 4) + '" y="' + (y(yMax) + 4) + '" fill="#76849b" font-size="10" text-anchor="end">' + (o.yFmt ? o.yFmt(yMax) : yMax) + "</text>" +
-      '<polyline points="' + poly + '" fill="none" stroke="#8ec3ea" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' +
-      pts.map((p, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.y).toFixed(1) + '" r="2.6" fill="#8ec3ea"/>').join("") +
+    const f = v => o.yFmt ? o.yFmt(v) : v;
+    const desc = (o.label || "chart") + ": " + pts.length + " points, " + f(pts[0].y) + " to " + f(pts[pts.length - 1].y) + ", highest " + f(dMax);
+    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(desc) + '">' +
+      '<line x1="' + P + '" y1="' + (H - Q) + '" x2="' + (W - P) + '" y2="' + (H - Q) + '" class="ax"/>' +
+      '<text x="' + (P - 4) + '" y="' + (y(yMax) + 4) + '" text-anchor="end">' + (o.yFmt ? o.yFmt(yMax) : yMax) + "</text>" +
+      '<polyline points="' + poly + '" class="ln" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' +
+      pts.map((p, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(p.y).toFixed(1) + '" r="2.6" class="dt"/>').join("") +
       "</svg>";
   }
 
   function svgBars(items, opts) {
     const o = opts || {};
-    const W = 600, H = 140, P = 24;
+    const W = 600, H = 165, P = 50;
     if (!items.length) return null;
     const max = Math.max.apply(null, items.map(i => Math.max(i.v || 0, i.v2 || 0))) || 1;
     const bw = Math.min(34, (W - 2 * P) / items.length * (o.dual ? 0.36 : 0.7));
@@ -3857,24 +4165,24 @@ const PROGRESS = (function () {
     items.forEach((it, i) => {
       const cx = x(i);
       if (o.dual) {
-        bars += '<rect rx="2" x="' + (cx - bw) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" fill="#4a7ba6"/>';
-        bars += '<rect rx="2" x="' + cx + '" y="' + (H - P - h(it.v2 || 0)) + '" width="' + bw + '" height="' + h(it.v2 || 0) + '" fill="#d4b078"/>';
+        bars += '<rect rx="2" x="' + (cx - bw) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" class="b1"/>';
+        bars += '<rect rx="2" x="' + cx + '" y="' + (H - P - h(it.v2 || 0)) + '" width="' + bw + '" height="' + h(it.v2 || 0) + '" class="b2"/>';
       } else {
-        bars += '<rect rx="2" x="' + (cx - bw / 2) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" fill="#4a7ba6"/>';
+        bars += '<rect rx="2" x="' + (cx - bw / 2) + '" y="' + (H - P - h(it.v || 0)) + '" width="' + bw + '" height="' + h(it.v || 0) + '" class="b1"/>';
       }
-      if (it.label) bars += '<text x="' + cx + '" y="' + (H - P + 12) + '" fill="#76849b" font-size="9" text-anchor="middle">' + esc(String(it.label).slice(0, 10)) + "</text>";
+      if (it.label && !(i % Math.ceil(items.length / 6))) bars += '<text x="' + cx + '" y="' + (H - P + (i % 2 ? 34 : 14)) + '" text-anchor="middle">' + esc(String(it.label)) + "</text>";
     });
-    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.label || "bar chart") + '">' +
-      '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" stroke="#253044"/>' +
-      '<text x="' + (P - 4) + '" y="' + (P + 4) + '" fill="#76849b" font-size="10" text-anchor="end">' + (o.yFmt ? o.yFmt(max) : max) + "</text>" + bars + "</svg>";
+    const desc = (o.label || "chart") + ": " + items.map(i => i.label + " " + (i.v || 0) + (o.dual ? " and " + (i.v2 || 0) : "")).join(", ");
+    return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(desc) + '">' +
+      '<line x1="' + P + '" y1="' + (H - P) + '" x2="' + (W - P) + '" y2="' + (H - P) + '" class="ax"/>' +
+      '<text x="' + (P - 4) + '" y="' + (P + 4) + '" text-anchor="end">' + (o.yFmt ? o.yFmt(max) : max) + "</text>" + bars + "</svg>";
   }
 
   function calendar(sessions, today) {
     const byDate = {};
     for (const s of sessions) byDate[s.date] = (byDate[s.date] || 0) + (s.actualMin || 0);
     const weeks = 16;
-    let html = '<svg viewBox="0 0 ' + (weeks * 14 + 20) + ' 112" role="img" aria-label="practice consistency calendar, last ' + weeks + ' weeks">';
-    // find the sunday on/before (today - (weeks*7-1))
+    let html = '<svg viewBox="0 0 ' + (weeks * 14 + 20) + ' 112" role="img" aria-label="' + esc("practice consistency, last " + weeks + " weeks: sat on " + Object.keys(byDate).length + " days") + '">';
     const start = CORE.addDays(today, -(weeks * 7 - 1));
     for (let i = 0; i < weeks * 7; i++) {
       const d = CORE.addDays(start, i);
@@ -3919,12 +4227,13 @@ const PROGRESS = (function () {
       "</div>";
 
     // 30-day goal note (Gate 0)
-    html += '<div class="row between" style="margin-top:8px"><p class="faint" style="margin:0">Gate 0 target: a 30-day unbroken streak before booking the first retreat. Current: ' + mAll.currentStreak + "/30.</p>" +
+    html += '<div class="row between mt2"><p class="faint m0">Gate 0 target: a 30-day unbroken streak before booking the first retreat. Current: ' + mAll.currentStreak + "/30.</p>" +
       '<button id="btn-share-card" class="ghost">Share a card…</button></div>';
     if (synthCount) html += '<p class="faint">' + synthCount + " demo/test entries exist and are excluded from everything on this page.</p>";
 
     if (!sel.length) {
-      html += '<div class="empty" style="margin-top:16px"><strong>Nothing here yet.</strong><br>That changes after one sit.</div>';
+      html += '<div class="empty mt4"><strong>' + (all.length ? "No sits in this range." : "Nothing here yet.") + "</strong><br>" +
+        (all.length ? "You have " + all.length + " recorded — try a wider range above." : "Charts and observations appear here after your first sit.") + "</div>";
       box.innerHTML = html;
       const shb0 = $("#btn-share-card");
       if (shb0) shb0.onclick = () => SHARE.open();
@@ -3932,10 +4241,10 @@ const PROGRESS = (function () {
     }
 
     const lastN = sel.slice(-30);
-    html += chartBlock("Practice consistency (last 16 weeks, all sessions)", calendar(all, today), "cell shade = minutes sat that day");
+    html += chartBlock("Practice consistency (last 16 weeks, all sessions)", calendar(all, today), "cell shade = minutes sat that day: none · under 15 · 15\u201329 · 30\u201359 · 60+");
     html += chartBlock("Duration vs estimated contact minutes",
       lastN.filter(s => CORE.isNum(s.actualMin)).length >= 1 ? svgBars(lastN.map(s => ({ v: s.actualMin || 0, v2: CORE.isNum(s.concMin) ? s.concMin : 0, label: s.date.slice(5) })), { dual: true, label: "duration vs contact", yFmt: v => Math.round(v) + "′" }) : null,
-      "blue = duration · gold = self-reported contact minutes · last " + lastN.length + " sessions");
+      "left bar = duration · right bar = self-reported contact minutes · last " + lastN.length + " sessions");
     html += chartBlock("Concentration ratio over time",
       svgLine(lastN.filter(s => CORE.isNum(s.ratio)).map(s => ({ y: s.ratio })), { yMax: 1, yFmt: v => Math.round(v * 100) + "%", label: "ratio over time" }),
       "self-reported · " + lastN.filter(s => CORE.isNum(s.ratio)).length + " sessions with an estimate");
@@ -3950,7 +4259,7 @@ const PROGRESS = (function () {
       "self-reported");
 
     // hindrances
-    const hCounts = CORE.HINDRANCES.map(h => ({ label: CORE.HINDRANCE_LABELS[h].split(" ")[0], v: sel.filter(s => s.hindrances && s.hindrances[h]).length }));
+    const hCounts = CORE.HINDRANCES.map(h => ({ label: CORE.HINDRANCE_LABELS[h], v: sel.filter(s => s.hindrances && s.hindrances[h]).length }));
     html += chartBlock("Hindrance frequency (sessions reporting each)",
       hCounts.some(h => h.v > 0) ? svgBars(hCounts, { label: "hindrance frequency" }) : null,
       sel.length + " sessions in range", "No hindrances recorded in this range.");
@@ -3985,18 +4294,18 @@ const PROGRESS = (function () {
     html += "<h3>Observations (computed from your data — never by AI)</h3>";
     if (!ins.length) html += '<div class="empty">Not enough data for grounded observations yet. They appear once patterns have a reasonable sample behind them.</div>';
     else html += ins.map(i =>
-      '<div class="card sub" style="margin-bottom:8px"><p style="margin:0">' + esc(i.text) + "</p>" +
+      '<div class="card sub" style="margin-bottom:8px"><p class="m0">' + esc(i.text) + "</p>" +
       '<div class="faint">range: ' + esc(i.range) + " · n=" + i.n + " · metric: " + esc(i.metric) + " · evidence strength: " + esc(i.strength) + "</div></div>"
     ).join("");
 
     // canned questions, answered locally and instantly
-    html += '<h3 style="margin-top:16px">Ask about your practice</h3>';
+    html += '<h3 class="mt4">Ask about your practice</h3>';
     html += '<div class="row" role="group" aria-label="Practice questions" style="flex-wrap:wrap">' +
       CORE.INSIGHT_QUESTIONS.map(q => '<button class="chip ask-q" data-q="' + q.id + '" aria-pressed="' + (askId === q.id ? "true" : "false") + '">' + esc(q.q) + "</button>").join("") +
       "</div>";
     if (askId) {
       const a = CORE.answerQuestion(askId, all);
-      if (a) html += '<div class="card sub" style="margin-top:8px" id="ask-answer"><p style="margin:0">' + esc(a.text) + "</p>" +
+      if (a) html += '<div class="card sub mt2" id="ask-answer"><p class="m0">' + esc(a.text) + "</p>" +
         '<div class="faint">range: ' + esc(a.range) + " · n=" + a.n + " · metric: " + esc(a.metric) + " · evidence strength: " + esc(a.strength) + "</div></div>";
     }
     html += '<p class="honesty">All concentration values are self-reported estimates. Charts and answers show associations only; nothing here demonstrates attainment or causation.</p>';
@@ -4046,7 +4355,7 @@ const MAP = (function () {
       } else {
         html += "<p style='font-size:var(--fs-sm)'>" + esc(lv.body) + "</p>";
       }
-      html += '<div class="row" style="margin-top:8px">' +
+      html += '<div class="row mt2">' +
         '<label for="map-ev-' + i + '">evidence:</label>' +
         '<select id="map-ev-' + i + '" class="map-evidence" data-i="' + i + '">' +
         CORE.MAP_EVIDENCE.map(e => '<option value="' + e + '"' + (lvState.evidence === e ? " selected" : "") + ">" + e.replace(/-/g, " ") + "</option>").join("") +
@@ -4072,7 +4381,7 @@ const MAP = (function () {
   }
 
   function advancedBody() {
-    return '<div style="font-size:var(--fs-sm)">' +
+    return '<div class="fss">' +
       '<p><strong>Educational reference only.</strong> The traditional six higher knowledges (အဘိညာဉ် ၆ ပါး) as described in the Visuddhimagga (ch. XII–XIII) and the Pa-Auk curriculum:</p>' +
       "<ol style='margin:8px 0 8px 20px'>" +
       "<li>ဣဒ္ဓိဝိဓ — supernormal power (traditional claim)</li>" +
@@ -4172,8 +4481,8 @@ const JOURNAL = (function () {
     html += fieldRow("After-state",
       '<select id="df-after"><option value="">null</option>' + CORE.AFTER_STATES.map(a => '<option value="' + a + '"' + (d.afterStateReport === a ? " selected" : "") + ">" + a + "</option>").join("") + "</select>", "afterStateReport");
     html += '<div class="draft-field"><span class="dim">Date</span><span><input type="date" id="df-date" value="' + esc(d.date || STORE.todayStr()) + '"></span><span></span></div>';
-    html += '<div id="df-errors" style="color:var(--err);font-size:var(--fs-sm);margin-top:8px" aria-live="polite">' + (v.ok ? "" : v.errors.map(esc).join("<br>")) + "</div>";
-    html += '<div class="row" style="margin-top:12px">' +
+    html += '<div id="df-errors" style="color:var(--destructive);font-size:var(--fs-sm);margin-top:8px" aria-live="polite">' + (v.ok ? "" : v.errors.map(esc).join("<br>")) + "</div>";
+    html += '<div class="row mt3">' +
       '<button id="df-save" class="primary big">Save as session…</button>' +
       '<button id="df-reject" class="danger">Reject draft</button>' +
       "</div>" +
@@ -4195,7 +4504,7 @@ const JOURNAL = (function () {
       d.afterStateReport = $("#df-after").value || null;
       d.date = $("#df-date").value || null;
     };
-    box.querySelectorAll("input,select").forEach(el => el.addEventListener("change", () => { readBack(); renderDraft(); }));
+    box.querySelectorAll("input,select").forEach(el => el.addEventListener("change", e => { const back = e.target.id; readBack(); renderDraft(); const n = back && document.getElementById(back); if (n) n.focus(); }));
 
     $("#df-save").onclick = async () => {
       readBack();
@@ -4217,7 +4526,7 @@ const JOURNAL = (function () {
         const dlg = UI.modal("<h2>Confirm save</h2>" +
           (dup ? '<div class="notice warn">A session with the same date, start and duration already exists (' + esc(dup.date) + ", " + dup.actualMin + "′). Saving will create a <strong>second</strong> session, not overwrite it.</div>" : "") +
           summary +
-          '<div class="row" style="margin-top:12px;justify-content:flex-end"><button id="dfc-cancel">Back</button><button id="dfc-ok" class="primary">Save session</button></div>');
+          '<div class="row mt3 end"><button id="dfc-cancel">Back</button><button id="dfc-ok" class="primary">Save session</button></div>');
         $("#dfc-ok").onclick = () => { dlg.close(); resolve(true); };
         $("#dfc-cancel").onclick = () => { dlg.close(); resolve(false); };
         dlg.oncancel = () => resolve(false);
@@ -4288,7 +4597,7 @@ const SETTINGS = (function () {
     reader.onload = () => {
       const res = CORE.parseImport(String(reader.result), STORE.sessions(), STORE.nowIso());
       if (!res.ok) {
-        UI.modal("<h2>Import rejected</h2><p>" + esc(res.error) + '</p><div class="row" style="justify-content:flex-end"><button onclick="document.getElementById(\'modal\').close()">Close</button></div>');
+        UI.modal("<h2>Import rejected</h2><p>" + esc(res.error) + '</p><div class="row end"><button onclick="document.getElementById(\'modal\').close()">Close</button></div>');
         return;
       }
       let html = "<h2>Import preview</h2>" +
@@ -4308,7 +4617,7 @@ const SETTINGS = (function () {
           res.fresh.slice(0, 5).map(s => "• " + esc(s.date) + " · " + s.actualMin + "′" + (s.concMin !== null ? " · contact " + s.concMin + "′" : "")).join("<br>") +
           (res.fresh.length > 5 ? "<br>…and " + (res.fresh.length - 5) + " more" : "") + "</div></details>";
       }
-      html += '<div class="row" style="margin-top:12px;justify-content:flex-end">' +
+      html += '<div class="row mt3 end">' +
         '<button id="imp-cancel">Cancel</button>' +
         (res.fresh.length ? '<button id="imp-ok" class="primary">Import ' + res.fresh.length + " sessions</button>" : "") +
         "</div>";
@@ -4439,8 +4748,8 @@ const SETTINGS = (function () {
     $("#btn-wipe").onclick = () => {
       const dlg = UI.modal("<h2>Delete all tracker data</h2>" +
         "<p>This deletes the <code>jhanaTracker.v2</code> envelope (" + STORE.sessions().length + " sessions) from this browser. Legacy keys are untouched. <strong>Export a backup first.</strong></p>" +
-        '<p>Type <code>DELETE</code> to confirm:</p><input type="text" id="wipe-confirm" autocomplete="off">' +
-        '<div class="row" style="margin-top:12px;justify-content:flex-end"><button id="wipe-cancel">Cancel</button><button id="wipe-ok" class="danger" disabled>Delete everything</button></div>');
+        '<label for="wipe-confirm">Type <code>DELETE</code> to confirm:</label><input type="text" id="wipe-confirm" autocomplete="off" placeholder="DELETE">' +
+        '<div class="row mt3 end"><button id="wipe-cancel">Cancel</button><button id="wipe-ok" class="danger" disabled>Delete everything</button></div>');
       $("#wipe-confirm").addEventListener("input", () => { $("#wipe-ok").disabled = $("#wipe-confirm").value !== "DELETE"; });
       $("#wipe-cancel").onclick = () => dlg.close();
       $("#wipe-ok").onclick = () => {
@@ -4470,30 +4779,29 @@ const TODAY = (function () {
     const real = CORE.realSessions(STORE.sessions());
     const m = CORE.summaryMetrics(real, today);
     const todays = real.filter(s => s.date === today);
-    const sortKey = s => s.date + (s.startTime || "");
-    const last = real.slice().sort((a, b) => sortKey(a) < sortKey(b) ? -1 : 1)[real.length - 1];
     const satToday = todays.length > 0;
     const todayMin = Math.round(todays.reduce((a, s) => a + (s.actualMin || 0), 0));
-    // three designed stat tiles: today · streak · last sit
-    const tile = (v, l, n, done) =>
-      '<div class="tstat' + (done ? " done" : "") + '"><div class="v">' + v + '</div><div class="l">' + esc(l) + "</div>" + (n ? '<div class="n">' + esc(n) + "</div>" : "") + "</div>";
-    let tiles = "";
-    tiles += tile(satToday ? todayMin + "′" : "—", "today", satToday ? "recorded ✓" : "no sit yet", satToday);
-    tiles += tile(m.currentStreak + "<span class='unit'>d</span>", "streak", m.currentStreak > 0 ? "days in a row" : "starts with one sit", false);
-    tiles += tile(last ? Math.round(last.actualMin) + "′" : "—", "last sit", last ? last.date : "none yet", false);
-    // utility pills stay quiet, below the stats
+    // identity + continuity only — no tiles, no scores, no predictions
     const guideSeen = !!STORE.getSetting("guideSeen", false);
-    let pills = '<span class="pill"' + (guideSeen ? "" : ' style="border-color:var(--accent)"') + '><a href="#" id="guide-hint">how to use →</a></span>';
-    if (navigator.serviceWorker && navigator.serviceWorker.controller) pills += '<span class="pill"><span class="dot"></span>works offline</span>';
-    if (!isStandalone() && location.protocol.indexOf("http") === 0) pills += '<span class="pill"><a href="#" id="install-hint">install on phone →</a></span>';
-    el.innerHTML = '<div class="today-stats">' + tiles + "</div>" + '<div class="status-strip">' + pills + "</div>";
+    const mode = CORE.currentPracticeMode({ currentPracticeMode: STORE.getSetting("currentPracticeMode", null) });
+    const cont = CORE.continuityLine(STORE.sessions(), today);
+    const savedCfg = STORE.getSetting("sitConfig", null);
+    const cfg = savedCfg && CORE.isNum(savedCfg.min) ? savedCfg.min + "′ · bells as saved" : "press Start to begin";
+    let memory = satToday ? "Today: " + todayMin + "′ recorded" : (m.currentStreak > 0 ? m.currentStreak + (m.currentStreak === 1 ? " day" : " days") + " in a row" : "");
+    if (cont) memory += (memory ? " · " : "") + "Last sit " + esc(cont.date) + " · " + cont.minutes + "′" + (cont.noteExcerpt ? ' — <em>“' + esc(cont.noteExcerpt) + '”</em>' : "");
+    let links = '<a href="#" id="guide-hint"' + (guideSeen ? "" : ' style="font-weight:600"') + '>How to use</a>';
+    if (!isStandalone() && location.protocol.indexOf("http") === 0) links += '<a href="#" id="install-hint">Install on your phone</a>';
+    el.innerHTML = '<p class="today-line"><span class="label-caps">Current practice</span><br><strong>' + esc(mode.name) + '</strong> <span class="dim">· ' + esc(cfg) + '</span></p>' +
+      '<p class="dim">' + esc(mode.objectLine) + " " + esc(mode.returnCue) + "</p>" +
+      (memory ? '<p class="faint">' + memory + "</p>" : "") +
+      '<p class="faint today-links">' + links + "</p>";
     const gh = $("#guide-hint");
     if (gh) gh.onclick = (e) => {
       e.preventDefault();
       STORE.setSetting("guideSeen", true);
       const dlg = UI.modal("<h2>How to use</h2>" +
         CORE.GUIDE.map(s => "<h3>" + s[0] + "</h3><p class='dim'>" + s[1] + "</p>").join("") +
-        '<div class="row" style="justify-content:flex-end"><button id="gd-close" class="primary">Done</button></div>');
+        '<div class="row end"><button id="gd-close" class="primary">Done</button></div>');
       $("#gd-close").onclick = () => { dlg.close(); renderStatus(); };
     };
     const hint = $("#install-hint");
@@ -4508,7 +4816,7 @@ const ONBOARD = (function () {
   const { $ } = UI;
   // strings come from the CORE i18n table (English until the owner supplies Burmese)
   const lang = () => STORE.getSetting("language", "en");
-  const STEPS = () => [1, 2, 3].map(i => ({ title: CORE.tr("ob.title" + i, lang()), text: CORE.tr("ob.text" + i, lang()) }));
+  const STEPS = () => [1, 2].map(i => ({ title: CORE.tr("ob.title" + i, lang()), text: CORE.tr("ob.text" + i, lang()) }));
   let step = 0;
   let heroDone = false;   // the first-open hero shows once per arrival, before step 1
 
@@ -4522,13 +4830,15 @@ const ONBOARD = (function () {
     if (!st.show) return;
     step = st.step;
     heroDone = step > 0;                 // resuming mid-intro skips the hero
+    const dlg = $("#onboard");
+    dlg.showModal();
+    dlg.oncancel = e => { e.preventDefault(); finish("skip"); };   // Escape = Skip, and it saves
     render();
-    $("#onboard").hidden = false;
   }
 
   function finish(how) {
     saveState({ done: true, step: 0 });
-    $("#onboard").hidden = true;
+    $("#onboard").close();
     if (how === "start30") { UI.selectPreset("first"); UI.showTab("today"); TIMER.start(); }
     if (how === "shorter") { UI.selectPreset("short"); UI.showTab("today"); window.scrollTo({ top: 0 }); UI.toast("Pick any practice card, then press Start."); }
     if (how === "explore") { APP.loadDemo(); UI.showTab("journal"); } // demo entries are visible in history (Progress rightly excludes them)
@@ -4593,12 +4903,12 @@ const FEEDBACK = (function () {
     const dlg = UI.modal(
       "<h2>Send feedback</h2>" +
       '<p class="dim">Local only — this builds a text report you can copy, download, or email yourself. Nothing is sent automatically.</p>' +
-      '<div class="field"><label for="fb-trying">What were you trying to do?</label><input type="text" id="fb-trying"></div>' +
-      '<div class="field"><label for="fb-confused">What was confusing?</label><textarea id="fb-confused" style="min-height:60px"></textarea></div>' +
-      '<div class="field"><label for="fb-broken">What didn\'t work?</label><textarea id="fb-broken" style="min-height:60px"></textarea></div>' +
-      '<div class="field"><label for="fb-impression">General impression?</label><input type="text" id="fb-impression"></div>' +
+      FL+'fb-trying">What were you trying to do?</label><input type="text" id="fb-trying"></div>' +
+      FL+'fb-confused">What was confusing?</label><textarea id="fb-confused" style="min-height:60px"></textarea></div>' +
+      FL+'fb-broken">What didn\'t work?</label><textarea id="fb-broken" style="min-height:60px"></textarea></div>' +
+      FL+'fb-impression">General impression?</label><input type="text" id="fb-impression"></div>' +
       '<p class="faint">device (auto): ' + esc(deviceLine()) + "</p>" +
-      '<div class="row" style="justify-content:flex-end"><button id="fb-cancel">Cancel</button><button id="fb-make" class="primary">Create report</button></div>'
+      '<div class="row end"><button id="fb-cancel">Cancel</button><button id="fb-make" class="primary">Create report</button></div>'
     );
     $("#fb-cancel").onclick = () => dlg.close();
     $("#fb-make").onclick = () => {
@@ -4691,8 +5001,8 @@ const SHARE = (function () {
       '<div class="row" role="group" aria-label="Card format">' +
       '<button class="chip" id="sh-story" aria-pressed="true">Story</button>' +
       '<button class="chip" id="sh-square" aria-pressed="false">Square</button></div>' +
-      '<canvas id="sh-canvas" style="width:100%;max-width:250px;display:block;margin:12px auto;border-radius:14px;border:1px solid var(--line)" aria-label="Share card preview"></canvas>' +
-      '<div class="row" style="justify-content:flex-end"><button id="sh-close">Close</button><button id="sh-save" class="primary">Save image</button></div>'
+      '<canvas id="sh-canvas" style="width:100%;max-width:250px;display:block;margin:12px auto;border-radius:14px;border:var(--edge)" aria-label="Share card preview"></canvas>' +
+      '<div class="row end"><button id="sh-close">Close</button><button id="sh-save" class="primary">Save image</button></div>'
     );
     let aspect = "story";
     const paint = () => draw($("#sh-canvas"), d, aspect);
@@ -4881,18 +5191,80 @@ const APP = (function () {
       (text
         ? '<p class="dim">Unaltered source document (' + UI.esc(file) + ").</p><pre style='white-space:pre-wrap;font-size:var(--fs-xs);max-height:60vh;overflow:auto'>" + UI.esc(text) + "</pre>"
         : '<p class="dim">The document could not be loaded here. It lives beside the app as <code>' + UI.esc(file) + "</code> — open it directly from the folder with any text editor.</p>") +
-      '<div class="row" style="justify-content:flex-end"><button id="doc-close" class="primary">Close</button></div>'
+      '<div class="row end"><button id="doc-close" class="primary">Close</button></div>'
     );
     UI.$("#doc-close").onclick = () => UI.closeModal();
   };
   UI.$("#btn-doc-manual").onclick = () => openDoc("abhinna-practice-manual.md", "အဘိညာဉ် ၆ ပါး — Full Practice Manual");
   UI.$("#btn-doc-roadmap").onclick = () => openDoc("abhinna-6-roadmap.md", "အဘိညာဉ် ၆ ပါး — Roadmap");
+  UI.$("#btn-doc-sources").onclick = () => openDoc("PRACTICE_SOURCES.md", "Practice sources — the ledger");
+
+  // Learn: source map, jhāna module, troubleshooting — rendered from CORE so the
+  // same structures the tests audit are what the reader sees
+  (function renderLearn() {
+    const esc = UI.esc;
+    const srcLine = s => '<p class="faint" style="margin:6px 0 0">Source: ' + esc(s) + "</p>";
+    const cardDetails = list => list.map(c =>
+      "<details><summary>" + esc(c.title || c.q) + "</summary><p class='dim'>" + esc(c.body) + "</p>" + srcLine(c.source) + "</details>").join("");
+    UI.$("#learn-sources").innerHTML =
+      '<div class="card"><h3 class="mt0">The source map <span class="badge gold">traditional claim</span></h3>' +
+      '<p class="dim">Four ways the same breath is taught. Related practices — all watch the breath, all return from wandering — but not one doctrine. Each card names whose instruction it is; the full citations live in the source ledger below.</p>' +
+      cardDetails(CORE.PRACTICE_SOURCE_MAP) + "</div>";
+    const j = CORE.JHANA_MODULE;
+    UI.$("#learn-jhana").innerHTML =
+      '<div class="card"><h3 class="mt0">' + esc(j.title) + ' <span class="badge gold">' + esc(j.badge) + '</span></h3>' +
+      "<p class='dim'>" + esc(j.body) + "</p>" +
+      '<div class="notice mt2"><strong>' + esc(j.boundary) + "</strong></div>" + srcLine(j.source) + "</div>";
+    UI.$("#learn-troubleshoot").innerHTML =
+      '<div class="card"><h3 class="mt0">Troubleshooting <span class="badge">practice guidance</span></h3>' +
+      '<p class="dim">Short answers for common snags. Where the traditions disagree, the disagreement is shown, not averaged.</p>' +
+      cardDetails(CORE.TROUBLESHOOTING) + "</div>";
+  })();
 
   // today tab wiring
   UI.renderPresets();
   UI.$("#sit-object").addEventListener("change", () => {
     UI.$("#sit-object-custom").hidden = UI.$("#sit-object").value !== "custom";
   });
+
+  // practice-instruction card renders from the current mode (source-tracked
+  // wording — see PRACTICE_SOURCES.md; Learn carries the full source map)
+  (function renderPracticeInstructions() {
+    const mode = CORE.currentPracticeMode({ currentPracticeMode: STORE.getSetting("currentPracticeMode", null) });
+    UI.$("#practice-instructions").innerHTML =
+      '<strong style="color:var(--label-primary)">How to practice — ' + UI.esc(mode.name) + '</strong> <span class="badge">practice guidance</span><br>' +
+      UI.esc(mode.prepCue) + " " + UI.esc(mode.objectLine) + " " + UI.esc(mode.instruction) + " " +
+      UI.esc(mode.returnCue) + " " + UI.esc(mode.subtleCue) +
+      '<br><span class="faint">Sources and how the traditions differ: the Learn tab.</span>';
+  })();
+
+  // restore the last-used sit configuration so opening the app arms the usual
+  // practice with zero setup (saved on every Start; see the design note)
+  (function applySavedSitConfig() {
+    const c = STORE.getSetting("sitConfig", null);
+    if (!c || typeof c !== "object") return;
+    const $ = UI.$;
+    $("#opt-prep").checked = CORE.isNum(c.prepSec) && c.prepSec > 0;
+    if (CORE.isNum(c.prepSec) && [10, 20, 30, 60].indexOf(c.prepSec) >= 0) $("#opt-prep-sec").value = String(c.prepSec);
+    $("#opt-interval").checked = CORE.isNum(c.intervalMin) && c.intervalMin > 0;
+    if (CORE.isNum(c.intervalMin) && [5, 10, 15].indexOf(c.intervalMin) >= 0) $("#opt-interval-min").value = String(c.intervalMin);
+    $("#opt-final").checked = c.finalBell !== false;
+    $("#opt-wakelock").checked = c.wantWakeLock !== false;
+    if (c.object && CORE.OBJECTS.indexOf(c.object) >= 0) {
+      $("#sit-object").value = c.object;
+      $("#sit-object-custom").hidden = c.object !== "custom";
+      if (c.object === "custom" && c.objectCustom) $("#sit-object-custom").value = c.objectCustom;
+    }
+    if (CORE.isNum(c.min)) {
+      const p = CORE.PRESETS.find(x => x.min === c.min);
+      if (p) UI.selectPreset(p.id);
+      else {
+        UI.selectPreset("custom");
+        const ci = $("#custom-min");
+        if (ci) { ci.value = String(c.min); UI.renderTimer(); }
+      }
+    }
+  })();
   UI.$("#btn-start").onclick = () => TIMER.start();
   UI.$("#btn-pause").onclick = () => {
     const snap = TIMER.snapshot();
@@ -4909,7 +5281,7 @@ const APP = (function () {
     const tag = (e.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select" || tag === "button") return;
     if (!UI.$("#tab-today").classList.contains("active")) return;
-    if (!UI.$("#onboard").hidden) return;
+    if (UI.$("#onboard").open) return;
     e.preventDefault();
     const snap = TIMER.snapshot();
     if (!snap) TIMER.start();
@@ -4937,7 +5309,6 @@ const APP = (function () {
   TODAY.renderStatus();
 
   // family beta wiring
-  UI.$("#beta-chip").onclick = () => FEEDBACK.open();
   UI.$("#btn-feedback").onclick = () => FEEDBACK.open();
   UI.$("#btn-invite").onclick = () => SHARE.invite();
   UI.$("#btn-try-demo").onclick = () => APP.loadDemo();

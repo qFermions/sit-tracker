@@ -1,0 +1,571 @@
+/* Sit Tracker — machine-checkable browser gates.
+ *
+ * These are the checks a machine can actually decide. Anything subjective
+ * (does this feel calm? is the hierarchy right?) is deliberately NOT scored here —
+ * a fabricated aesthetic number would be worse than no number.
+ *
+ * Usage:  node tests/run-browser-gates.mjs [baseUrl]
+ * Needs:  a static server already serving the repo root, e.g.
+ *           npx http-server -p 8099 -s .
+ *         and playwright resolvable (NODE_PATH=/opt/node22/lib/node_modules).
+ */
+import { createRequire } from "node:module";
+/* Resolve playwright from NODE_PATH too — ESM does not honour it on its own.
+   Set PLAYWRIGHT_DIR or NODE_PATH if playwright lives outside the repo. */
+const req = createRequire(import.meta.url);
+const pwRoot = process.env.PLAYWRIGHT_DIR || (process.env.NODE_PATH || "").split(":")[0];
+let chromium;
+try { ({ chromium } = req("playwright")); }
+catch { ({ chromium } = req(pwRoot + "/playwright")); }
+
+const BASE = process.argv[2] || "http://127.0.0.1:8099";
+const APP = BASE + "/sit-tracker-v2.html";
+
+const results = [];
+let failed = 0;
+function gate(name, ok, detail = "") {
+  results.push({ name, ok: !!ok, detail });
+  if (!ok) failed++;
+  console.log(`${ok ? "  ok  " : "  FAIL"} ${name}${detail ? "  — " + detail : ""}`);
+}
+function section(t) { console.log("\n=== " + t + " ==="); }
+
+/* WCAG 2.1 relative luminance + contrast ratio, computed over rendered colours. */
+const CONTRAST_FN = `
+(() => {
+  const lin = c => { c /= 255; return c <= 0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+  const lum = ([r,g,b]) => 0.2126*lin(r) + 0.7152*lin(g) + 0.0722*lin(b);
+  const parse = s => { const m = String(s).match(/[\\d.]+/g); return m ? m.slice(0,3).map(Number) : null; };
+  const alpha = s => { const m = String(s).match(/[\\d.]+/g); return m && m.length > 3 ? Number(m[3]) : 1; };
+  const over = (fg, bg, a) => fg.map((c,i) => c*a + bg[i]*(1-a));
+  // walk up for the first non-transparent background, compositing as we go
+  const bgOf = el => {
+    let n = el, stack = [];
+    while (n && n.nodeType === 1) {
+      const cs = getComputedStyle(n), c = parse(cs.backgroundColor), a = alpha(cs.backgroundColor);
+      if (c && a > 0) { stack.push([c,a]); if (a >= 0.999) break; }
+      n = n.parentElement;
+    }
+    let base = [255,255,255];
+    for (let i = stack.length-1; i >= 0; i--) base = over(stack[i][0], base, stack[i][1]);
+    return base;
+  };
+  window.__gradientSkipped = [];
+  // Pull every rgb/rgba stop out of a computed gradient so we can test the WORST one,
+  // rather than skipping gradient-backed text and calling the result a pass.
+  const stopsOf = img => {
+    const out = [];
+    const re = /rgba?\(([^)]+)\)/g; let m;
+    while ((m = re.exec(img))) {
+      const v = m[1].split(",").map(x => parseFloat(x));
+      if (v.length >= 3) out.push({ c: v.slice(0,3), a: v.length > 3 ? v[3] : 1 });
+    }
+    return out;
+  };
+  window.__contrast = el => {
+    const cs = getComputedStyle(el);
+    const fg0 = parse(cs.color); if (!fg0) return null;
+    // Find the nearest layer that actually paints behind this text. An OPAQUE gradient
+    // replaces whatever is under it — including it as an extra candidate would compare
+    // the label against a page background it completely covers.
+    const behind = bgOf(el);
+    let cands = null;
+    for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+      const s2 = getComputedStyle(n);
+      const img = s2.backgroundImage || "";
+      if (img.indexOf("gradient") !== -1) {
+        const st = stopsOf(img);
+        if (!st.length) { window.__gradientSkipped.push(el.id ? "#" + el.id : el.tagName.toLowerCase()); return null; }
+        const opaque = st.filter(x => x.a >= 0.999);
+        if (opaque.length) { cands = opaque.map(x => x.c); break; }   // covers what is under it
+        // fully translucent gradient (e.g. the orb glow): it tints, it does not cover
+        cands = st.map(x => over(x.c, behind, x.a)).concat([behind]); break;
+      }
+      if (parse(s2.backgroundColor) && alpha(s2.backgroundColor) >= 0.999) { cands = [parse(s2.backgroundColor)]; break; }
+    }
+    if (!cands) cands = [behind];
+    let worst = Infinity;
+    for (const bg of cands) {
+      const f = alpha(cs.color) < 1 ? over(fg0, bg, alpha(cs.color)) : fg0;
+      const l1 = lum(f), l2 = lum(bg);
+      const r = (Math.max(l1,l2) + 0.05) / (Math.min(l1,l2) + 0.05);
+      if (r < worst) worst = r;
+    }
+    return worst === Infinity ? null : worst;
+  };
+  window.__unused = el => {
+    const cs = getComputedStyle(el);
+    const fg = parse(cs.color); if (!fg) return null;
+    return null;
+  };
+  return true;
+})()`;
+
+const WIDTHS = [320, 360, 375, 390, 430, 768, 834, 1024, 1280];
+
+async function main() {
+  const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
+  const consoleErrors = [];
+
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: "dark" });
+  const page = await ctx.newPage();
+  page.on("console", m => { if (m.type() === "error") consoleErrors.push(m.text()); });
+  page.on("pageerror", e => consoleErrors.push("pageerror: " + e.message));
+
+  await page.goto(APP, { waitUntil: "networkidle" });
+  await page.evaluate(CONTRAST_FN);
+
+  /* Dismiss onboarding so the app proper is measurable. */
+  const onboardVisible = await page.locator("#onboard[open]").count();
+  if (onboardVisible) {
+    for (let i = 0; i < 8; i++) {
+      const btns = page.locator("#ob-actions button:visible");
+      if (!(await btns.count())) break;
+      await btns.last().click().catch(() => {});
+      await page.waitForTimeout(120);
+      if (!(await page.locator("#onboard[open]").count())) break;
+    }
+  }
+
+  section("STRUCTURE");
+
+  const dupIds = await page.evaluate(() => {
+    const seen = {}, dup = [];
+    document.querySelectorAll("[id]").forEach(e => {
+      if (seen[e.id]) dup.push(e.id); else seen[e.id] = 1;
+    });
+    return dup;
+  });
+  gate("no duplicate DOM ids", dupIds.length === 0, dupIds.join(", "));
+
+  const danglingAria = await page.evaluate(() =>
+    [...document.querySelectorAll("[aria-controls],[aria-labelledby],[aria-describedby]")]
+      .flatMap(e => ["aria-controls","aria-labelledby","aria-describedby"]
+        .filter(a => e.hasAttribute(a))
+        .flatMap(a => e.getAttribute(a).split(/\s+/).filter(Boolean)
+          .filter(id => !document.getElementById(id))
+          .map(id => e.tagName.toLowerCase() + "#" + (e.id||"?") + " " + a + "->" + id))));
+  gate("every aria-controls / labelledby / describedby resolves", danglingAria.length === 0, danglingAria.slice(0,6).join("; "));
+
+  const undefinedVars = await page.evaluate(() => {
+    const css = [...document.querySelectorAll("style")].map(s => s.textContent).join("\n");
+    const used = new Set([...css.matchAll(/var\(\s*(--[\w-]+)/g)].map(m => m[1]));
+    const def = new Set([...css.matchAll(/(--[\w-]+)\s*:/g)].map(m => m[1]));
+    return [...used].filter(v => !def.has(v));
+  });
+  gate("no CSS custom property is used but never defined", undefinedVars.length === 0, undefinedVars.join(", "));
+
+  section("ACCESSIBLE NAMES");
+
+  const unlabelled = await page.evaluate(() => {
+    const bad = [];
+    document.querySelectorAll("input,select,textarea").forEach(el => {
+      if (el.type === "hidden") return;
+      const id = el.id;
+      const has =
+        (id && document.querySelector(`label[for="${CSS.escape(id)}"]`)) ||
+        el.closest("label") ||
+        el.getAttribute("aria-label") ||
+        el.getAttribute("aria-labelledby") ||
+        el.getAttribute("title");
+      if (!has) bad.push((el.tagName + "#" + (id || "(no id)")).toLowerCase());
+    });
+    return bad;
+  });
+  gate("every form control has an accessible name", unlabelled.length === 0, unlabelled.slice(0, 8).join(", "));
+
+  const emptyButtons = await page.evaluate(() => {
+    const bad = [];
+    document.querySelectorAll("button,[role=tab],[role=button]").forEach(el => {
+      if (el.offsetParent === null && !el.hasAttribute("hidden")) { /* still check */ }
+      const name = (el.textContent || "").trim() ||
+        el.getAttribute("aria-label") || el.getAttribute("title") || "";
+      if (!name) bad.push(el.id || el.className || el.tagName);
+    });
+    return bad;
+  });
+  gate("no button without an accessible name", emptyButtons.length === 0, emptyButtons.slice(0, 8).join(", "));
+
+  // Measure the name of an ACTUALLY OPEN dialog — a closed one legitimately carries none.
+  const dialogName = await page.evaluate(async () => {
+    const h = window.__sitTracker;
+    if (!h) return { why: "no test hook" };
+    const d = document.querySelector("dialog#modal");
+    if (!d) return { why: "no dialog element" };
+    // drive a real modal through the app's own helper, then WAIT: the dialog plays an
+    // entrance animation, and measuring mid-animation reports scaled (0.98x) geometry
+    const ui = document.querySelector("#btn-invite") || document.querySelector("#btn-feedback");
+    if (ui) ui.click();
+    await new Promise(r => setTimeout(r, 500));
+    if (!d.open) return { why: "could not open a modal to measure" };
+    const byId = d.getAttribute("aria-labelledby");
+    const named = byId && document.getElementById(byId) ? document.getElementById(byId).textContent.trim() : (d.getAttribute("aria-label") || "").trim();
+    d.close();
+    return { name: named };
+  });
+  // never leave a modal open for later gates to trip over
+  await page.evaluate(() => { const d = document.querySelector("dialog#modal"); if (d && d.open) d.close(); });
+  await page.waitForTimeout(150);
+  const generic = ["dialog", "modal", "window", ""];
+  gate("an open dialog is named by its own heading, not a generic placeholder",
+    !!(dialogName.name && !generic.includes(dialogName.name.toLowerCase())),
+    dialogName.why || `name = "${dialogName.name}"`);
+
+  section("TOUCH TARGETS (>=44x44, visible interactive elements)");
+
+  const smallTargets = await page.evaluate(() => {
+    const bad = [];
+    document.querySelectorAll("button,a[href],select,summary,input[type=checkbox],input[type=radio],input[type=range],[role=tab],[role=button]").forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) return;          // not rendered
+      const cs = getComputedStyle(el);
+      if (cs.visibility === "hidden" || cs.display === "none") return;
+      // a small visual control is fine if its label/parent provides the 44pt target
+      const lab = el.closest("label");
+      const h = Math.max(r.height, lab ? lab.getBoundingClientRect().height : 0);
+      const w = Math.max(r.width,  lab ? lab.getBoundingClientRect().width  : 0);
+      if (h < 44 || w < 44) {
+        bad.push(`${el.tagName.toLowerCase()}${el.id ? "#" + el.id : "." + (el.className||"").toString().split(" ")[0]} ${Math.round(w)}x${Math.round(h)}`);
+      }
+    });
+    return bad;
+  });
+  gate("every visible interactive target is at least 44x44", smallTargets.length === 0,
+    smallTargets.slice(0, 10).join("; ") + (smallTargets.length > 10 ? ` (+${smallTargets.length - 10} more)` : ""));
+
+  section("CONTRAST (rendered, WCAG 2.1)");
+
+  async function contrastScan(label) {
+    return await page.evaluate(() => {
+      const bad = [];
+      const els = document.querySelectorAll("body *");
+      for (const el of els) {
+        if (!el.offsetParent && el.tagName !== "BODY") continue;
+        // only elements with their own visible text node
+        const own = [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim().length > 1);
+        if (!own) continue;
+        const cs = getComputedStyle(el);
+        if (cs.visibility === "hidden" || cs.opacity === "0") continue;
+        const px = parseFloat(cs.fontSize);
+        const w = parseInt(cs.fontWeight, 10) || 400;
+        // WCAG large text = >=24px, or >=18.66px when bold
+        const large = px >= 24 || (px >= 18.66 && w >= 700);
+        const need = large ? 3.0 : 4.5;
+        const r = window.__contrast(el);
+        if (r && r < need) {
+          bad.push(`${el.tagName.toLowerCase()}${el.id ? "#" + el.id : (el.className ? "." + String(el.className).split(" ")[0] : "")} ${r.toFixed(2)}:1 (needs ${need}, ${Math.round(px)}px/${w}) "${el.textContent.trim().slice(0, 32)}"`);
+        }
+      }
+      return [...new Set(bad)];
+    });
+  }
+
+  const cDark = await contrastScan("dark");
+  const skipped = await page.evaluate(() => (window.__gradientSkipped || []).length);
+  gate("all rendered text meets WCAG contrast (dark appearance)", cDark.length === 0,
+    cDark.length ? cDark.slice(0, 8).join(" | ") + (cDark.length > 8 ? ` (+${cDark.length - 8} more)` : "")
+                 : `gradient stops sampled at worst case; ${skipped} element(s) unmeasurable`);
+
+  section("APPEARANCE");
+
+  const declaredScheme = await page.evaluate(() =>
+    (document.querySelector('meta[name="color-scheme"]') || {}).content || "(none)");
+  gate("the document declares support for both appearances", /light/.test(declaredScheme) && /dark/.test(declaredScheme),
+    `color-scheme = "${declaredScheme}"`);
+
+  const hasLightCss = await page.evaluate(() =>
+    [...document.querySelectorAll("style")].map(s => s.textContent).join("").includes("prefers-color-scheme"));
+  gate("the stylesheet defines a light appearance", hasLightCss);
+
+  // Re-render in light and re-scan contrast.
+  const lightCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: "light" });
+  const lightPage = await lightCtx.newPage();
+  const lightErrors = [];
+  lightPage.on("pageerror", e => lightErrors.push(e.message));
+  await lightPage.goto(APP, { waitUntil: "networkidle" });
+  await lightPage.evaluate(CONTRAST_FN);
+  const obL = await lightPage.locator("#onboard[open]").count();
+  if (obL) {
+    for (let i = 0; i < 8; i++) {
+      const b = lightPage.locator("#ob-actions button:visible");
+      if (!(await b.count())) break;
+      await b.last().click().catch(() => {});
+      await lightPage.waitForTimeout(120);
+      if (!(await lightPage.locator("#onboard[open]").count())) break;
+    }
+  }
+  const bodyBgLight = await lightPage.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const bodyBgDark = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  gate("light and dark actually render different grounds", bodyBgLight !== bodyBgDark,
+    `light=${bodyBgLight} dark=${bodyBgDark}`);
+
+  const cLight = await lightPage.evaluate(() => {
+    const bad = [];
+    for (const el of document.querySelectorAll("body *")) {
+      if (!el.offsetParent && el.tagName !== "BODY") continue;
+      const own = [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim().length > 1);
+      if (!own) continue;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === "hidden" || cs.opacity === "0") continue;
+      const px = parseFloat(cs.fontSize), w = parseInt(cs.fontWeight, 10) || 400;
+      const need = (px >= 24 || (px >= 18.66 && w >= 700)) ? 3.0 : 4.5;
+      const r = window.__contrast(el);   // null when a gradient makes it unmeasurable
+      if (r && r < need) bad.push(`${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""} ${r.toFixed(2)}:1 (needs ${need}) "${el.textContent.trim().slice(0,28)}"`);
+    }
+    return [...new Set(bad)];
+  });
+  gate("all rendered text meets WCAG contrast (light appearance)", cLight.length === 0,
+    cLight.slice(0, 8).join(" | ") + (cLight.length > 8 ? ` (+${cLight.length - 8} more)` : ""));
+  await lightCtx.close();
+
+  section("RESPONSIVE — no horizontal overflow, no safe-area clipping");
+
+  for (const w of WIDTHS) {
+    await page.setViewportSize({ width: w, height: 844 });
+    await page.waitForTimeout(90);
+    const over = await page.evaluate(() => {
+      const de = document.documentElement;
+      const bleeding = [];
+      if (de.scrollWidth > de.clientWidth + 1) {
+        for (const el of document.querySelectorAll("body *")) {
+          if (!el.offsetParent) continue;
+          const r = el.getBoundingClientRect();
+          if (r.right > de.clientWidth + 1 && r.width > 0)
+            bleeding.push(`${el.tagName.toLowerCase()}${el.id ? "#" + el.id : (el.className ? "." + String(el.className).split(" ")[0] : "")} right=${Math.round(r.right)}`);
+        }
+      }
+      return { doc: de.scrollWidth, client: de.clientWidth, bleeding: [...new Set(bleeding)].slice(0, 5) };
+    });
+    gate(`no horizontal overflow at ${w}px`, over.doc <= over.client + 1,
+      over.doc > over.client + 1 ? `scrollWidth ${over.doc} > ${over.client}: ${over.bleeding.join(", ")}` : "");
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  section("TEXT ZOOM");
+  // the guideline asks that people can enlarge text by at least 200%.
+  // This MUST sweep every tab: an earlier version tested only the default tab and so
+  // missed overflow on Settings, Learn and Progress entirely.
+  const TABS = ["today", "journal", "progress", "learn", "settings"];
+  for (const [w, z] of [[320, "150%"], [320, "200%"], [390, "200%"]]) {
+    await page.setViewportSize({ width: w, height: 844 });
+    await page.evaluate(zz => { document.documentElement.style.fontSize = zz; }, z);
+    await page.waitForTimeout(150);
+    const worst = [];
+    for (const t of TABS) {
+      await page.evaluate(x => { const b = document.querySelector("#tabbtn-" + x); if (b) b.click(); }, t);
+      // open every disclosure: collapsed content cannot overflow, which hides real defects
+      await page.evaluate(() => document.querySelectorAll('section[role="tabpanel"].active details').forEach(d => { d.open = true; }));
+      await page.waitForTimeout(180);
+      const r = await page.evaluate(() => {
+        const de = document.documentElement, out = [];
+        for (const el of document.querySelectorAll("body *")) {
+          if (!el.offsetParent) continue;
+          const b = el.getBoundingClientRect();
+          if (b.right > de.clientWidth + 1 && b.width > 0)
+            out.push(el.tagName.toLowerCase() + (el.id ? "#" + el.id : (el.className ? "." + String(el.className).split(" ")[0] : "")));
+        }
+        return { sw: de.scrollWidth, cw: de.clientWidth, bleeding: [...new Set(out)].slice(0, 4) };
+      });
+      if (r.sw > r.cw + 1) worst.push(`${t}: ${r.sw}>${r.cw} (${r.bleeding.join(", ")})`);
+    }
+    await page.evaluate(() => { const b = document.querySelector("#tabbtn-today"); if (b) b.click(); });
+    const r = { over: worst.length > 0, bleeding: worst };
+    gate(`no horizontal overflow on ANY tab at ${w}px with text at ${z}`, !r.over, r.bleeding.join(" | "));
+    // Three failure modes scrollWidth cannot see: a single-word label wrapping onto a
+    // second line (mid-word fracture — scrollWidth reads clean because the text DID fit,
+    // vertically), two buttons' rects intersecting, and a wrapped multi-row bar growing
+    // taller than the reserve main keeps for it (content slides underneath).
+    const tabs = await page.evaluate(() => {
+      const bs = [...document.querySelectorAll("nav.tabs button")];
+      const fractured = bs.filter(b => {
+        const r = document.createRange(); r.selectNodeContents(b);
+        return new Set([...r.getClientRects()].map(x => Math.round(x.top))).size > 1;
+      }).map(b => b.textContent.trim());
+      const rects = bs.map(b => b.getBoundingClientRect());
+      let overlap = false;
+      for (let i = 1; i < rects.length; i++)
+        for (let j = 0; j < i; j++)
+          if (rects[i].left < rects[j].right - 0.5 && rects[j].left < rects[i].right - 0.5 &&
+              rects[i].top < rects[j].bottom - 0.5 && rects[j].top < rects[i].bottom - 0.5) overlap = true;
+      const nav = document.querySelector("nav.tabs");
+      const fixed = getComputedStyle(nav).position === "fixed";
+      const navH = nav.getBoundingClientRect().height;
+      const reserve = parseFloat(getComputedStyle(document.querySelector("main")).paddingBottom);
+      return { fractured, overlap, tooTall: fixed && navH > reserve, navH: Math.round(navH), reserve: Math.round(reserve) };
+    });
+    gate(`tab labels intact, not overlapping, bar within its reserve at ${w}px / ${z}`,
+      tabs.fractured.length === 0 && !tabs.overlap && !tabs.tooTall,
+      (tabs.fractured.length ? "mid-word: " + tabs.fractured.join(", ") + "; " : "") +
+      (tabs.overlap ? "overlapping; " : "") +
+      (tabs.tooTall ? `bar ${tabs.navH}px > reserve ${tabs.reserve}px` : ""));
+  }
+  await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  section("FIXED-BAR OCCLUSION");
+  // a fixed bottom bar must not cover content at the end of any screen — and a `padding`
+  // shorthand in a narrow-width media query silently wiped the inset that prevents it
+  for (const w of [320, 390]) {
+    await page.setViewportSize({ width: w, height: 844 });
+    for (const t of ["today", "journal", "progress", "learn", "settings"]) {
+      await page.evaluate(x => { const b = document.querySelector("#tabbtn-" + x); if (b) b.click(); }, t);
+      await page.waitForTimeout(200);
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await page.waitForTimeout(200);
+      const hidden = await page.evaluate(() => {
+        const nav = document.querySelector("nav.tabs");
+        if (!nav || getComputedStyle(nav).position !== "fixed") return [];
+        const n = nav.getBoundingClientRect();
+        const panel = document.querySelector('section[role="tabpanel"].active');
+        if (!panel) return [];
+        return [...new Set([...panel.querySelectorAll("button,a[href],input,select,textarea")]
+          .filter(e => e.checkVisibility && e.checkVisibility())
+          .filter(e => { const r = e.getBoundingClientRect(); return r.height > 0 && r.bottom > n.top + 1 && r.top < n.bottom; })
+          .map(e => e.id || (e.textContent || "").trim().slice(0, 18) || e.tagName))];
+      });
+      gate(`nothing on ${t} is hidden behind the tab bar at ${w}px`, hidden.length === 0, hidden.join(", "));
+    }
+  }
+  await page.evaluate(() => { const b = document.querySelector("#tabbtn-today"); if (b) b.click(); });
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  section("MOTION");
+
+  const reducedCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  const rPage = await reducedCtx.newPage();
+  await rPage.goto(APP, { waitUntil: "networkidle" });
+  const animatingUnderReduce = await rPage.evaluate(() => {
+    const bad = [];
+    for (const el of document.querySelectorAll("body *")) {
+      const cs = getComputedStyle(el);
+      if (cs.animationName && cs.animationName !== "none" && parseFloat(cs.animationDuration) > 0)
+        bad.push(`${el.tagName.toLowerCase()}${el.className ? "." + String(el.className).split(" ")[0] : ""}:${cs.animationName}`);
+    }
+    return [...new Set(bad)];
+  });
+  gate("no animation runs under prefers-reduced-motion", animatingUnderReduce.length === 0,
+    animatingUnderReduce.slice(0, 6).join(", "));
+  await reducedCtx.close();
+
+  section("THE ORB CONTRACT");
+
+  const orbRule = await page.evaluate(() => {
+    const css = [...document.querySelectorAll("style")].map(s => s.textContent).join("\n");
+    return {
+      settle: /body\.settling\s+\.orb\s*\{[^}]*animation\s*:\s*orbBreathe/.test(css),
+      still: /body\.running:not\(\.settling\)\s+\.orb\s*\{[^}]*animation\s*:\s*none/.test(css)
+    };
+  });
+  gate("the orb animates during settling", orbRule.settle);
+  gate("the orb is explicitly still during the sit itself", orbRule.still);
+
+  const orbLive = await page.evaluate(async () => {
+    const b = document.body;
+    b.classList.add("running");
+    b.classList.remove("settling");
+    const orb = document.querySelector(".orb");
+    const during = getComputedStyle(orb).animationName;
+    b.classList.add("settling");
+    const settling = getComputedStyle(orb).animationName;
+    b.classList.remove("running", "settling");
+    return { during, settling };
+  });
+  gate("live check: orb has no animation while running-not-settling", orbLive.during === "none",
+    `animationName=${orbLive.during}`);
+  gate("live check: orb animates while settling", orbLive.settling !== "none",
+    `animationName=${orbLive.settling}`);
+
+  section("CHARTS (with real data)");
+  // Charts only exist once there are sessions, so seed some through CORE's own generator
+  // and strip the synthetic marker, then measure every label's rendered box.
+  const chartCheck = await page.evaluate(async () => {
+    const h = window.__sitTracker;
+    if (!h || !h.CORE || !h.CORE.makeTestSessions) return { why: "no seeding hook" };
+    const raw = h.CORE.makeTestSessions(120, h.STORE.todayStr(), h.STORE.nowIso());
+    const clean = raw.map(x => { const c = JSON.parse(JSON.stringify(x)); delete c._test;
+      if (c.notes) c.notes = c.notes.replace(/\[TEST DATA\]\s*/g, ""); return c; });
+    h.STORE.mergeImported(clean);
+    document.querySelector("#tabbtn-progress").click();
+    await new Promise(r => setTimeout(r, 700));
+    const clipped = [], overlapping = [];
+    document.querySelectorAll("#tab-progress .chart svg").forEach(svg => {
+      const sr = svg.getBoundingClientRect();
+      const ts = [...svg.querySelectorAll("text")];
+      ts.forEach(t => { const r = t.getBoundingClientRect();
+        if (r.left < sr.left - 0.5 || r.right > sr.right + 0.5) clipped.push(t.textContent); });
+      const byY = {};
+      ts.forEach(t => { const r = t.getBoundingClientRect(); (byY[Math.round(r.top)] = byY[Math.round(r.top)] || []).push({ r, s: t.textContent }); });
+      Object.values(byY).forEach(g => { g.sort((a, b) => a.r.left - b.r.left);
+        for (let i = 1; i < g.length; i++) if (g[i].r.left < g[i - 1].r.right - 0.5) overlapping.push(g[i - 1].s + "/" + g[i].s); });
+    });
+    const charts = document.querySelectorAll("#tab-progress .chart svg").length;
+    return { charts, clipped: [...new Set(clipped)], overlapping: [...new Set(overlapping)] };
+  });
+  gate("charts render at all once there is data", (chartCheck.charts || 0) > 0, chartCheck.why || `${chartCheck.charts} charts`);
+
+  // Geometry, not just typography: a padding change once made the vertical drawing span
+  // NEGATIVE (H-2P = -6), flattening every line chart to a ~1px inverted band below the
+  // axis — and the clipping/overlap gates passed, because the labels were fine.
+  const lineGeom = await page.evaluate(() => {
+    const bad = [];
+    document.querySelectorAll("#tab-progress .chart svg").forEach(svg => {
+      const pl = svg.querySelector("polyline"); if (!pl) return;
+      const axis = svg.querySelector("line.ax"); if (!axis) { bad.push("no axis line"); return; }
+      const axisY = parseFloat(axis.getAttribute("y1"));
+      const ys = pl.getAttribute("points").trim().split(/\s+/).map(t => parseFloat(t.split(",")[1]));
+      const name = (svg.getAttribute("aria-label") || "").slice(0, 24);
+      if (!ys.every(y => y <= axisY + 0.01)) bad.push(name + ": points below the axis");
+      if (new Set(ys.map(y => Math.round(y))).size > 1 && Math.max(...ys) - Math.min(...ys) < 5)
+        bad.push(name + ": varying data drawn flat (span " + (Math.max(...ys) - Math.min(...ys)).toFixed(1) + ")");
+    });
+    return bad;
+  });
+  gate("line charts draw their data above the axis with real vertical span", lineGeom.length === 0, lineGeom.join("; "));
+  gate("no chart label is clipped by its own viewBox", (chartCheck.clipped || []).length === 0, (chartCheck.clipped || []).join(", "));
+  gate("no two chart labels overlap", (chartCheck.overlapping || []).length === 0, (chartCheck.overlapping || []).slice(0, 5).join(", "));
+
+  section("PRIVACY / DATA");
+
+  const exportHygiene = await page.evaluate(async () => {
+    const h = window.__sitTracker;
+    if (!h || !h.STORE) return { ok: false, why: "no test hook" };
+    try {
+      h.STORE.setSetting("aiKey", "sk-SHOULD-NEVER-APPEAR");
+      if (h.STORE.getSetting("aiKey", "") !== "sk-SHOULD-NEVER-APPEAR")
+        return { ok: false, why: "could not seed the key" };
+      // capture whatever the real export writes, by intercepting the object URL
+      let captured = null;
+      const realCreate = URL.createObjectURL;
+      URL.createObjectURL = b => { captured = b; return realCreate.call(URL, b); };
+      const btn = document.querySelector("#btn-export-json");
+      if (!btn) { URL.createObjectURL = realCreate; return { ok: false, why: "#btn-export-json missing" }; }
+      btn.click();
+      await new Promise(r => setTimeout(r, 120));
+      URL.createObjectURL = realCreate;
+      if (!captured) return { ok: false, why: "export produced no blob to inspect" };
+      const text = await captured.text();
+      if (!text.length) return { ok: false, why: "export blob was empty" };
+      return { ok: text.indexOf("SHOULD-NEVER-APPEAR") === -1, why: "inspected " + text.length + " bytes of real export" };
+    } catch (e) { return { ok: false, why: e.message }; }
+  });
+  gate("the API key never appears in an export", exportHygiene.ok, exportHygiene.why);
+
+  const schema = await page.evaluate(() => (window.__sitTracker && window.__sitTracker.CORE)
+    ? { v: window.__sitTracker.CORE.SCHEMA_VERSION, app: window.__sitTracker.CORE.APP_VERSION } : null);
+  gate("the app exposes its schema and app version", !!schema, schema ? `schema v${schema.v}, app v${schema.app}` : "");
+
+  section("CONSOLE");
+  gate("zero console errors during the run", consoleErrors.length === 0,
+    consoleErrors.slice(0, 5).join(" | "));
+
+  await browser.close();
+
+  console.log(`\n${results.length - failed}/${results.length} gates passed, ${failed} failed.`);
+  if (failed) {
+    console.log("\nFAILED GATES:");
+    results.filter(r => !r.ok).forEach(r => console.log("  ✗ " + r.name + (r.detail ? "  — " + r.detail : "")));
+  }
+  process.exit(failed ? 1 : 0);
+}
+
+main().catch(e => { console.error(e); process.exit(2); });

@@ -1,0 +1,219 @@
+{
+  "format": "sit-tracker-release/1",
+  "app": {
+    "version": "4.6.0",
+    "swVersion": "v4.6.0",
+    "schemaVersion": 6
+  },
+  "source": {
+    "repo": "https://github.com/qFermions/sit-tracker",
+    "commit": "c23a0a54099a8131e67a4c7319a5114fbe23a79d",
+    "branch": "claude/practice-training-system",
+    "dirtyMembers": []
+  },
+  "sourceFiles": [
+    {
+      "path": "sit-tracker-v2.html",
+      "bytes": 339746,
+      "sha256": "8af95fbf5fa7350aa48b7825b116c598dbc422abcbc4ff6ef01e3a0afa406fbf"
+    },
+    {
+      "path": "sw.js",
+      "bytes": 2308,
+      "sha256": "c9cfd3eb0be6a292d1042270552a53969860665babeb92544e6ddee99603f393"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 689,
+      "sha256": "40a4028965d8f235382ce15fb2ce67303ce2662934e791d0b51a1780c6b91bc4"
+    },
+    {
+      "path": "PRACTICE_SOURCES.md",
+      "bytes": 8173,
+      "sha256": "eb256cf636ce5ec6584be65a5a70f0db5eda571dfa6019ed44336746a009ce6b"
+    },
+    {
+      "path": "abhinna-practice-manual.md",
+      "bytes": 10531,
+      "sha256": "3032c0992160f1603b522250ba749e576a9ec1deec920f6a0f9a33d896bf0092"
+    },
+    {
+      "path": "abhinna-6-roadmap.md",
+      "bytes": 5589,
+      "sha256": "fdf1612fa48be0d83914cd407db57bbe91ce09812c4aa405d0d2abebd8dd7ede"
+    },
+    {
+      "path": "tools/make-icons.mjs",
+      "bytes": 3435,
+      "sha256": "35dcd7d39f0aa49be583e78dd0d8d7e115833feb11b9b4d8cfc3d8b1b99ecd40"
+    }
+  ],
+  "packaging": {
+    "tar": "GNU tar --sort=name --owner=0 --group=0 --numeric-owner --mtime=2026-01-01 00:00Z --mode=0644 --format=gnu -cf payload.tar <members in SOURCE_MEMBERS order>",
+    "xz": "xz -9e",
+    "partBytes": 13500,
+    "base64": "standard alphabet, 1000-char lines, trailing newline; decoded strictly (no junk, exact length)",
+    "ordering": "reassembly order is manifest.parts[] ascending by index; a part is bound to BOTH its name and its digests, so a right-named file with other bytes is corruption, never a reorder; files not named in the manifest are ignored",
+    "rootEntry": {
+      "/": "/sit-tracker-v2.html"
+    },
+    "rootEntryNote": "hosting rewrite of / to the app document; this is deployment configuration, not a change to any source byte"
+  },
+  "payload": {
+    "tarBytes": 378880,
+    "tarSha256": "d55a491d1d8774f27b20b82fce8189e735d8f191772f8310bfbdf943898483c0",
+    "xzBytes": 91764,
+    "xzSha256": "54cf7de69dc1d6233f1220001b79403fedee2f55549baaa9b17a345435ba3f63"
+  },
+  "parts": [
+    {
+      "index": 0,
+      "name": "tp_00",
+      "textName": "tp_00.b64.txt",
+      "bytes": 13500,
+      "sha256": "c6d915b8d4db66e979e466e0337b52cf16aafabbd759dd399cabe4be82161c4a",
+      "textBytes": 18018,
+      "textSha256": "6ae8153924fc6b3103c67bbb60b812d591f95bde3a11413e33cba737049ed3fa"
+    },
+    {
+      "index": 1,
+      "name": "tp_01",
+      "textName": "tp_01.b64.txt",
+      "bytes": 13500,
+      "sha256": "05970e2ba00c20048eb19a8c904ec2ce2c2dce17ecee28ab0eea782c93de0de6",
+      "textBytes": 18018,
+      "textSha256": "e86e97f3c7f9e0c4adb645389be53dade73015615143ed5a80c96b70afdf2ec6"
+    },
+    {
+      "index": 2,
+      "name": "tp_02",
+      "textName": "tp_02.b64.txt",
+      "bytes": 13500,
+      "sha256": "994c5b7d608f9070f3b0b53dc6cb1088953fc1b90672ac44a2f846724ab4bb95",
+      "textBytes": 18018,
+      "textSha256": "62ec65d18c9772dd0b21818eee872044f15e3dcd2c4bb34ef10d99776aefc1fe"
+    },
+    {
+      "index": 3,
+      "name": "tp_03",
+      "textName": "tp_03.b64.txt",
+      "bytes": 13500,
+      "sha256": "85622c6c37bd0560d77da5d81242ac7da111dcfed1d03de8342fd361dbc39236",
+      "textBytes": 18018,
+      "textSha256": "a42de262418b34607742028fee91395ab58fb636db72cd8c8d41cf20b592377a"
+    },
+    {
+      "index": 4,
+      "name": "tp_04",
+      "textName": "tp_04.b64.txt",
+      "bytes": 13500,
+      "sha256": "9a4fd0593766b46d0af1b25c2e0d3e3febd5859e99431129f54e61239f318ced",
+      "textBytes": 18018,
+      "textSha256": "af6891c124ff1afdb8a2b39e27be5a9bd5628fdd779b498c75558279b30adeca"
+    },
+    {
+      "index": 5,
+      "name": "tp_05",
+      "textName": "tp_05.b64.txt",
+      "bytes": 13500,
+      "sha256": "34b5b57155aedb0dc46d4e9b2843fed8206597b2c024539a2787338e4aaae4eb",
+      "textBytes": 18018,
+      "textSha256": "3473c68450960f40e25b4caa972a4e21b488c4fe89707234d69b1027a47490d9"
+    },
+    {
+      "index": 6,
+      "name": "tp_06",
+      "textName": "tp_06.b64.txt",
+      "bytes": 10764,
+      "sha256": "e594d078d99b02d59f93b552319b043f3ef1503771ed91a53ed4a8a57bd076f7",
+      "textBytes": 14367,
+      "textSha256": "0852f0f394cb12f7b3a2a7843632a338e9aa53e9d9b20a3b9ae50b234a0a09dc"
+    }
+  ],
+  "output": {
+    "generated": [
+      {
+        "path": "icons/icon-192.png",
+        "bytes": 7376,
+        "sha256": "f0666c55d58906fa3d00ee15b960bcd8ad3473ecc0a90ed7b6e614b8df2274c0",
+        "generator": "tools/make-icons.mjs"
+      },
+      {
+        "path": "icons/icon-512.png",
+        "bytes": 24228,
+        "sha256": "27911b758c601ccb30ee2893fce163af581a03828d68af7e0944f9c9821d8e52",
+        "generator": "tools/make-icons.mjs"
+      },
+      {
+        "path": "icons/icon-maskable-512.png",
+        "bytes": 23057,
+        "sha256": "9c9ffb9f25a587ebfc2a1123573f20d39e525e9adf8307f6d645fa4202c92303",
+        "generator": "tools/make-icons.mjs"
+      },
+      {
+        "path": "icons/apple-touch-icon.png",
+        "bytes": 6453,
+        "sha256": "03229b3f54eec384d1a639b46f659b8a8563cf40e2c5b3782e4013e31be713a7",
+        "generator": "tools/make-icons.mjs"
+      }
+    ],
+    "runtimeFiles": [
+      {
+        "path": "sit-tracker-v2.html",
+        "bytes": 339746,
+        "sha256": "8af95fbf5fa7350aa48b7825b116c598dbc422abcbc4ff6ef01e3a0afa406fbf"
+      },
+      {
+        "path": "sw.js",
+        "bytes": 2308,
+        "sha256": "c9cfd3eb0be6a292d1042270552a53969860665babeb92544e6ddee99603f393"
+      },
+      {
+        "path": "manifest.json",
+        "bytes": 689,
+        "sha256": "40a4028965d8f235382ce15fb2ce67303ce2662934e791d0b51a1780c6b91bc4"
+      },
+      {
+        "path": "PRACTICE_SOURCES.md",
+        "bytes": 8173,
+        "sha256": "eb256cf636ce5ec6584be65a5a70f0db5eda571dfa6019ed44336746a009ce6b"
+      },
+      {
+        "path": "abhinna-practice-manual.md",
+        "bytes": 10531,
+        "sha256": "3032c0992160f1603b522250ba749e576a9ec1deec920f6a0f9a33d896bf0092"
+      },
+      {
+        "path": "abhinna-6-roadmap.md",
+        "bytes": 5589,
+        "sha256": "fdf1612fa48be0d83914cd407db57bbe91ce09812c4aa405d0d2abebd8dd7ede"
+      },
+      {
+        "path": "icons/icon-192.png",
+        "bytes": 7376,
+        "sha256": "f0666c55d58906fa3d00ee15b960bcd8ad3473ecc0a90ed7b6e614b8df2274c0"
+      },
+      {
+        "path": "icons/icon-512.png",
+        "bytes": 24228,
+        "sha256": "27911b758c601ccb30ee2893fce163af581a03828d68af7e0944f9c9821d8e52"
+      },
+      {
+        "path": "icons/icon-maskable-512.png",
+        "bytes": 23057,
+        "sha256": "9c9ffb9f25a587ebfc2a1123573f20d39e525e9adf8307f6d645fa4202c92303"
+      },
+      {
+        "path": "icons/apple-touch-icon.png",
+        "bytes": 6453,
+        "sha256": "03229b3f54eec384d1a639b46f659b8a8563cf40e2c5b3782e4013e31be713a7"
+      }
+    ]
+  },
+  "packedAt": "2026-09-09T06:11:51.538Z",
+  "tools": {
+    "node": "v22.22.2",
+    "tar": "tar (GNU tar) 1.35",
+    "xz": "xz (XZ Utils) 5.4.5"
+  }
+}

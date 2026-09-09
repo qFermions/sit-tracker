@@ -1,7 +1,310 @@
 # PROJECT_STATE — Sit Tracker
 
 *A future session should be able to resume from this file alone.*
-*Last verified: 2026-07-11, visual-identity run (every claim below was exercised on that date unless dated otherwise).*
+*Last verified: 2026-08-26, Apple design pass (sections below dated as verified).*
+
+## Night Practice + Apple restraint (v4.6.0, 2026-09-09) — the sit leads, the update window closes
+
+**Tested implementation `c23a0a5`** (initial `7fe2434`, corrected after independent review; manifest commit
+`d44ec17`; documentation commits follow and are not the tested implementation). App 4.6.0 = SW v4.6.0, schema 6, data keys unchanged.
+`sit-tracker-v2.html` 339,746 B sha256 `8af95fbf5fa7350aa48b7825b116c598dbc422abcbc4ff6ef01e3a0afa406fbf`;
+payload xz sha256 `54cf7de69dc1d6233f1220001b79403fedee2f55549baaa9b17a345435ba3f63` (ADR-0003 ceiling
+344,064 unchanged; headroom 6 → 4,318 — the redesign reclaimed bytes).
+Direction and measured tokens: `APPLE_DESIGN_SYSTEM.md` Part 0. HIG-inspired; not an Apple
+certification. Previous artifact (ec9b564, v4.5.0) and its bundle/receipts preserved for rollback.
+
+Three largest design failures found in the BEFORE renders and what changed:
+1. **Start was below the fold at every width** (header chip, backup notice, practice card, three
+   stat tiles and three pills came first). Now the orb, the time and one dominant Start action open
+   Today; the remembered practice, its configuration and one continuity line follow, then presets.
+2. **Card-around-everything on a cool-blue dashboard palette.** Now one consolidated token layer:
+   near-black ground, flat charcoal surfaces with a single edge, warm labels, restrained amber; light
+   is warm paper + ink + brown-amber, calibrated separately. No gradients, glows or drop shadows.
+   Journal history is a list, Learn an editorial page, Settings grouped lists with capital headers,
+   the tab bar translucent over content with an opaque fallback under reduced transparency.
+3. **The active sit was cluttered and fractured** ("Wandering" broke mid-word). Markers sit in a
+   grid that never fractures; the stage is open ground; Reset and Quiet Screen are quiet ghosts;
+   the orb still settles with you and holds still during the sit.
+Removed from Today: stat tiles, the "works offline" pill, the header beta chip (feedback stays in
+Settings; how-to-use and install remain as links). No feature removed.
+
+**Mixed-version window — reproduced, then closed (in scope this pass).** With the real v4.5.0
+output installed from its start_url (never "/"), an active sit and a second tab, deploying v4.6.0
+and opening "/" ran the new document under the old worker (both caches present) — reproduced.
+Fix, two parts: the worker answers a navigation to the scope root or to the app document (any
+query) with its own cached copy, so a page can never run a newer or older document than the worker
+serving it — every other navigation (a companion .md opened directly, an icon, an unknown path)
+keeps its cache-first answer and its real 404; and `migrate()` upgrades records stamped by an older
+schema even in a current envelope (a simulated older-client write came back `v:6` with the v6
+fields null). In the window the new document's own registration check finds the matching worker
+and offers it through the existing notice — no forced reload, the sit untouched; applying the
+update moved all three tabs onto v4.6.0 with only its cache left and the sit offered back. Forward
+closure is proven with a gate that can fail: a fresh start_url-only client opening "/" for the
+first time while a v9.9.9 fixture sits on the network still runs v4.6.0 (a worker with the branch
+stripped fails that gate), and the newer release is still offered through the notice.
+
+**Gates on the packaged v4.6.0 directory (`dist/release-v4.6.0/public`)** — release gates 82/82
+(served identity; v4.3.0/schema-5 client → v4.6.0 with records + active sit; failed precache never
+replaces a usable install; export→import across two origins with duplicate policy, invalid and
+future-schema input, no API key; mixed-version window and forward closure; companion documents
+and unknown paths keep their own answers under the worker; offline with the server refusing every
+connection and every asset byte-compared to the release; persistence; 390/1280 overflow; zero
+foreign requests; zero candidate console errors) · cache-wipe mutant still fails 5 gates with
+exit 1 · browser gates 49/49 (contrast in both appearances, 44×44 targets, 150 %/200 % zoom sweep,
+nine widths, reduced motion, orb contract, export key-stripping) · interaction flow 35/35 (real
+10 s settle + 11 s sit, pause/resume, export → wipe → import, offline reload) · core 447/447 with
+ceiling/version/syntax/attribute gates · `release.mjs` check PASS, selftest 15/15; the manifest
+packed from the committed tree reproduces the same digests.
+Evidence: before/after screenshots (phone 390 dark+light, wide 1024) and the contact sheet,
+a 390×844 real-browser walkthrough video, and every log — in the v4.6.0 private bundle.
+
+- Independent review (Codex CLI absent — that cross-model gate stays unfulfilled; fresh-context
+  Claude reviewer, job `a0925475260b6a617`, isolated worktree, ran the gates, two mutants, its own
+  sweep and probes, looked at the renders). Initial verdict on `7fe2434`: **BLOCKED — 3 MAJOR, no
+  data loss**: the navigation handler masked every in-scope navigation (companion documents,
+  manifest, icons, 404s all returned the app); the forward-closure gate was vacuous (marker outside
+  `documentElement`, "/" pre-cached — the suite stayed green with the handler deleted) and the
+  `reg.update()` guard was redundant; the phase line sat under a notched phone's status bar during
+  a sit because the header, the only safe-area carrier, is hidden then. Plus MINORs ("1 days",
+  timer weight vs the record, navy theme-color, wordmark fracture at 200 %, 1 h+ timer at 320 px,
+  Progress empty-state copy, hero focus ring, cross-tab last-writer-wins). All MAJORs and the first
+  five MINORs closed at `c23a0a5` (details: `~/sit-tracker-vercel-staging/review-v4.6.0-*.md`);
+  the last three stay recorded below. **Re-review 1 of 2 on `c23a0a5`: PASS** — every MAJOR fix
+  reproduced by the reviewer (navigation sweep; closure gate failing on the nav mutant, 82/82 on
+  the real artifact; safe-area geometry under a CDP inset override), MINORs spot-checked, identity
+  confirmed. Re-review 2 unused (no code changed after `c23a0a5`). Counters: initial 1/1, re-reviews
+  1 of 2, correction loop 1 of 3 (one attempt). Records: `~/sit-tracker-vercel-staging/review-v4.6.0-*.md`.
+- Reviewer-noted items left as they are (pre-existing, MINOR): the Progress empty state shows dash
+  tiles and the practice map's "Gate 0 target … 0/30" line (product copy — the owner's call whether
+  to soften it); the first-open hero button renders a focus ring in headless Chromium (device
+  behaviour unverified); saving from an old-version tab after a new tab wrote is last-writer-wins
+  (limitation 5, unchanged).
+- Live deployment: no Vercel probe was made (no new evidence since the 2026-09-08 wall); LIVE:
+  UNPROVEN. v4.6.0 parts are packed and unsent; resume from tp_00 with the v4.6.0 manifest only.
+- Unobserved and therefore unproven: real iPhone/Android installation and lock-screen behaviour,
+  VoiceOver, Burmese owner approval of any copy (no copy changed).
+
+## Release recovery + data-safety gates (2026-09-08) — the v4.5.0 artifact becomes reproducible
+
+**Runtime artifact unchanged.** Tested revision for the runtime files: `ec9b564` (PR #2 head;
+`sit-tracker-v2.html` sha256 `1b9b6abdeaf1f160dfb72c8cdc3bb1d9216701d5dd8a5daae0ae39a956a0c4e8`).
+Release tooling and gates: implementation `2a3542a`, corrected after independent review at
+`3dd6c1e`, test-validity MINORs closed at `ce34d0e` = the final tested implementation
+(documentation commits come after it and are not the tested implementation). Procedure:
+`release/README.md`. Deployment state and resume plan: `~/sit-tracker-vercel-staging/DEPLOY-STATE.md`
+(outside the repo; private).
+
+- `tools/release.mjs` — `pack` (deterministic tar+xz of the seven allowlisted source members →
+  seven base64 text parts + a manifest with every full SHA-256), `check` (rebuilds in a temp dir:
+  parts in manifest order bound to name + text digest + decoded digest → payload digests →
+  archive safety (regular members only, declared paths only, no escapes) → source parity →
+  version coherence → icons regenerated byte-identically by `tools/make-icons.mjs` → runtime
+  directory is exactly the ten-file allowlist; publishes atomically, keeps the previous output;
+  exit 1 on the first failed gate), `selftest` (15 fixtures: missing / duplicate / out-of-order /
+  truncated / invalid base64 / validly-encoded corruption with and without a forged text digest /
+  wrong expected payload, source and icon digests / undeclared output file / unreferenced extra
+  file / two resume-plan fixtures — every corruption fails at the named gate and the known-good
+  output is never disturbed), `resume-plan` (a part is skipped only on a receipt for this exact
+  release, carrying the manifest digest, marked verified — a created deployment is not a passed
+  check; a final deployment that exists but is unverified yields "verify-first", never a blind
+  duplicate). A fresh pack on 2026-09-08 reproduced the August-28 parts and payload digest exactly.
+- `tests/run-release-gates.mjs` — 62 gates on the ASSEMBLED release directory served as hosting
+  serves it (`/` → app, revalidating SW, unknown paths 404 — properties of the test's own
+  hosting-shaped server; the real host is a live gate), two isolated origins, synthetic data:
+  served identity (bytes on the wire = release bytes; PROJECT_STATE.md, tests, tools, .git,
+  manifest all 404); an installed **v4.3.0 / schema-5 client — what master serves** — with three
+  records and a running sit receives the candidate through the app's own update notice
+  (cache-first keeps the old app until the user applies; the candidate precached all nine assets
+  first; apply → reload into 4.5.0; envelope migrated to schema 6 with every record and the
+  device-local API key intact, v6 fields null; stale cache dropped; the sit survives with the same
+  start timestamp and the app offers to continue it; with the candidate installed and waiting a
+  reload still serves the old app and re-offers the notice); a candidate whose precache 404s
+  never replaces the usable installation (no notice, same controller, records intact; the
+  attempted install is proven by the empty cache it leaves under its own name — `Cache.addAll`
+  is atomic — which the next successful activate deletes); export on origin A → import on origin B
+  (contract-field parity, schema-6 stamps, no `aiKey` field or value anywhere in the backup, the
+  same file twice adds nothing, invalid JSON and an unrecognised envelope are refused without
+  loss, a future-schema backup merges only its new valid record, a future-schema envelope already
+  on the device is loaded without destroying records or unknown fields and is not downgraded);
+  under service-worker control, with the test server refusing every connection, a NEW page at the
+  root URL opens with records, journal and all runtime assets and the server served nothing (the
+  one attempted request — the browser's worker-script update check — was refused; Playwright's
+  `setOffline` alone does not cut a worker's fetches, which the initial review proved); reload
+  keeps every record exactly once; no horizontal overflow at 390 and
+  1280 px; every one of the observed requests stayed on the two test origins; zero console
+  errors from the candidate (the only 404 was the old v4.3.0 client's `favicon.ico` — it has no
+  icon link; the candidate does).
+- Existing suites on the release directory (not the source tree): core 447/447 with all gates,
+  browser gates 49/49, interaction flow 35/35 (real 10 s settle + 11 s sit, pause/resume, export →
+  wipe → import through the real file input, offline reload).
+- Live deployment: **BLOCKED — unchanged access wall.** Two bounded reads with the saved
+  identifiers (`get_project sit-tracker-preview`, `get_deployment dpl_GXLoRTm7…`, team
+  `team_q5u0Ro6D8zGh5H19URVl922o`) returned 404 at ~16:51Z, as on 2026-08-28; no mutation was
+  retried. LIVE: UNPROVEN. The one part already sent (tp_00) stays **unverified** in
+  `receipts.json` and is resent by the resume plan.
+- Independent review: Codex CLI is not installed in this environment (that bridge: BLOCKED). A
+  fresh-context read-only Claude reviewer (job `aeea85c99119dd630`, isolated worktree, inspected
+  `git archive 2a3542a`, ran pack/check/selftest, the full gate file and its own probes) returned
+  **BLOCKED — 2 MAJOR, 0 BLOCKER**: (1) the tar pinned order/owner/mtime/format but not member
+  mode, so a repack under another umask changed the release identity (reproduced: 664-mode tree
+  → different xz digest; `--mode=0644` restores the committed digest); (2) the offline gates could
+  pass with an empty cache because `setOffline` does not reach worker fetches (reproduced: caches
+  deleted + setOffline → page still loaded with 2 server hits). MINOR: `check --publish` failed
+  with EXDEV across filesystems (safe-fail); the cache-first assertion sat before the candidate
+  was installed; the failed-precache leftover is an empty cache, not partial, and was a note not
+  an assertion; the served-identity section proves the test's server, not the host; trust-model
+  header wanted. Clean: corruption-to-output, data loss/duplication, secrets, resume/receipts.
+  All of the above corrected at `3dd6c1e` (pack from 664- and 600-mode trees reproduces the
+  committed digests; offline section asserts zero served bytes with the server refusing every
+  connection; gates 62/62). **Re-review 1 of 2 on `3dd6c1e`: PASS** — the reviewer repacked
+  from 664- and 600-mode trees (committed digests reproduced), ran the suite (62/62) and a
+  cache-wiped mutant (FAIL, exit 1 — the offline gate can now fail), and confirmed the EXDEV,
+  cache-first and failed-precache fixes. Two MINOR test items remained (the per-asset offline
+  check was status-only because the worker answers any failed fetch with the HTML at 200; an
+  offline page that fails to open threw instead of failing cleanly) — closed at `ce34d0e`: each
+  asset's bytes are now compared against the release digests, and guarded probes give clean
+  FAILs (mutant: 5 FAILs, summary, exit 1; real run 62/62). **Re-review 2 of 2 on `ce34d0e`:
+  PASS** — the reviewer confirmed the diff touches only the offline section, reran the suite
+  (62/62, all six offline assets are release bytes, 0 served) and the mutant (5 clean FAILs,
+  exit 1); still open and non-blocking: this document's staleness (closed here), the pre-existing
+  mixed-version design item (limitation 8), and the live host (unverifiable). Counters: initial
+  review 1/1; re-reviews 2 of 2 used; correction loops 2 of 3 (one attempt each). Review
+  records: `~/sit-tracker-vercel-staging/review-*.md` and the private bundle.
+- Pre-existing app-design finding from the review (not introduced here, not fixed here because it
+  needs an HTML/SW change and a new artifact): an installed old client that opens the root URL
+  under its old worker after a deploy fetches the NEW document into the OLD cache and runs it under
+  the old worker until the update is applied; `start_url` still serves the old document. Records
+  are never lost, but sessions written in that window carry stale `v` stamps and `undefined`
+  instead of `null` for v6 fields (tolerated by validation and CSV). Recorded under limitations.
+
+Real-device limitations unchanged: no phone hardware, no lock-screen behaviour, no Burmese
+approval observed.
+
+## Apple design pass (v4.5.0, 2026-08-26) — the app gets a coherent, accessible surface
+
+Mission: make Sit Tracker feel as calm, coherent and native-quality as an excellent
+first-party application, while keeping its meditation identity and its deliberately
+small offline architecture. Audited against a pinned third-party HIG-derived guideline
+corpus (`APPLE_SKILL_PROVENANCE.md` — **not** an Apple certification, and none is
+claimed).
+
+**Documents produced:** `APPLE_SKILL_PROVENANCE.md`, `APPLE_HIG_APPLICABILITY_MATRIX.md`
+(all 53 guideline docs classified, each with a reason verified against the code),
+`APPLE_HIG_AUDIT.md` (42 findings + 8 product-character findings, each carrying how it
+was verified), `APPLE_DESIGN_SYSTEM.md` (thesis + full token contract with measured
+contrast), `APPLE_POLISH_PLAN.md` (ranked ledger with honest open/done status).
+
+**Defects found and fixed** (each reproduced in a real browser before being believed):
+- Every `.notice` in the app rendered with **no border** — `--accent-dim` was referenced
+  and never defined, which invalidates the whole `border` shorthand. Affected the
+  storage-loss and resume-a-sit banners.
+- Chart labels rendered at **4.44–4.93 px** on a 320 px phone.
+- The five nav tabs did not fit at **any** phone width, with both scroll affordances
+  suppressed, so Settings sat off-screen.
+- The in-app guide made an unconditional privacy promise the app does not keep when the
+  AI provider is on — **and a test pinned the false wording in place**.
+- The post-sit review and AI draft destroyed keyboard focus and collapsed the section the
+  user was working inside on every interaction.
+- The orb never animated for a new user (settling countdown was off by default); the
+  onboarding orb sat 38 px off-centre; its animation clobbered its own centring
+  transform.
+- A selected *recommended* preset showed no selected state.
+- Learn's 17 collapsible sections showed no disclosure marker at all.
+
+**Added:** a full light appearance (the app had none), increased-contrast and
+reduced-transparency variants, a convertible tab bar (bottom on phones, top from 768px),
+text equivalents for every chart, and semantic purpose-named colour tokens.
+
+**Architecture unchanged:** one HTML file, no framework, no build step, no runtime
+dependency, localStorage, offline via the service worker, **schema v6 untouched** — a
+visual redesign that made zero data-contract changes. The ADR-0003 ceiling was **not**
+moved: ~3,400 bytes were reclaimed from dead and duplicated code to fund the work.
+Final payload **344,058 / 344,064 bytes** (6 free) — the binding constraint on what
+remains open in `APPLE_POLISH_PLAN.md`.
+
+**Verification:** Node **447/447** (plus new gates: whole-script syntax — the CORE
+extraction previously let a syntax error anywhere in the app modules pass all 447 tests
+while the app failed to boot — and duplicate `class` attributes), browser gates
+**49/49**, interaction flow **35/35**, sweep at 320/360/375/390/430/768/834/1024 in both
+appearances plus text at 150% and 200%, zero horizontal overflow and zero console errors.
+
+**Independent review:** a fresh-context reviewer ran the app in a browser and returned
+BLOCKED with five findings (frozen tab labels, keyboard-unreachable onboarding, a dead
+Quiet-screen control, 200%-zoom overflow, clipped chart labels — three of the five caused
+by this pass's own earlier fixes). All five were repaired, each repair gated; one repair
+round introduced a further regression each (mid-word tab fracture; flattened line charts),
+both caught by review, both fixed and gated. Final independent verdict on `78acb6a`:
+**PASS**. Full trail in `APPLE_POLISH_PLAN.md`. Final payload **344,058 / 344,064**.
+Real phone hardware remains untested.
+
+## Practice-training run (v4.4.0, 2026-08-18) — the app becomes a training cockpit
+
+Mission: evolve timer+journal into a quiet cockpit for the owner's actual
+practice (natural breath at the nostril rim / upper lip), with sourced teaching
+and zero new gamification. Design decisions + evidence:
+`docs/design/practice-training-design.md`; source ledger: `PRACTICE_SOURCES.md`
+(ships beside the app, SW-precached, readable from Learn).
+
+- **Practice modes (schema v6).** `CORE.PRACTICE_MODES` — one real mode,
+  `nostril_breath` (objects nostril+upperlip), with sourced instruction/cues.
+  Sessions gain nullable `practiceMode`, `contactWhere`, `breathSubtle`,
+  `pleasantFeeling`; v5→v6 migration nulls them on old records; CSV + import/
+  export round-trip tested. DATA_CONTRACT.md updated (authoritative).
+- **One-tap start.** `settings.sitConfig` remembers the full sit configuration
+  on every Start and re-arms it at boot; Today leads with a Current-practice
+  card (mode, saved config, object line, last sit + owner's own last note
+  excerpt — continuity, no levels/scores/predictions).
+- **The sit is a fact.** Timer completions save immediately (minimal honest
+  record incl. practiceMode stamp); the review opens as enrichment of the
+  saved entry ("Close — sit is saved"); reset still discards. Three new one-tap
+  reflection rows (breath clearest at / became subtle / pleasant feeling —
+  yes/no/not sure), all nullable.
+- **Orb demoted during the sit** (design §12, option D): settle animation only
+  during the prep countdown (`body.settling`); static dim disc while running —
+  the practice object is the breath, not the screen.
+- **Learn rebuilt.** Source map = four distinct tradition cards (what MN 118
+  itself says — and does NOT specify; Pa-Auk; Brasington; Thai Forest), a
+  "Jhāna, honestly" module with the boundary sentence ("The app records your
+  practice. It does not decide what meditative state you attained"), and 8
+  troubleshooting cards that preserve genuine tradition disagreements (subtle
+  breath, lights) instead of averaging them. The old "every source says the
+  same" lights card was removed as fake consensus. All content lives in CORE
+  structures (`PRACTICE_SOURCE_MAP`, `JHANA_MODULE`, `TROUBLESHOOTING`) so
+  tests hold every card to a source + label. In-app content is attributed
+  summary, not quotation (direct fetches were proxy-blocked; verification
+  method recorded in PRACTICE_SOURCES.md).
+- **Progress.** Three new deterministic questions (focus-point distribution,
+  subtle-breath frequency with answered-question denominators, own-notes
+  replay after highest-ratio sits) under the same range/n/strength honesty
+  contract.
+- **Gates (all exercised 2026-08-18):** node suite **447/447** (394→447);
+  payload 341,771 bytes under the ADR-0003 ceiling 344,064 (ceiling + SW/app
+  version match now machine-enforced by tests/run-core-tests.mjs); SW v4.4.0
+  precaches PRACTICE_SOURCES.md; browser pass 34/34 in Playwright-driven
+  Chromium at 390×844 (hero→skip→one-tap start→markers→pause→finish→auto-save
+  →reflections→reload re-arm→Learn incl. in-app ledger→Progress honesty→
+  offline reload from SW→responsive sweep 360/390/844×390/768, zero console
+  errors after adding the missing favicon link); file:// double-click
+  self-tests 447/447 in-DOM. Real phone hardware still untested (unchanged
+  limitation).
+- **Fresh-context adversarial review (2026-08-18, ~140k tokens, 35 tool calls):**
+  2 BLOCKING + 6 NON-BLOCKING findings against a broad VERIFIED-PASS list
+  (migration attacked live with a seeded v2 envelope; auto-save probed for
+  duplicates/loss; certification greps; CORE purity re-proven; export hygiene;
+  a11y sweep). Both blockers fixed with regression protection:
+  (1) the orb settle animation was dead CSS — the static rule fired during
+  prep too; fixed with `body.running:not(.settling)`, verified live
+  (prep → orbBreathe, running → none/0.55), gate added to the test runner;
+  (2) the Learn lights card attributed a visions instruction to Thai Forest
+  that the ledger marks UNVERIFIED — attribution removed. Top non-blocking
+  fixes: dull/pleasant/striving cards re-grounded to ledger-verified points
+  (ledger expanded where the scout had verified more than the ledger recorded),
+  "steadiest sits" question renamed "highest-contact sits" to match its metric,
+  dead "source text" badge now applied to the Source library with an
+  unaltered-companion-files note, MN 118 card source line now names the
+  simile suttas. Accepted-as-recorded: byte headroom ~2 KB (ADR-0003 explains),
+  CSV column order (header-driven, documented). After fixes: node suite
+  447/447 + all runner gates; browser pass re-run 34/34; orb phase check PASS.
 
 ## Current practice position
 
@@ -14,12 +317,12 @@
 
 ## App version & schema
 
-- App **v4.2.0** (`CORE.APP_VERSION`), SW cache **v4.2.0** (`sw.js` SW_VERSION — ⚠ bump on
-  every HTML edit or installed clients keep the stale shell; the update notice was verified
-  live again this run: notice → reload → old cache deleted, data intact).
-- **Data schema v5** in envelope `jhanaTracker.v2` — see DATA_CONTRACT.md (authoritative).
-  v5 adds session `timelineSource` ('markers'|'manual'|null); the tested v4→v5 migration
-  marks every pre-v5 timeline 'manual'. Migration chain v1→v5 tested end to end.
+- App **v4.5.0** (`CORE.APP_VERSION`), SW cache **v4.5.0** (`sw.js` SW_VERSION — ⚠ bump on
+  every HTML edit or installed clients keep the stale shell; the version match is now
+  machine-enforced by the test runner).
+- **Data schema v6** in envelope `jhanaTracker.v2` — see DATA_CONTRACT.md (authoritative).
+  v6 adds nullable session `practiceMode`/`contactWhere`/`breathSubtle`/`pleasantFeeling`;
+  migration chain v1→v6 tested end to end (older records get nulls, never guesses).
 - `nimitta` and `aiConfidence` stored names remain permanent.
 
 ## Product shape (v4.0.0 family-beta + 2026-07-10 depth run)
@@ -186,6 +489,12 @@ manifest + sw.js + icons; no dependencies, no build.
 6. Burmese slots in `CORE.I18N` are all empty by design — the owner supplies them;
    the language toggle stays hidden until at least one screen is complete.
 7. Print output was content-verified in DOM, not pixel-verified on paper this run.
+8. Mixed-version window (found by the 2026-09-08 review): after a deploy, an installed old
+   client that opens the root URL before applying the update runs the new document under the
+   old worker (the old cache stores it under `/`), while `start_url` still serves the old one.
+   No data loss; records written in that window get stale `v` stamps and `undefined` v6 fields.
+   Candidate fixes for a future version: per-record migration keyed on `v`, and/or precaching
+   `./` (which would require a root rewrite on every host).
 
 ## Family distribution (no deploy)
 

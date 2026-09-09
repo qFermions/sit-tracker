@@ -26,32 +26,58 @@ tab-sleep, and screen-lock recovery correct by construction.
 - `jhanaTracker.v2.recovered-<ts>` — quarantined unparseable bytes (never discarded)
 - `janSits`, `janGates` — legacy v1, read-once migrated, never written or deleted
 
-## Visual identity system (defined once in `:root`, 2026-07-11 pass)
+## Visual identity system (defined once in `:root`; Apple design pass, 2026-08-26)
 
 Everything visual derives from one token layer at the top of the `<style>` block; no
-surface invents its own values.
+surface invents its own values. Tokens are named for **purpose**, not appearance. The
+full contract, with every contrast ratio computed rather than estimated, is in
+`APPLE_DESIGN_SYSTEM.md`.
 
-- **Type** — system stack only (zero embedded font bytes). Hierarchy comes from brave
-  sizes plus weight and tracking: `--fs-hero` (clamp 2.7–4.2rem, landing), `--fs-display`
-  (1.9–2.75rem, stat/preset numerals, weight 750, tracking −.025em), `--fs-timer`
-  (3.4–6rem, weight 300), then xl/lg/md/sm/xs. Numerals are always `tabular-nums`.
-  Labels use the `.label-caps` recipe: xs · 600 · +.09em · uppercase · dim.
-- **Color** — midnight base (`--bg` #0a0e15 → `--bg3` #1a2333), off-white text ramp
-  (`--fg/--fg-dim/--fg-faint`, all AA on their surfaces), moonlit accent `#8ec3ea` with
-  `--accent-ink` (#0a1520) for text on accent, restrained gold for "recommended" and
-  traditional-claim marks, teal for ok/presence.
-- **Depth** — three elevation shadows (`--elev-1/2/3`) plus one glass recipe
-  (`--glass-bg` + blur 16–20px) used only for dialogs and the toast.
-- **Gradients** — exactly three recipes: `--grad-wash` (page), `--grad-card` (surface
-  sheen), `--grad-cta` (primary action). Nothing else gets a gradient.
+- **Appearances** — tokens are defined on `:root` for **dark** (the app's home look) and
+  redefined for **light** (`prefers-color-scheme: light`), **increased contrast**
+  (`prefers-contrast: more`, both appearances) and **reduced transparency**
+  (`prefers-reduced-transparency: reduce`, which makes the two glass surfaces opaque).
+  No token is defined only inside a media query. `<meta name="color-scheme">` declares
+  `dark light`. There is deliberately no in-app theme switch: the app follows the device.
+- **Type** — system stack only (zero embedded font bytes). **Four weights only**
+  (400/500/600/700) — the previous 650/750 steps rounded to 700/900 on the static
+  fallback families, so "one notch above bold" rendered heavier than `h1`. `--fs-timer`
+  (clamp 2.2–6rem, weight **400** — Regular, not Light; the floor is in `rem` so it
+  scales with the reader's text size and does not overflow a 320 px screen at 200%),
+  `--fs-hero` (2.4–3.6rem), `--fs-display` (1.8–2.6rem, weight 700), then xl/lg/md/sm/xs.
+  Numerals are always `tabular-nums`. Uppercase is reserved for the two genuinely
+  singular labels (`.label-caps`, `.p-tag`); the stat and tile captions render in the
+  sentence case they are written in.
+- **Colour** — backgrounds `--background` / `--surface` / `--surface-elevated`; labels
+  `--label-primary` / `--label-secondary` / `--label-tertiary`; structure `--separator` /
+  `--separator-strong`; meaning `--accent`, `--on-accent`, `--accent-muted`,
+  `--tradition`, `--success`, `--warning`, `--destructive`, `--danger-edge`.
+  Every label token clears **4.5:1 on the worst surface it can legally appear on**, in
+  both appearances — measured, and machine-gated by `tests/run-browser-gates.mjs`, whose
+  contrast check samples gradient colour stops at worst case so no rendered text is
+  skipped. (The previous ramp claimed "all AA on their surfaces" and was not: the
+  tertiary step scored 4.16:1 on `--bg3`.)
+- **Depth** — three elevation shadows (`--elev-1/2/3`, re-tuned for light) plus one glass
+  recipe (`--glass` + blur 16–20px) used only for the dialog and the toast, and dropped
+  entirely under reduced transparency.
+- **Gradients** — six named recipes, each with a job: `--grad-wash` (page ground),
+  `--grad-card` (surface sheen), `--grad-cta` (primary action), `--grad-hero`
+  (first-open), `--grad-orb`, `--grad-recommend`. Nothing else gets a gradient.
+  *(The previous note claimed "exactly three"; there were already six, three of them
+  written as untokenised literals.)*
 - **Motion** — `--dur-1/2/3` = 120/220/480ms with one decel curve (`--ease-out`);
-  transform+opacity only; press = scale(.97); hover = 1–2px lift; nothing animates in a
-  loop while idle (the orb breathes only during a running sit); the global
+  `transform`, `opacity` and `scale` only; press = scale(.97); nothing animates in a loop
+  while idle. **The orb breathes only during the settling countdown and is explicitly
+  still during the sit itself** — the practice object is the breath, not the screen. That
+  rule is gated three ways: a source-string check in `tests/run-core-tests.mjs` and two
+  live computed-style checks in the browser gates. The global
   `prefers-reduced-motion` rule kills every animation and transition.
-- **Radius** — `--r-lg` 22 (hero/dialog), `--r` 14 (cards), `--r-sm` 10 (controls),
-  `--r-pill` for chips/tabs/status.
-- **The sit screen is exempt** from expressive styling: large light-weight timer, no new
-  motion or decoration while sitting.
+- **Navigation** — a convertible tab bar: bottom-anchored and full width on compact
+  widths (thumb-reachable, `env(safe-area-inset-bottom)` aware), top-anchored as a
+  centred pill from 768px. Five destinations, no hamburger, no horizontal scrolling at
+  any width from 320 to 1024.
+- **Targets** — every interactive element renders at least 44×44, verified by measuring
+  rendered boxes across all five screens rather than reading declared CSS.
 
 ## Product principles (enforced, not aspirational)
 1. **Evidence integrity** — the app records self-reports; it never certifies jhāna, nimitta,
