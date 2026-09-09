@@ -7,6 +7,56 @@ values — none are estimated.
 
 ---
 
+# Part 0 — Night Practice + Apple restraint (v4.6.0, 2026-09-09)
+
+The v4.6.0 pass keeps the thesis and the semantic token layer below and re-picks the
+values and the surfaces. It is HIG-inspired, not an Apple certification; the skill's
+pinned corpus (`APPLE_SKILL_PROVENANCE.md`) was reused as reference, and the official
+Materials / Accessibility / Typography / Motion pages were the primary external reference.
+
+**Direction.** Dark is the home appearance: a near-black ground, gently separated charcoal
+surfaces, warm labels, one restrained amber emphasis. Light is a warm paper ground with ink
+text and a contrast-safe brown-amber accent, calibrated on its own, never inverted.
+
+**What changed visibly.** The sit leads: orb, time and one dominant Start action are the
+first thing on Today at every width; the remembered practice, its configuration and one
+continuity line follow, then the presets. Statistics tiles, the "works offline" pill and
+the header beta chip are gone from Today (feedback stays in Settings; how-to-use and
+install remain as quiet links). The timer stage sits on the open ground, not in a box.
+Cards are flat surfaces with a single edge — no gradients, glows or drop shadows; Journal
+history is a list; Learn is an editorial page; Settings groups carry small capital headers.
+The tab bar is translucent over content with an opaque fallback under reduced
+transparency; the active tab is a soft amber tint. Markers no longer fracture mid-word.
+
+**Tokens (dark → light).** background `#0b0b0d` → `#f7f4ee` · surface `#151517` → `#fffdf9`
+· surface-elevated `#1f1f23` → `#efeae1` · separator `#28282d` → `#e2ddd3` · label-primary
+`#f2ede4` → `#1c1913` · label-secondary `#b2aa9d` → `#585247` · label-tertiary `#8e877b` →
+`#6a635a` · accent `#e2a75c` → `#9a5b0f` (on-accent `#1b1205` → `#fff`) · tradition
+`#d6b47c` → `#7a5a1f` · destructive `#ee9188` → `#a52c2c` · glass `rgba(17,17,19,.82)` →
+`rgba(255,253,249,.86)` · tint = accent at 12 %. Radii 22/14/10 px; spacing 4·8·12·16·24·40;
+motion 120/220/480 ms with one ease-out; the only ambient loop is the optional settling orb.
+Type: system stack with Burmese fallbacks (`"Noto Sans Myanmar","Myanmar Text"`); body
+17 px (`--fs-md: 1.0625rem`), secondary 15 px, captions 13 px; the timer stays Regular (400,
+per Part 2 — never Light), tabular, `clamp(2.2rem, 14vw, 5.25rem)` and never wraps (a 1 h+
+reading fits 320 px). The wordmark keeps `overflow-wrap: normal` so 200 % text cannot fracture
+it. During a sit and on the Quiet Screen the header is hidden, so `main` carries the top safe-area
+inset itself. `theme-color` follows the ground in both appearances.
+
+**Measured contrast (WCAG 2.1 relative luminance, computed 2026-09-09; the browser gates
+re-measure rendered text in both appearances):** dark, on the background — label-primary
+16.9:1, label-secondary 8.5:1, label-tertiary 5.5:1, accent 9.3:1, tradition 10.0:1,
+destructive 8.5:1; on a surface — secondary 7.9:1, tertiary 5.1:1; on-accent text on the
+accent 8.7:1. Light, on the paper ground — label-primary 16.0:1, label-secondary 7.1:1,
+label-tertiary 5.4:1, accent 4.9:1, tradition 5.8:1, destructive 6.4:1; on a surface —
+secondary 7.6:1, tertiary 5.8:1; white on the accent 5.4:1. Increased-contrast variants
+lift the secondary and tertiary labels and the separators in both appearances.
+
+**Budget.** The redesign reclaimed bytes: 344,058 → 339,746 (ADR-0003 ceiling 344,064,
+headroom 6 → 4,318) by consolidating the stylesheet (23.3 KB → 20.4 KB), removing the
+gradient/elevation layer and the Today tile renderer.
+
+---
+
 # Part 1 — The thesis
 
 > **Opening Sit Tracker should feel like approaching a meditation cushion.**

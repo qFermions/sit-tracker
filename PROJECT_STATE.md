@@ -3,6 +3,87 @@
 *A future session should be able to resume from this file alone.*
 *Last verified: 2026-08-26, Apple design pass (sections below dated as verified).*
 
+## Night Practice + Apple restraint (v4.6.0, 2026-09-09) — the sit leads, the update window closes
+
+**Tested implementation `c23a0a5`** (initial `7fe2434`, corrected after independent review; manifest commit
+`d44ec17`; documentation commits follow and are not the tested implementation). App 4.6.0 = SW v4.6.0, schema 6, data keys unchanged.
+`sit-tracker-v2.html` 339,746 B sha256 `8af95fbf5fa7350aa48b7825b116c598dbc422abcbc4ff6ef01e3a0afa406fbf`;
+payload xz sha256 `54cf7de69dc1d6233f1220001b79403fedee2f55549baaa9b17a345435ba3f63` (ADR-0003 ceiling
+344,064 unchanged; headroom 6 → 4,318 — the redesign reclaimed bytes).
+Direction and measured tokens: `APPLE_DESIGN_SYSTEM.md` Part 0. HIG-inspired; not an Apple
+certification. Previous artifact (ec9b564, v4.5.0) and its bundle/receipts preserved for rollback.
+
+Three largest design failures found in the BEFORE renders and what changed:
+1. **Start was below the fold at every width** (header chip, backup notice, practice card, three
+   stat tiles and three pills came first). Now the orb, the time and one dominant Start action open
+   Today; the remembered practice, its configuration and one continuity line follow, then presets.
+2. **Card-around-everything on a cool-blue dashboard palette.** Now one consolidated token layer:
+   near-black ground, flat charcoal surfaces with a single edge, warm labels, restrained amber; light
+   is warm paper + ink + brown-amber, calibrated separately. No gradients, glows or drop shadows.
+   Journal history is a list, Learn an editorial page, Settings grouped lists with capital headers,
+   the tab bar translucent over content with an opaque fallback under reduced transparency.
+3. **The active sit was cluttered and fractured** ("Wandering" broke mid-word). Markers sit in a
+   grid that never fractures; the stage is open ground; Reset and Quiet Screen are quiet ghosts;
+   the orb still settles with you and holds still during the sit.
+Removed from Today: stat tiles, the "works offline" pill, the header beta chip (feedback stays in
+Settings; how-to-use and install remain as links). No feature removed.
+
+**Mixed-version window — reproduced, then closed (in scope this pass).** With the real v4.5.0
+output installed from its start_url (never "/"), an active sit and a second tab, deploying v4.6.0
+and opening "/" ran the new document under the old worker (both caches present) — reproduced.
+Fix, two parts: the worker answers a navigation to the scope root or to the app document (any
+query) with its own cached copy, so a page can never run a newer or older document than the worker
+serving it — every other navigation (a companion .md opened directly, an icon, an unknown path)
+keeps its cache-first answer and its real 404; and `migrate()` upgrades records stamped by an older
+schema even in a current envelope (a simulated older-client write came back `v:6` with the v6
+fields null). In the window the new document's own registration check finds the matching worker
+and offers it through the existing notice — no forced reload, the sit untouched; applying the
+update moved all three tabs onto v4.6.0 with only its cache left and the sit offered back. Forward
+closure is proven with a gate that can fail: a fresh start_url-only client opening "/" for the
+first time while a v9.9.9 fixture sits on the network still runs v4.6.0 (a worker with the branch
+stripped fails that gate), and the newer release is still offered through the notice.
+
+**Gates on the packaged v4.6.0 directory (`dist/release-v4.6.0/public`)** — release gates 82/82
+(served identity; v4.3.0/schema-5 client → v4.6.0 with records + active sit; failed precache never
+replaces a usable install; export→import across two origins with duplicate policy, invalid and
+future-schema input, no API key; mixed-version window and forward closure; companion documents
+and unknown paths keep their own answers under the worker; offline with the server refusing every
+connection and every asset byte-compared to the release; persistence; 390/1280 overflow; zero
+foreign requests; zero candidate console errors) · cache-wipe mutant still fails 5 gates with
+exit 1 · browser gates 49/49 (contrast in both appearances, 44×44 targets, 150 %/200 % zoom sweep,
+nine widths, reduced motion, orb contract, export key-stripping) · interaction flow 35/35 (real
+10 s settle + 11 s sit, pause/resume, export → wipe → import, offline reload) · core 447/447 with
+ceiling/version/syntax/attribute gates · `release.mjs` check PASS, selftest 15/15; the manifest
+packed from the committed tree reproduces the same digests.
+Evidence: before/after screenshots (phone 390 dark+light, wide 1024) and the contact sheet,
+a 390×844 real-browser walkthrough video, and every log — in the v4.6.0 private bundle.
+
+- Independent review (Codex CLI absent — that cross-model gate stays unfulfilled; fresh-context
+  Claude reviewer, job `a0925475260b6a617`, isolated worktree, ran the gates, two mutants, its own
+  sweep and probes, looked at the renders). Initial verdict on `7fe2434`: **BLOCKED — 3 MAJOR, no
+  data loss**: the navigation handler masked every in-scope navigation (companion documents,
+  manifest, icons, 404s all returned the app); the forward-closure gate was vacuous (marker outside
+  `documentElement`, "/" pre-cached — the suite stayed green with the handler deleted) and the
+  `reg.update()` guard was redundant; the phase line sat under a notched phone's status bar during
+  a sit because the header, the only safe-area carrier, is hidden then. Plus MINORs ("1 days",
+  timer weight vs the record, navy theme-color, wordmark fracture at 200 %, 1 h+ timer at 320 px,
+  Progress empty-state copy, hero focus ring, cross-tab last-writer-wins). All MAJORs and the first
+  five MINORs closed at `c23a0a5` (details: `~/sit-tracker-vercel-staging/review-v4.6.0-*.md`);
+  the last three stay recorded below. **Re-review 1 of 2 on `c23a0a5`: PASS** — every MAJOR fix
+  reproduced by the reviewer (navigation sweep; closure gate failing on the nav mutant, 82/82 on
+  the real artifact; safe-area geometry under a CDP inset override), MINORs spot-checked, identity
+  confirmed. Re-review 2 unused (no code changed after `c23a0a5`). Counters: initial 1/1, re-reviews
+  1 of 2, correction loop 1 of 3 (one attempt). Records: `~/sit-tracker-vercel-staging/review-v4.6.0-*.md`.
+- Reviewer-noted items left as they are (pre-existing, MINOR): the Progress empty state shows dash
+  tiles and the practice map's "Gate 0 target … 0/30" line (product copy — the owner's call whether
+  to soften it); the first-open hero button renders a focus ring in headless Chromium (device
+  behaviour unverified); saving from an old-version tab after a new tab wrote is last-writer-wins
+  (limitation 5, unchanged).
+- Live deployment: no Vercel probe was made (no new evidence since the 2026-09-08 wall); LIVE:
+  UNPROVEN. v4.6.0 parts are packed and unsent; resume from tp_00 with the v4.6.0 manifest only.
+- Unobserved and therefore unproven: real iPhone/Android installation and lock-screen behaviour,
+  VoiceOver, Burmese owner approval of any copy (no copy changed).
+
 ## Release recovery + data-safety gates (2026-09-08) — the v4.5.0 artifact becomes reproducible
 
 **Runtime artifact unchanged.** Tested revision for the runtime files: `ec9b564` (PR #2 head;
