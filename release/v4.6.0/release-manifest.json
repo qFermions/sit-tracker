@@ -7,25 +7,25 @@
   },
   "source": {
     "repo": "https://github.com/qFermions/sit-tracker",
-    "commit": "7fe2434dcda5dc4efbf62a2cb4d7192fa840e83c",
+    "commit": "c23a0a54099a8131e67a4c7319a5114fbe23a79d",
     "branch": "claude/practice-training-system",
     "dirtyMembers": []
   },
   "sourceFiles": [
     {
       "path": "sit-tracker-v2.html",
-      "bytes": 339831,
-      "sha256": "5c6e79b70e6032531747a7917aa1e81eeaad8869f6db3a46145f32b7f0f381b1"
+      "bytes": 339746,
+      "sha256": "8af95fbf5fa7350aa48b7825b116c598dbc422abcbc4ff6ef01e3a0afa406fbf"
     },
     {
       "path": "sw.js",
-      "bytes": 1986,
-      "sha256": "9c04515c84ecbb413c8d277c67a86f36957ecffbabc8f3e1a4b82d4b4b3d0d35"
+      "bytes": 2308,
+      "sha256": "c9cfd3eb0be6a292d1042270552a53969860665babeb92544e6ddee99603f393"
     },
     {
       "path": "manifest.json",
       "bytes": 689,
-      "sha256": "899b290d7483e331f271de31196b9ab5f5e6af38b068d2c60664982c8ec00ec5"
+      "sha256": "40a4028965d8f235382ce15fb2ce67303ce2662934e791d0b51a1780c6b91bc4"
     },
     {
       "path": "PRACTICE_SOURCES.md",
@@ -61,9 +61,9 @@
   },
   "payload": {
     "tarBytes": 378880,
-    "tarSha256": "37b298be3a9ad5e3a9392db3cdbda9d6e6a4da4d238108cab339c7074d5ec91d",
-    "xzBytes": 91680,
-    "xzSha256": "c27eb83be9b61df8cfc86c0d9a1c2b80c349d2febad0868db42ffb8be3cdba6e"
+    "tarSha256": "d55a491d1d8774f27b20b82fce8189e735d8f191772f8310bfbdf943898483c0",
+    "xzBytes": 91764,
+    "xzSha256": "54cf7de69dc1d6233f1220001b79403fedee2f55549baaa9b17a345435ba3f63"
   },
   "parts": [
     {
@@ -71,63 +71,63 @@
       "name": "tp_00",
       "textName": "tp_00.b64.txt",
       "bytes": 13500,
-      "sha256": "f333d849e5e06366764b62d38d8797eb3dd13290e5e2b20c84fb96791d1e3caa",
+      "sha256": "c6d915b8d4db66e979e466e0337b52cf16aafabbd759dd399cabe4be82161c4a",
       "textBytes": 18018,
-      "textSha256": "063a02913ebf9ced23c61bd8278f39b874d4b79b1424d38a7381c820eb39142a"
+      "textSha256": "6ae8153924fc6b3103c67bbb60b812d591f95bde3a11413e33cba737049ed3fa"
     },
     {
       "index": 1,
       "name": "tp_01",
       "textName": "tp_01.b64.txt",
       "bytes": 13500,
-      "sha256": "e68a25f94797b4da11adbc3da8c9e42274da1ebd8403b8a8ecb7bb5d0be6e1ae",
+      "sha256": "05970e2ba00c20048eb19a8c904ec2ce2c2dce17ecee28ab0eea782c93de0de6",
       "textBytes": 18018,
-      "textSha256": "72dd835e6a5c741ecc4641072c398987c5b12f686a71e9b8908db21b8eb42526"
+      "textSha256": "e86e97f3c7f9e0c4adb645389be53dade73015615143ed5a80c96b70afdf2ec6"
     },
     {
       "index": 2,
       "name": "tp_02",
       "textName": "tp_02.b64.txt",
       "bytes": 13500,
-      "sha256": "db036cb4cb3eb6977c12b66f953079eaca82e37df0d0f4ddeb77efe666221167",
+      "sha256": "994c5b7d608f9070f3b0b53dc6cb1088953fc1b90672ac44a2f846724ab4bb95",
       "textBytes": 18018,
-      "textSha256": "48686df89545d112eed44738ba9062fb4abe0ecaeb92179ef1df2bcba5660529"
+      "textSha256": "62ec65d18c9772dd0b21818eee872044f15e3dcd2c4bb34ef10d99776aefc1fe"
     },
     {
       "index": 3,
       "name": "tp_03",
       "textName": "tp_03.b64.txt",
       "bytes": 13500,
-      "sha256": "7125e39a8b36e777cdb45558026483673d1b5796c72bc702a83f39a7cfa2c894",
+      "sha256": "85622c6c37bd0560d77da5d81242ac7da111dcfed1d03de8342fd361dbc39236",
       "textBytes": 18018,
-      "textSha256": "6dd403b38c09bfec983cee48b65b0689bf715f8bfc20123dc597edb14f6998dc"
+      "textSha256": "a42de262418b34607742028fee91395ab58fb636db72cd8c8d41cf20b592377a"
     },
     {
       "index": 4,
       "name": "tp_04",
       "textName": "tp_04.b64.txt",
       "bytes": 13500,
-      "sha256": "cbb9e62ed179191abd9c0ceb3e05516044c4dbe55f473e20734a057bf766fe7d",
+      "sha256": "9a4fd0593766b46d0af1b25c2e0d3e3febd5859e99431129f54e61239f318ced",
       "textBytes": 18018,
-      "textSha256": "97ac77763c7eae4ea135a08f2d1022e98e5d9b6efce2939898d1242c3b70dc17"
+      "textSha256": "af6891c124ff1afdb8a2b39e27be5a9bd5628fdd779b498c75558279b30adeca"
     },
     {
       "index": 5,
       "name": "tp_05",
       "textName": "tp_05.b64.txt",
       "bytes": 13500,
-      "sha256": "bcc1657882962021d3a777b48e5cbe7dd237fae8cdb41f85ef2ee7013975699a",
+      "sha256": "34b5b57155aedb0dc46d4e9b2843fed8206597b2c024539a2787338e4aaae4eb",
       "textBytes": 18018,
-      "textSha256": "fb868ad6aac0e627c1d3d315c604b88c972d62715269be72bc15ffc3f22bde1c"
+      "textSha256": "3473c68450960f40e25b4caa972a4e21b488c4fe89707234d69b1027a47490d9"
     },
     {
       "index": 6,
       "name": "tp_06",
       "textName": "tp_06.b64.txt",
-      "bytes": 10680,
-      "sha256": "3c4f873ff5d9b5a721099865cea94e2d73d486f97e42128e88615450eaff053b",
-      "textBytes": 14255,
-      "textSha256": "f41a9f1b445842874d5baf1118c509fa8149bfd176b4d82c8f38b9da352c1cdd"
+      "bytes": 10764,
+      "sha256": "e594d078d99b02d59f93b552319b043f3ef1503771ed91a53ed4a8a57bd076f7",
+      "textBytes": 14367,
+      "textSha256": "0852f0f394cb12f7b3a2a7843632a338e9aa53e9d9b20a3b9ae50b234a0a09dc"
     }
   ],
   "output": {
@@ -160,18 +160,18 @@
     "runtimeFiles": [
       {
         "path": "sit-tracker-v2.html",
-        "bytes": 339831,
-        "sha256": "5c6e79b70e6032531747a7917aa1e81eeaad8869f6db3a46145f32b7f0f381b1"
+        "bytes": 339746,
+        "sha256": "8af95fbf5fa7350aa48b7825b116c598dbc422abcbc4ff6ef01e3a0afa406fbf"
       },
       {
         "path": "sw.js",
-        "bytes": 1986,
-        "sha256": "9c04515c84ecbb413c8d277c67a86f36957ecffbabc8f3e1a4b82d4b4b3d0d35"
+        "bytes": 2308,
+        "sha256": "c9cfd3eb0be6a292d1042270552a53969860665babeb92544e6ddee99603f393"
       },
       {
         "path": "manifest.json",
         "bytes": 689,
-        "sha256": "899b290d7483e331f271de31196b9ab5f5e6af38b068d2c60664982c8ec00ec5"
+        "sha256": "40a4028965d8f235382ce15fb2ce67303ce2662934e791d0b51a1780c6b91bc4"
       },
       {
         "path": "PRACTICE_SOURCES.md",
@@ -210,7 +210,7 @@
       }
     ]
   },
-  "packedAt": "2026-09-09T05:50:28.903Z",
+  "packedAt": "2026-09-09T06:11:51.538Z",
   "tools": {
     "node": "v22.22.2",
     "tar": "tar (GNU tar) 1.35",
